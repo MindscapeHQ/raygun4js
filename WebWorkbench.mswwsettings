@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<web-workbench>
+  <file name="raygun.js">
+    <setting name="Compile">True</setting>
+    <setting name="Minify">True</setting>
+    <setting name="OutputFolder"></setting>
+    <setting name="IncludedFiles">tracekit\tracekit.js</setting>
+  </file>
+</web-workbench>
