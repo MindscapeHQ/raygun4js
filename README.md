@@ -1,4 +1,11 @@
-raygun4js
-=========
+Raygun4Js
+==========
 
-Raygun.io Plugin for JavaScript
+[Raygun.io](http://raygun.io) Provider for JavaScript
+
+
+Installation
+====================
+
+Usage
+====================
