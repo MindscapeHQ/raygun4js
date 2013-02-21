@@ -55,6 +55,6 @@ You can detach the handler by calling .detach()
   </script>
 ```
 
-License
-====================
-MIT
+## License
+
+MIT license. Copyright 2013 Mindscape
