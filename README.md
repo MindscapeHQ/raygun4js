@@ -54,3 +54,7 @@ You can detach the handler by calling .detach()
     Raygun.detach();
   </script>
 ```
+
+License
+====================
+MIT
