@@ -3,7 +3,8 @@
   var _traceKit = TraceKit.noConflict(),
       _raygun = window.Raygun,
       _raygunApiKey,
-      _debugMode = false;
+      _debugMode = false,
+      _customData = {};
 
   var Raygun =
   {
@@ -12,10 +13,11 @@
       return Raygun;
     },
 
-    init: function(key, options) {
+    init: function(key, options, customdata) {
       _raygunApiKey = key;
       _traceKit.remoteFetching = false;
-      
+      _customData = customdata;
+
       if (options)
       {
       	if (options.debugMode)
@@ -27,6 +29,11 @@
       return Raygun;
     },
     
+    withCustomData: function (customdata) {
+      _customData = customdata;
+      return Raygun;
+    },
+
     attach: function () {
       if (!isApiKeyConfigured()) return;
       _traceKit.report.subscribe(processUnhandledException);
@@ -38,9 +45,9 @@
       return Raygun;
     },
 
-    send: function (ex) {
+    send: function (ex, customData) {
       try {
-        _traceKit.report(ex, {});
+        _traceKit.report(ex, merge(_customData, customData));
       } 
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -61,10 +68,32 @@
     return false;
   }  
 
+  function merge(o1, o2) {
+    var o3 = {};
+    for (var a in o1) { o3[a] = o1[a]; }
+    for (var a in o2) { o3[a] = o2[a]; }
+    return o3;
+  }
+
   function forEach(set, func) {
     for (var i = 0; i < set.length; i++) {
       func.call(null, i, set[i]);
     }
+  }
+
+  function isEmpty(o) {
+    for (var p in o) {
+      if (o.hasOwnProperty(p)) return false;
+    }
+    return true;
+  }
+
+  function getViewPort() {
+    var e = document.documentElement,
+    g = document.getElementsByTagName('body')[0],
+    x = window.innerWidth || e.clientWidth || g.clientWidth,
+    y = window.innerHeight || e.clientHeight || g.clientHeight;
+    return { width: x, height: y };
   }
 
   function processUnhandledException(stackTrace, options) {
@@ -91,6 +120,12 @@
       });
     }
 
+    if (isEmpty(options)) {
+      options = _customData;
+    }
+
+    var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
+
     sendToRaygun({
       'OccurredOn': new Date(),
       'Details': {
@@ -99,15 +134,32 @@
           'Message': stackTrace.message || 'Script error',
           'StackTrace': stack
         },
-        'Environment': {},
+        'Environment': {
+          'User-Language': navigator.userLanguage,
+          'Document-Mode': document.documentMode,
+          'Browser-Width': getViewPort().width,
+          'Browser-Height': getViewPort().height,
+          'Screen-Width': screen.width,
+          'Screen-Height': screen.height,
+          'Color-Depth': screen.colorDepth,
+          'Browser': navigator.appCodeName,
+          'Browser-Name': navigator.appName,
+          'Browser-Version': navigator.appVersion,
+          'Platform': navigator.platform
+        },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.0.0'
+          'Version': '1.0.1'
         },
         'UserCustomData': options,
         'Request': {
           'Url': document.location.href,
-          'QueryString': qs
+          'QueryString': qs,          
+          'Headers': {
+            'User-Agent': navigator.userAgent,
+            'Referer': document.referrer,
+            'Host': document.domain
+          }
         }
       }
     });
