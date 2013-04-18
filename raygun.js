@@ -135,6 +135,7 @@
           'StackTrace': stack
         },
         'Environment': {
+          'UtcOffset': new Date().getTimezoneOffset() / -60.0,
           'User-Language': navigator.userLanguage,
           'Document-Mode': document.documentMode,
           'Browser-Width': getViewPort().width,
