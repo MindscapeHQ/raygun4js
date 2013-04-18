@@ -1,3 +1,11 @@
+/*
+ * raygun4js
+ * https://github.com/MindscapeHQ/raygun4js
+ *
+ * Copyright (c) 2013 MindscapeHQ
+ * Licensed under the MIT license.
+ */
+
 (function (window) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
@@ -20,22 +28,24 @@
 
       if (options)
       {
-      	if (options.debugMode)
-      	{
+        if (options.debugMode)
+        {
           _debugMode = options.debugMode;
-      	}
+        }
       }
 
       return Raygun;
     },
-    
+
     withCustomData: function (customdata) {
       _customData = customdata;
       return Raygun;
     },
 
     attach: function () {
-      if (!isApiKeyConfigured()) return;
+      if (!isApiKeyConfigured()) {
+        return;
+      }
       _traceKit.report.subscribe(processUnhandledException);
       return Raygun;
     },
@@ -48,7 +58,7 @@
     send: function (ex, customData) {
       try {
         _traceKit.report(ex, merge(_customData, customData));
-      } 
+      }
       catch (traceKitException) {
         if (ex !== traceKitException) {
           throw traceKitException;
@@ -61,17 +71,19 @@
   /* internals */
 
   function isApiKeyConfigured() {
-    if (_raygunApiKey && _raygunApiKey !== '') return true;
-    if (window.console && console.error) {
-      console.error("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
+    if (_raygunApiKey && _raygunApiKey !== '') {
+      return true;
+    }
+    if (window.console && window.console.error) {
+      window.console.error("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
     }
     return false;
-  }  
+  }
 
   function merge(o1, o2) {
-    var o3 = {};
-    for (var a in o1) { o3[a] = o1[a]; }
-    for (var a in o2) { o3[a] = o2[a]; }
+    var a, o3 = {};
+    for (a in o1) { o3[a] = o1[a]; }
+    for (a in o2) { o3[a] = o2[a]; }
     return o3;
   }
 
@@ -83,7 +95,9 @@
 
   function isEmpty(o) {
     for (var p in o) {
-      if (o.hasOwnProperty(p)) return false;
+      if (o.hasOwnProperty(p)) {
+        return false;
+      }
     }
     return true;
   }
@@ -114,7 +128,7 @@
     if (window.location.search && window.location.search.length > 1) {
       forEach(window.location.search.substring(1).split('&'), function (i, segment) {
         var parts = segment.split('=');
-        if (parts && parts.length == 2) {
+        if (parts && parts.length === 2) {
           qs[decodeURIComponent(parts[0])] = parts[1];
         }
       });
@@ -155,7 +169,7 @@
         'UserCustomData': options,
         'Request': {
           'Url': document.location.href,
-          'QueryString': qs,          
+          'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,
             'Referer': document.referrer,
@@ -167,13 +181,15 @@
   }
 
   function sendToRaygun(data) {
-    if (!isApiKeyConfigured()) return;
-    if (window.console && console.log && _debugMode) {
-      console.log('Sending exception data to Raygun:', data);
+    if (!isApiKeyConfigured()) {
+      return;
+    }
+    if (window.console && window.console.log && _debugMode) {
+      window.console.log('Sending exception data to Raygun:', data);
     }
     var img = new Image(1,1);
     img.src = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey) + '&payload=' + encodeURIComponent(JSON.stringify(data));
-  }  
+  }
 
   window.Raygun = Raygun;
 })(window);

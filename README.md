@@ -1,60 +1,53 @@
-Raygun4Js
-==========
+# Raygun4js
 
-[Raygun.io](http://raygun.io) Provider for JavaScript
+Raygun.io plugin for JavaScript
 
+## Getting Started
+Download the [production version][min] or the [development version][max].
 
-Installation
-====================
+[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
+[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
 
-To install the provider download raygun.min.js which has been pre-combined with tracekit as a single script to include
-in your site.
+In your web page:
 
-
-Usage
-====================
-
-The provider provides two functions, the first allows you to manually send errors as part of handling a catch in
-your JavaScript code and the second is a window.onerror handler which will catch all unhandled exceptions.
-
-To get started you will need to initialize the provider with your application API key
-
-```
-  <script type="text/javascript">
-    Raygun.init('yourApiKey');
-  </script>
+```html
+<script src="dist/raygun.min.js"></script>
+<script>
+  Raygun.init('yourApiKey');
+</script>
 ```
 
-To submit manual errors call .send()
+To submit manual errors:
 
 ```
-  try
-  {
-    // your code
-  }
-  catch(e)
-  {
-    // any other error handling
-    Raygun.send(e);
-  }
+try {
+  // your code
+}
+catch(e) {
+  Raygun.send(e);
+}
 ```
 
-To attach the window.onerror handler call .attach(), typically inline with initializing the provider
+To attach the window.onerror handler call:
 
-```
-  <script type="text/javascript">
-    Raygun.init('yourApiKey').attach();
-  </script>
-```
-
-You can detach the handler by calling .detach()
-
-```
-  <script type="text/javascript">
-    Raygun.detach();
-  </script>
+```html
+<script src="dist/raygun.min.js"></script>
+<script>
+  Raygun.init('yourApiKey').attach();
+</script>
 ```
 
-## License
+If you need to detach it:
 
-MIT license. Copyright 2013 Mindscape
+```
+Raygun.detach();
+```
+
+## Documentation
+_(Coming soon)_
+
+## Examples
+_(Coming soon)_
+
+## Release History
+_(Nothing yet)_
