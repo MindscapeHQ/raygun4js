@@ -52,6 +52,7 @@ module.exports = function(grunt) {
       src : 'src/**/*.js',
       options : {
         specs : 'spec/**/*.js',
+        vendor : ['libs/tracekit/tracekit.js'],
         template : require('grunt-template-jasmine-istanbul'),
         templateOptions: {
           coverage: 'reports/coverage.json',
