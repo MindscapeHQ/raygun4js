@@ -19,7 +19,7 @@ In your web page:
 
 To submit manual errors:
 
-```
+```javascript
 try {
   // your code
 }
@@ -39,7 +39,7 @@ To attach the window.onerror handler call:
 
 If you need to detach it:
 
-```
+```javascript
 Raygun.detach();
 ```
 
