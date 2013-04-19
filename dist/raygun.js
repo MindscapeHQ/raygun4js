@@ -1,4 +1,4 @@
-/*! Raygun4js - v0.1.0 - 2013-04-19
+/*! Raygun4js - v0.2.0 - 2013-04-19
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {

@@ -50,4 +50,6 @@ _(Coming soon)_
 _(Coming soon)_
 
 ## Release History
-_(Nothing yet)_
+
+1.2.0 - Changed from QueryString approach to sending data to using an ajax post with CORS
+1.0.1 - Initial Release
