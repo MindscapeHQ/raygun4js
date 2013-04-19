@@ -70,13 +70,17 @@
 
   /* internals */
 
+  function log(message) {
+    if (window.console && window.console.log && _debugMode) {
+      window.console.log(message);
+    }
+  }
+
   function isApiKeyConfigured() {
     if (_raygunApiKey && _raygunApiKey !== '') {
       return true;
     }
-    if (window.console && window.console.error) {
-      window.console.error("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
-    }
+    log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
     return false;
   }
 
@@ -164,7 +168,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.0.1'
+          'Version': '1.2.0'
         },
         'UserCustomData': options,
         'Request': {
@@ -184,11 +188,44 @@
     if (!isApiKeyConfigured()) {
       return;
     }
-    if (window.console && window.console.log && _debugMode) {
-      window.console.log('Sending exception data to Raygun:', data);
+    log('Sending exception data to Raygun:', data);
+    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    makeCorsRequest(url, JSON.stringify(data));
+  }
+
+  // Create the XHR object.
+  function createCORSRequest(method, url) {
+    var xhr;
+
+    xhr = new window.XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+      // XHR for Chrome/Firefox/Opera/Safari.
+      xhr.open(method, url, true);
+    } else if (window.XDomainRequest) {
+      // XDomainRequest for IE.
+      xhr = new window.XDomainRequest();
+      xhr.open(method, url);
     }
-    var img = new Image(1,1);
-    img.src = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey) + '&payload=' + encodeURIComponent(JSON.stringify(data));
+
+    xhr.onload = function () {
+      log('logged error to Raygun');
+    };
+    xhr.onerror = function () {
+      log('failed to log error to Raygun');
+    };
+
+    return xhr;
+  }
+
+  // Make the actual CORS request.
+  function makeCorsRequest(url, data) {
+    var xhr = createCORSRequest('POST', url);
+    if (!xhr) {
+      log('CORS not supported');
+      return;
+    }
+
+    xhr.send(data);
   }
 
   window.Raygun = Raygun;
