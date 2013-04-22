@@ -6,13 +6,18 @@
  * Licensed under the MIT license.
  */
 
-(function (window) {
+(function (window, $) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
-      _customData = {};
+      _customData = {},
+      $document;
+
+  if ($) {
+    $document = $(document);
+  }
 
   var Raygun =
   {
@@ -47,11 +52,17 @@
         return;
       }
       _traceKit.report.subscribe(processUnhandledException);
+      if ($document) {
+        $document.ajaxError(processJQueryAjaxError);
+      }
       return Raygun;
     },
 
     detach: function () {
       _traceKit.report.unsubscribe(processUnhandledException);
+      if ($document) {
+        $document.unbind('ajaxError', processJQueryAjaxError);
+      }
       return Raygun;
     },
 
@@ -69,6 +80,15 @@
   };
 
   /* internals */
+
+  function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+    Raygun.send(thrownError || event.type, {
+      status: jqXHR.status,
+      statusText: jqXHR.statusText,
+      type: ajaxSettings.type,
+      url: ajaxSettings.url,
+      contentType: ajaxSettings.contentType });
+  }
 
   function log(message) {
     if (window.console && window.console.log && _debugMode) {
@@ -168,7 +188,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.2.0'
+          'Version': '1.2.1'
         },
         'UserCustomData': options,
         'Request': {
@@ -229,4 +249,4 @@
   }
 
   window.Raygun = Raygun;
-})(window);
+})(window, window.jQuery);
