@@ -1,4 +1,4 @@
-/*! Raygun4js - v0.2.0 - 2013-04-19
+/*! Raygun4js - v1.2.1 - 2013-04-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1161,13 +1161,18 @@ window.TraceKit = TraceKit;
 
 }(window));
 
-(function (window) {
+(function (window, $) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
-      _customData = {};
+      _customData = {},
+      $document;
+
+  if ($) {
+    $document = $(document);
+  }
 
   var Raygun =
   {
@@ -1202,11 +1207,17 @@ window.TraceKit = TraceKit;
         return;
       }
       _traceKit.report.subscribe(processUnhandledException);
+      if ($document) {
+        $document.ajaxError(processJQueryAjaxError);
+      }
       return Raygun;
     },
 
     detach: function () {
       _traceKit.report.unsubscribe(processUnhandledException);
+      if ($document) {
+        $document.unbind('ajaxError', processJQueryAjaxError);
+      }
       return Raygun;
     },
 
@@ -1224,6 +1235,15 @@ window.TraceKit = TraceKit;
   };
 
   /* internals */
+
+  function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+    Raygun.send(thrownError || event.type, {
+      status: jqXHR.status,
+      statusText: jqXHR.statusText,
+      type: ajaxSettings.type,
+      url: ajaxSettings.url,
+      contentType: ajaxSettings.contentType });
+  }
 
   function log(message) {
     if (window.console && window.console.log && _debugMode) {
@@ -1323,7 +1343,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.0.1'
+          'Version': '1.2.1'
         },
         'UserCustomData': options,
         'Request': {
@@ -1384,4 +1404,4 @@ window.TraceKit = TraceKit;
   }
 
   window.Raygun = Raygun;
-})(window);
+})(window, window.jQuery);
