@@ -17,9 +17,11 @@ In your web page:
 </script>
 ```
 
-To submit manual errors:
+To submit manual errors (Currently you still need to call attach() in order to send an error, this is a bug that will be fixed):
 
 ```javascript
+// You only need to init and attach once.
+Raygun.init('yourApiKey').attach();
 try {
   // your code
 }
