@@ -53,6 +53,7 @@ _(Coming soon)_
 
 ## Release History
 
+- 1.3.0 - Updated to latest TraceKit, included removed jQuery support from TraceKit
 - 1.2.1 - Added jQuery AJAX error support
 - 1.2.0 - Changed from QueryString approach to sending data to using an ajax post with CORS
 - 1.0.1 - Initial Release

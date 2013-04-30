@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['libs/tracekit/tracekit.js','src/<%= pkg.name %>.js'],
+        src: ['libs/tracekit/tracekit.js', 'src/<%= pkg.name %>.tracekit.jquery.js', 'src/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>.js'
       },
     },
