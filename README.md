@@ -46,7 +46,14 @@ Raygun.detach();
 ```
 
 ## Documentation
-_(Coming soon)_
+
+### Sending custom data
+
+Custom data variables can be placed in an array passed in as the third parameter in the init() call. For instance:
+
+```javascript
+Raygun.init('{{your_api_key}}', null, ['the user name']).attach();
+```
 
 ## Examples
 _(Coming soon)_
