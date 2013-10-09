@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.3.0 - 2013-10-09
+/*! Raygun4js - v1.3.0 - 2013-10-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1176,7 +1176,6 @@ window.TraceKit = TraceKit;
       _debugMode = false,
       _customData = {},
       _user,
-      _context,
       $document;
 
   if ($) {
@@ -1243,7 +1242,7 @@ window.TraceKit = TraceKit;
     },
 
     setUser: function (user) {
-      _user = user;
+      _user = { 'Identifier': user };
       return Raygun;
     }
   };
@@ -1303,13 +1302,6 @@ window.TraceKit = TraceKit;
     return { width: x, height: y };
   }
 
-  function generateUuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
-      return v.toString(16);
-    });
-  }
-
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
@@ -1340,7 +1332,7 @@ window.TraceKit = TraceKit;
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
-    sendToRaygun({
+    var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
@@ -1375,31 +1367,14 @@ window.TraceKit = TraceKit;
             'Referer': document.referrer,
             'Host': document.domain
           }
-        },
-        'Context': {
-          'Identifier': contextIdentifier()
-        },
-        'User': {
-          'Identifier': userIdentifier()
-        }
+        }        
       }
-    });
-  }
+    };
 
-  function userIdentifier() {
-    if (_user) {      
-    } else {
-      _user = generateUuid();
-    }    
-    return _user;
-  }
-
-  function contextIdentifier() {
-    if (_context) {      
-    } else {
-      _context = generateUuid();
+    if (_user) {
+      payload.Details.User = _user;
     }
-    return _context;    
+    sendToRaygun(payload);
   }
 
   function sendToRaygun(data) {
@@ -1407,7 +1382,7 @@ window.TraceKit = TraceKit;
       return;
     }
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = 'http://api.raygun.dev/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
