@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.3.0 - 2013-05-01
+/*! Raygun4js - v1.3.0 - 2013-10-09
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1175,6 +1175,8 @@ window.TraceKit = TraceKit;
       _raygunApiKey,
       _debugMode = false,
       _customData = {},
+      _user,
+      _context,
       $document;
 
   if ($) {
@@ -1238,6 +1240,11 @@ window.TraceKit = TraceKit;
         }
       }
       return Raygun;
+    },
+
+    setUser: function (user) {
+      _user = user;
+      return Raygun;
     }
   };
 
@@ -1294,6 +1301,13 @@ window.TraceKit = TraceKit;
     x = window.innerWidth || e.clientWidth || g.clientWidth,
     y = window.innerHeight || e.clientHeight || g.clientHeight;
     return { width: x, height: y };
+  }
+
+  function generateUuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
   }
 
   function processUnhandledException(stackTrace, options) {
@@ -1361,9 +1375,31 @@ window.TraceKit = TraceKit;
             'Referer': document.referrer,
             'Host': document.domain
           }
+        },
+        'Context': {
+          'Identifier': contextIdentifier()
+        },
+        'User': {
+          'Identifier': userIdentifier()
         }
       }
     });
+  }
+
+  function userIdentifier() {
+    if (_user) {      
+    } else {
+      _user = generateUuid();
+    }    
+    return _user;
+  }
+
+  function contextIdentifier() {
+    if (_context) {      
+    } else {
+      _context = generateUuid();
+    }
+    return _context;    
   }
 
   function sendToRaygun(data) {
