@@ -1382,7 +1382,7 @@ window.TraceKit = TraceKit;
       return;
     }
     log('Sending exception data to Raygun:', data);
-    var url = 'http://api.raygun.dev/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
