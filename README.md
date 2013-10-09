@@ -63,13 +63,14 @@ You can provide the user name or email address of the currently logged in user t
 Raygun.setUser('username_or_email');
 ```
 
-This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called a random identifier will be assigned to the current user.
+This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no user tracking will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
 ## Examples
 _(Coming soon)_
 
 ## Release History
 
+- 1.3.1 - Added user tracking functionality
 - 1.3.0 - Updated to latest TraceKit, included removed jQuery support from TraceKit
 - 1.2.1 - Added jQuery AJAX error support
 - 1.2.0 - Changed from QueryString approach to sending data to using an ajax post with CORS
