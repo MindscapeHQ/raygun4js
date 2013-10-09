@@ -55,6 +55,16 @@ Custom data variables can be placed in an array passed in as the third parameter
 Raygun.init('{{your_api_key}}', null, ['the user name']).attach();
 ```
 
+### Unique user tracking
+
+You can provide the user name or email address of the currently logged in user to Raygun by calling:
+
+```javascript
+Raygun.setUser('username_or_email');
+```
+
+This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called a random identifier will be assigned to the current user.
+
 ## Examples
 _(Coming soon)_
 
