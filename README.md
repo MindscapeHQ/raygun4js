@@ -65,12 +65,19 @@ Raygun.setUser('username_or_email');
 
 This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no user tracking will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
-## Examples
-_(Coming soon)_
+### Version filtering
+
+You can set a version for your app by calling:
+
+```
+Raygun.setVersion('1.0.0.0');
+```
+
+This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
 
 ## Release History
 
-- 1.3.1 - Added user tracking functionality
+- 1.3.1 - Added user tracking and version tracking functionality
 - 1.3.0 - Updated to latest TraceKit, included removed jQuery support from TraceKit
 - 1.2.1 - Added jQuery AJAX error support
 - 1.2.0 - Changed from QueryString approach to sending data to using an ajax post with CORS
