@@ -14,6 +14,7 @@
       _debugMode = false,
       _customData = {},
       _user,
+      _version,
       $document;
 
   if ($) {
@@ -81,6 +82,11 @@
 
     setUser: function (user) {
       _user = { 'Identifier': user };
+      return Raygun;
+    },
+
+    setVersion: function (version) {
+      _version = version;
       return Raygun;
     }
   };
@@ -205,7 +211,8 @@
             'Referer': document.referrer,
             'Host': document.domain
           }
-        }        
+        },
+        'Version': _version || 'Not supplied'        
       }
     };
 
