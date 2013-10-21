@@ -13,6 +13,8 @@
       _raygunApiKey,
       _debugMode = false,
       _customData = {},
+      _user,
+      _version,
       $document;
 
   if ($) {
@@ -75,6 +77,16 @@
           throw traceKitException;
         }
       }
+      return Raygun;
+    },
+
+    setUser: function (user) {
+      _user = { 'Identifier': user };
+      return Raygun;
+    },
+
+    setVersion: function (version) {
+      _version = version;
       return Raygun;
     }
   };
@@ -164,7 +176,7 @@
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
-    sendToRaygun({
+    var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
@@ -199,9 +211,15 @@
             'Referer': document.referrer,
             'Host': document.domain
           }
-        }
+        },
+        'Version': _version || 'Not supplied'        
       }
-    });
+    };
+
+    if (_user) {
+      payload.Details.User = _user;
+    }
+    sendToRaygun(payload);
   }
 
   function sendToRaygun(data) {
