@@ -69,8 +69,8 @@
     },
 
     send: function (ex, customData) {
-      try {
-        _traceKit.report(ex, merge(_customData, customData));
+      try {        
+        processUnhandledException(_traceKit.computeStackTrace(ex, merge(_customData, customData)));        
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {

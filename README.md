@@ -17,11 +17,10 @@ In your web page:
 </script>
 ```
 
-To submit manual errors (Currently you still need to call attach() in order to send an error, this is a bug that will be fixed):
+To submit manual errors:
 
 ```javascript
-// You only need to init and attach once.
-Raygun.init('yourApiKey').attach();
+Raygun.init('yourApiKey');
 try {
   // your code
 }
@@ -30,7 +29,7 @@ catch(e) {
 }
 ```
 
-To attach the window.onerror handler call:
+To automatically catch and send unhandled errors, attach the window.onerror handler call:
 
 ```html
 <script src="dist/raygun.min.js"></script>
@@ -39,7 +38,7 @@ To attach the window.onerror handler call:
 </script>
 ```
 
-If you need to detach it:
+If you need to detach it (this will disable automatic unhandled error sending):
 
 ```javascript
 Raygun.detach();
@@ -77,6 +76,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
+- 1.3.2 - Fixed the need to call attach() (if only using manual sending)
 - 1.3.1 - Added user tracking and version tracking functionality
 - 1.3.0 - Updated to latest TraceKit, included removed jQuery support from TraceKit
 - 1.2.1 - Added jQuery AJAX error support
