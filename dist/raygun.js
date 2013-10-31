@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.3.0 - 2013-10-31
+/*! Raygun4js - v1.3.0 - 2013-11-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1231,8 +1231,8 @@ window.TraceKit = TraceKit;
     },
 
     send: function (ex, customData) {
-      try {        
-        processUnhandledException(_traceKit.computeStackTrace(ex, merge(_customData, customData)));        
+      try {
+        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));        
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -1330,7 +1330,7 @@ window.TraceKit = TraceKit;
           qs[decodeURIComponent(parts[0])] = parts[1];
         }
       });
-    }
+    }    
 
     if (isEmpty(options)) {
       options = _customData;

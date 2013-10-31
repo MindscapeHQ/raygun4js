@@ -69,8 +69,8 @@
     },
 
     send: function (ex, customData) {
-      try {        
-        processUnhandledException(_traceKit.computeStackTrace(ex, merge(_customData, customData)));        
+      try {
+        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));        
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -168,7 +168,7 @@
           qs[decodeURIComponent(parts[0])] = parts[1];
         }
       });
-    }
+    }    
 
     if (isEmpty(options)) {
       options = _customData;
