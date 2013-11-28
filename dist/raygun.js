@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.3.0 - 2013-11-01
+/*! Raygun4js - v1.4.0 - 2013-11-29
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1232,7 +1232,7 @@ window.TraceKit = TraceKit;
 
     send: function (ex, customData) {
       try {
-        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));        
+        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -1330,7 +1330,7 @@ window.TraceKit = TraceKit;
           qs[decodeURIComponent(parts[0])] = parts[1];
         }
       });
-    }    
+    }
 
     if (isEmpty(options)) {
       options = _customData;
@@ -1343,7 +1343,7 @@ window.TraceKit = TraceKit;
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': stackTrace.message || 'Script error',
+          'Message': stackTrace.message || options.status || 'Script error',
           'StackTrace': stack
         },
         'Environment': {
@@ -1362,7 +1362,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.2.1'
+          'Version': '1.4.0'
         },
         'UserCustomData': options,
         'Request': {
@@ -1374,7 +1374,7 @@ window.TraceKit = TraceKit;
             'Host': document.domain
           }
         },
-        'Version': _version || 'Not supplied'        
+        'Version': _version || 'Not supplied'
       }
     };
 
