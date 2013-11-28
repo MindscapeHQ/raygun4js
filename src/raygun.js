@@ -70,7 +70,7 @@
 
     send: function (ex, customData) {
       try {
-        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));        
+        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -168,7 +168,7 @@
           qs[decodeURIComponent(parts[0])] = parts[1];
         }
       });
-    }    
+    }
 
     if (isEmpty(options)) {
       options = _customData;
@@ -200,7 +200,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.2.1'
+          'Version': '1.4.0'
         },
         'UserCustomData': options,
         'Request': {
@@ -212,7 +212,7 @@
             'Host': document.domain
           }
         },
-        'Version': _version || 'Not supplied'        
+        'Version': _version || 'Not supplied'
       }
     };
 
