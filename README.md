@@ -76,6 +76,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
+- 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery
 - 1.4.0 - AJAX errors will display status code instead of script error
 - 1.3.3 - Fixed regression where send()) would no longer attach a custom data object parameter
 - 1.3.2 - Fixed the need to call attach() (if only using manual sending)
