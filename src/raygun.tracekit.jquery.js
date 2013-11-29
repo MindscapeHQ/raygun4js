@@ -41,16 +41,23 @@
   };
 
   var _oldAjax = $.ajax;
-  $.ajax = function traceKitAjaxWrapper(s) {
+  $.ajax = function traceKitAjaxWrapper(url, options) {
+    if (typeof url === "object") {
+      options = url;
+      url = undefined;
+    }
+
+    options = options || {};
+
     var keys = ['complete', 'error', 'success'], key;
     while(key = keys.pop()) {
-      if ($.isFunction(s[key])) {
-        s[key] = TraceKit.wrap(s[key]);
+      if ($.isFunction(options[key])) {
+        options[key] = TraceKit.wrap(options[key]);
       }
     }
 
     try {
-      return _oldAjax.call(this, s);
+      return _oldAjax.call(this, url, options);
     } catch (e) {
       TraceKit.report(e);
       throw e;
