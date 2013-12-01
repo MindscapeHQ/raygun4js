@@ -23,11 +23,16 @@ To submit manual errors:
 Raygun.init('yourApiKey');
 try {
   // your code
+  throw new Error('oops');
 }
 catch(e) {
   Raygun.send(e);
 }
 ```
+
+In order to get stack traces, you need to wrap your code in a try/catch block like above. Otherwise the error hits ```window.onerror``` handler and will only contain the error message, line number, and column number.
+
+You also need to throw errors with ```throw new Error('foo')``` instead of ```throw 'foo'```.
 
 To automatically catch and send unhandled errors, attach the window.onerror handler call:
 
