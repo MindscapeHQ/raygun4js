@@ -49,6 +49,14 @@ If you need to detach it (this will disable automatic unhandled error sending):
 Raygun.detach();
 ```
 
+If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will
+need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider
+will only submit over HTTPS which IE8 will not allow while being served over HTTP.
+
+```javascript
+Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
+```
+
 ## Documentation
 
 ### Sending custom data
@@ -81,6 +89,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
+- 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
 - 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery
 - 1.4.0 - AJAX errors will display status code instead of script error
 - 1.3.3 - Fixed regression where send()) would no longer attach a custom data object parameter
