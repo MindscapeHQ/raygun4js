@@ -49,6 +49,14 @@ If you need to detach it (this will disable automatic unhandled error sending):
 Raygun.detach();
 ```
 
+If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will
+need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider
+will only submit over HTTPS which IE8 will not allow while being served over HTTP.
+
+```javascript
+Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
+```
+
 ## Documentation
 
 ### Sending custom data
