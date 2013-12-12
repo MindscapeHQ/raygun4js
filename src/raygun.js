@@ -12,6 +12,7 @@
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
+      _allowInsecureSubmissions = false,
       _customData = {},
       _user,
       _version,
@@ -35,6 +36,7 @@
 
       if (options)
       {
+        _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -241,6 +243,12 @@
       xhr.open(method, url, true);
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
+      if (_allowInsecureSubmissions) {
+        // remove 'https:' and use relative protocol
+        // this allows IE8 to post messages when running
+        // on http
+        url = url.slice(6);
+      }
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
     }
