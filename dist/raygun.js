@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.5.0 - 2013-12-12
+/*! Raygun4js - v1.5.1 - 2013-12-16
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1268,7 +1268,8 @@ window.TraceKit = TraceKit;
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
-      contentType: ajaxSettings.contentType });
+      contentType: ajaxSettings.contentType,
+      data: ajaxSettings.data });
   }
 
   function log(message) {
