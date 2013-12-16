@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-(function (window, $) {
+(function (window, $, undefined) {
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
       _raygun = window.Raygun,
@@ -102,7 +102,7 @@
       type: ajaxSettings.type,
       url: ajaxSettings.url,
       contentType: ajaxSettings.contentType,
-      data: ajaxSettings.data });
+      data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
   function log(message) {
