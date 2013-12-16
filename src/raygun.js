@@ -101,7 +101,8 @@
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
-      contentType: ajaxSettings.contentType });
+      contentType: ajaxSettings.contentType,
+      data: ajaxSettings.data });
   }
 
   function log(message) {
