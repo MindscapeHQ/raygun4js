@@ -3,10 +3,19 @@
 Raygun.io plugin for JavaScript
 
 ## Getting Started
+
+### With Bower
+
+Run `bower install raygun4js`
+
+### Manual download
+
 Download the [production version][min] or the [development version][max].
 
 [min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
 [max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
+
+## Usage
 
 In your web page:
 
@@ -89,6 +98,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
+- 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
 - 1.5.1 - Capture data submitted by jQuery AJAX calls
 - 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
 - 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery

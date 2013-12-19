@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.5.1 - 2013-12-16
+/*! Raygun4js - v1.5.2 - 2013-12-19
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1164,7 +1164,7 @@ window.TraceKit = TraceKit;
     }
 
     try {
-      return _oldAjax.call(this, url, options);
+      return (url) ? _oldAjax.call(this, url, options) : _oldAjax.call(this, options);
     } catch (e) {
       TraceKit.report(e);
       throw e;
