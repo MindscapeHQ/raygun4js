@@ -276,4 +276,4 @@
   }
 
   window.Raygun = Raygun;
-})(window, window.jQuery || window.Zepto || window.ender);
+})(window, window.jQuery);

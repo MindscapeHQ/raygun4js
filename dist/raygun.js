@@ -1171,7 +1171,7 @@ window.TraceKit = TraceKit;
     }
   };
 
-}(window.jQuery || window.Zepto || window.ender, window.TraceKit));
+}(window.jQuery, window.TraceKit));
 
 (function (window, $, undefined) {
   // pull local copy of TraceKit to handle stack trace collection
@@ -1443,4 +1443,4 @@ window.TraceKit = TraceKit;
   }
 
   window.Raygun = Raygun;
-})(window, window.jQuery || window.Zepto || window.ender);
+})(window, window.jQuery);

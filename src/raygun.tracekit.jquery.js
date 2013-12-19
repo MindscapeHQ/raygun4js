@@ -64,4 +64,4 @@
     }
   };
 
-}(window.jQuery || window.Zepto || window.ender, window.TraceKit));
+}(window.jQuery, window.TraceKit));
