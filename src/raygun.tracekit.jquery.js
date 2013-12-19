@@ -57,11 +57,11 @@
     }
 
     try {
-      return _oldAjax.call(this, url, options);
+      return (url) ? _oldAjax.call(this, url, options) : _oldAjax.call(this, options);
     } catch (e) {
       TraceKit.report(e);
       throw e;
     }
   };
 
-}(window.jQuery, window.TraceKit));
+}(window.jQuery || window.Zepto || window.ender, window.TraceKit));

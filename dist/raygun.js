@@ -1,7 +1,7 @@
-/*! Raygun4js - v1.5.1 - 2013-12-16
+/*! Raygun4js - v1.5.2 - 2013-12-19
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2013 MindscapeHQ; Licensed MIT */
-(function(window, undefined) {
+;(function(window, undefined) {
 
 
 var TraceKit = {};
@@ -320,14 +320,14 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return '';
         }
         try {
-            var getXHR = function() {
+            function getXHR() {
                 try {
                     return new window.XMLHttpRequest();
                 } catch (e) {
                     // explicitly bubble up the exception if not found
                     return new window.ActiveXObject('Microsoft.XMLHTTP');
                 }
-            };
+            }
 
             var request = getXHR();
             request.open('GET', url, false);
@@ -616,7 +616,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+        var chrome = /^\s*at (?:((?:\[object object\])?\S+) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -1051,6 +1051,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         } catch (ex) {
             return computeStackTrace(ex, depth + 1);
         }
+
+        return null;
     }
 
     computeStackTrace.augmentStackTraceWithInitialElement = augmentStackTraceWithInitialElement;
@@ -1164,14 +1166,14 @@ window.TraceKit = TraceKit;
     }
 
     try {
-      return _oldAjax.call(this, url, options);
+      return (url) ? _oldAjax.call(this, url, options) : _oldAjax.call(this, options);
     } catch (e) {
       TraceKit.report(e);
       throw e;
     }
   };
 
-}(window.jQuery, window.TraceKit));
+}(window.jQuery || window.Zepto || window.ender, window.TraceKit));
 
 (function (window, $, undefined) {
   // pull local copy of TraceKit to handle stack trace collection
@@ -1443,4 +1445,4 @@ window.TraceKit = TraceKit;
   }
 
   window.Raygun = Raygun;
-})(window, window.jQuery);
+})(window, window.jQuery || window.Zepto || window.ender);
