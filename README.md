@@ -98,7 +98,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
-- 1.5.2 - Added Bower package; support for Zepto.js/ender.js as jQuery replacements; minor bugfix for Ajax functionality
+- 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
 - 1.5.1 - Capture data submitted by jQuery AJAX calls
 - 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
 - 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery
