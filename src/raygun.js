@@ -203,7 +203,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.5.0'
+          'Version': '1.5.2'
         },
         'UserCustomData': options,
         'Request': {
