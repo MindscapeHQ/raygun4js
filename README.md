@@ -76,6 +76,12 @@ Custom data variables can be placed in an array passed in as the third parameter
 Raygun.init('{{your_api_key}}', null, ['the user name']).attach();
 ```
 
+You can also pass custom data with manual send calls, with the second parameter. This lets you add variables that are in scope or global when handled in catch blocks. For example:
+
+```javascript
+Raygun.send(err, [{customName: 'customData'}];
+```
+
 ### Unique user tracking
 
 You can provide the user name or email address of the currently logged in user to Raygun by calling:
