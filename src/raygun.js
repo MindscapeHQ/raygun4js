@@ -79,7 +79,7 @@
       try {
         processUnhandledException(_traceKit.computeStackTrace(ex), {
           customData: merge(_customData, customData),
-          tags: _tags.concat(tags)
+          tags: mergeArray(_tags, tags)
         });
       }
       catch (traceKitException) {
@@ -134,6 +134,12 @@
     return o3;
   }
 
+  function mergeArray(t0, t1) {
+    if (t1 != null) {
+      return t0.concat(t1);
+    }
+  }
+
   function forEach(set, func) {
     for (var i = 0; i < set.length; i++) {
       func.call(null, i, set[i]);
@@ -184,8 +190,6 @@
     if (isEmpty(options.customData)) {
       options.customData = _customData;
     }
-
-    console.log(options.customData);
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
@@ -241,7 +245,7 @@
       return;
     }
     log('Sending exception data to Raygun:', data);
-    var url = 'http://api.raygun.dev/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 

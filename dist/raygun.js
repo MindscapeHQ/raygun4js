@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.5.2 - 2014-01-09
+/*! Raygun4js - v1.5.2 - 2014-01-21
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1181,6 +1181,7 @@ window.TraceKit = TraceKit;
       _debugMode = false,
       _allowInsecureSubmissions = false,
       _customData = {},
+      _tags = [],
       _user,
       _version,
       $document;
@@ -1218,6 +1219,10 @@ window.TraceKit = TraceKit;
       return Raygun;
     },
 
+    withTags: function (tags) {
+      _tags = tags;
+    },
+
     attach: function () {
       if (!isApiKeyConfigured()) {
         return;
@@ -1237,9 +1242,12 @@ window.TraceKit = TraceKit;
       return Raygun;
     },
 
-    send: function (ex, customData) {
+    send: function (ex, customData, tags) {
       try {
-        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));
+        processUnhandledException(_traceKit.computeStackTrace(ex), {
+          customData: merge(_customData, customData),
+          tags: mergeArray(_tags, tags)
+        });
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -1293,6 +1301,12 @@ window.TraceKit = TraceKit;
     return o3;
   }
 
+  function mergeArray(t0, t1) {
+    if (t1 != null) {
+      return t0.concat(t1);
+    }
+  }
+
   function forEach(set, func) {
     for (var i = 0; i < set.length; i++) {
       func.call(null, i, set[i]);
@@ -1340,8 +1354,8 @@ window.TraceKit = TraceKit;
       });
     }
 
-    if (isEmpty(options)) {
-      options = _customData;
+    if (isEmpty(options.customData)) {
+      options.customData = _customData;
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
@@ -1372,7 +1386,8 @@ window.TraceKit = TraceKit;
           'Name': 'raygun-js',
           'Version': '1.5.2'
         },
-        'UserCustomData': options,
+        'UserCustomData': options.customData,
+        'Tags': options.tags,
         'Request': {
           'Url': document.location.href,
           'QueryString': qs,
