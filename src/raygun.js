@@ -14,6 +14,7 @@
       _debugMode = false,
       _allowInsecureSubmissions = false,
       _customData = {},
+      _tags = [],
       _user,
       _version,
       $document;
@@ -51,6 +52,10 @@
       return Raygun;
     },
 
+    withTags: function (tags) {
+      _tags = tags;
+    },
+
     attach: function () {
       if (!isApiKeyConfigured()) {
         return;
@@ -70,9 +75,12 @@
       return Raygun;
     },
 
-    send: function (ex, customData) {
+    send: function (ex, customData, tags) {
       try {
-        processUnhandledException(_traceKit.computeStackTrace(ex), merge(_customData, customData));
+        processUnhandledException(_traceKit.computeStackTrace(ex), {
+          customData: merge(_customData, customData),
+          tags: _tags.concat(tags)
+        });
       }
       catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -173,9 +181,11 @@
       });
     }
 
-    if (isEmpty(options)) {
-      options = _customData;
+    if (isEmpty(options.customData)) {
+      options.customData = _customData;
     }
+
+    console.log(options.customData);
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
@@ -205,7 +215,8 @@
           'Name': 'raygun-js',
           'Version': '1.5.2'
         },
-        'UserCustomData': options,
+        'UserCustomData': options.customData,
+        'Tags': options.tags,
         'Request': {
           'Url': document.location.href,
           'QueryString': qs,
@@ -230,7 +241,7 @@
       return;
     }
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = 'http://api.raygun.dev/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
