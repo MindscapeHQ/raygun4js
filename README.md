@@ -70,16 +70,44 @@ Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 
 ### Sending custom data
 
-Custom data variables can be placed in an array passed in as the third parameter in the init() call. For instance:
+**On initialization:**
+
+Custom data variables (objects, arrays etc) can be added by calling the withCustomData function on the Raygun object:
 
 ```javascript
-Raygun.init('{{your_api_key}}', null, ['the user name']).attach();
+Raygun.init('{{your_api_key}}').attach().withCustomData({ foo: 'bar' });
 ```
+
+They can also be passed in as the third parameter in the init() call, for instance:
+
+```javascript
+Raygun.init('{{your_api_key}}', null, { enviroment: 'production' }).attach();
+```
+
+**During a Send:**
 
 You can also pass custom data with manual send calls, with the second parameter. This lets you add variables that are in scope or global when handled in catch blocks. For example:
 
 ```javascript
 Raygun.send(err, [{customName: 'customData'}];
+```
+
+### Adding tags
+
+The Raygun dashboard can also display tags for errors. These are arrays of strings or Numbers. This is done similar to the above custom data, like so:
+
+**On initialization:**
+
+```javascript
+Raygun.init('{{your_api_key}}').attach().withTags(['tag1', 'tag2']);
+```
+
+**During a Send:**
+
+Pass tags in as the third parameter:
+
+```javascript
+Raygun.send(err, null, ['tag']];
 ```
 
 ### Unique user tracking
