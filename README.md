@@ -8,6 +8,10 @@ Raygun.io plugin for JavaScript
 
 Run `bower install raygun4js`
 
+### From NuGet
+
+Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
+
 ### Manual download
 
 Download the [production version][min] or the [development version][max].
@@ -132,7 +136,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
-- 1.5.3 - Added support for attaching Tags
+- 1.6.0 - Added support for attaching Tags, added NuGet package
 - 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
 - 1.5.1 - Capture data submitted by jQuery AJAX calls
 - 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
