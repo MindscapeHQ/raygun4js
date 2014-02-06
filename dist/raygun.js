@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.6.0 - 2014-01-21
+/*! Raygun4js - v1.6.1 - 2014-02-07
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1333,6 +1333,8 @@ window.TraceKit = TraceKit;
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
+
+    options = options || {};
 
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {

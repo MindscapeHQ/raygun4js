@@ -136,6 +136,7 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ## Release History
 
+- 1.6.1 - Fixed an issue with not supplying options to processUnhandledException
 - 1.6.0 - Added support for attaching Tags, added NuGet package
 - 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
 - 1.5.1 - Capture data submitted by jQuery AJAX calls

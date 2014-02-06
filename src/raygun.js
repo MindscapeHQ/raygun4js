@@ -167,6 +167,8 @@
     var stack = [],
         qs = {};
 
+    options = options || {};
+
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
