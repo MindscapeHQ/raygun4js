@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['libs/tracekit/tracekit.js', 'src/<%= pkg.name %>.tracekit.jquery.js', 'src/<%= pkg.name %>.js'],
+        src: ['tracekit/tracekit.js', 'src/<%= pkg.name %>.tracekit.jquery.js', 'src/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>.js'
       },
     },
@@ -52,7 +52,7 @@ module.exports = function(grunt) {
       src : 'src/**/*.js',
       options : {
         specs : 'spec/**/*.js',
-        vendor : ['libs/tracekit/tracekit.js'],
+        vendor : ['tracekit/tracekit.js'],
         template : require('grunt-template-jasmine-istanbul'),
         templateOptions: {
           coverage: 'reports/coverage.json',
