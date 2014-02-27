@@ -1,3 +1,0 @@
-[submodule "libs/tracekit"]
-	path = libs/tracekit
-	url = https://github.com/occ/TraceKit.git

@@ -167,12 +167,11 @@
     var stack = [],
         qs = {};
 
-    options = options || {};
-
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
           'LineNumber': frame.line,
+          'ColumnNumber': frame.column,
           'ClassName': 'line ' + frame.line + ', column ' + frame.column,
           'FileName': frame.url,
           'MethodName': frame.func || '[anonymous]'
@@ -189,6 +188,10 @@
       });
     }
 
+    if (options === undefined) {
+      options = {};
+    }
+    
     if (isEmpty(options.customData)) {
       options.customData = _customData;
     }
