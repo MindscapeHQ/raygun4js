@@ -134,8 +134,13 @@ Raygun.setVersion('1.0.0.0');
 
 This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
 
+### Source maps support
+
+Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. As at March 2014, this is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.
+
 ## Release History
 
+- 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
 - 1.6.1 - Fixed an issue with not supplying options to processUnhandledException
 - 1.6.0 - Added support for attaching Tags, added NuGet package
 - 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
