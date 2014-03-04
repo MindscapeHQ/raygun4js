@@ -138,6 +138,7 @@
     if (t1 != null) {
       return t0.concat(t1);
     }
+    return t0;
   }
 
   function forEach(set, func) {
@@ -191,7 +192,7 @@
     if (options === undefined) {
       options = {};
     }
-    
+
     if (isEmpty(options.customData)) {
       options.customData = _customData;
     }
