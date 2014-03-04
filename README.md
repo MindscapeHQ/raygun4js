@@ -140,6 +140,7 @@ Raygun4JS now features source maps support through the transmission of column nu
 
 ## Release History
 
+- 1.7.1 - Fixed broken withTags when no other custom data provided on Send
 - 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
 - 1.6.1 - Fixed an issue with not supplying options to processUnhandledException
 - 1.6.0 - Added support for attaching Tags, added NuGet package
