@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.7.1 - 2014-03-05
+/*! Raygun4js - v1.7.2 - 2014-03-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1421,6 +1421,10 @@ window.TraceKit = TraceKit;
 
     if (isEmpty(options.customData)) {
       options.customData = _customData;
+    }
+
+    if (isEmpty(options.tags)) {
+      options.tags = _tags;
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
