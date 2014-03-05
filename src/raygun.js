@@ -197,6 +197,10 @@
       options.customData = _customData;
     }
 
+    if (isEmpty(options.tags)) {
+      options.tags = _tags;
+    }
+
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
 
     var payload = {
