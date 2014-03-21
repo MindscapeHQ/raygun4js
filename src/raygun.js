@@ -17,6 +17,7 @@
       _tags = [],
       _user,
       _version,
+      _raygunApiUrl = 'http://api.raygun.dev',
       $document;
 
   if ($) {
@@ -164,6 +165,53 @@
     return { width: x, height: y };
   }
 
+  function checkNetworkConnectivity(callback, payload) {
+    var xhr = createCORSRequest('HEAD', _raygunApiUrl);
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+
+      if (xhr.status === 200) {
+        if (payload) {
+          sendToRaygun(payload);
+        }
+
+        for (var key in localStorage) {
+          if (key.substring(0, 9) === 'raygunjs=') {
+            sendToRaygun(JSON.parse(localStorage[key]));
+
+            localStorage.removeItem(key);
+          }
+        }
+      } else {
+        var dateTime = new Date().toISOString();
+        var prefix = null;
+
+        while (localStorage['raygunjs=' + dateTime + prefix]) {
+          prefix += 1;
+        }
+
+        if (prefix != null) {
+          localStorage['raygunjs=' + dateTime + '=' + prefix] = JSON.stringify(payload);
+        } else {
+          localStorage['raygunjs=' + dateTime] = JSON.stringify(payload);
+        }
+
+      }
+    };
+
+    if (!xhr) {
+      log('CORS not supported');
+      return;
+    }
+
+    try {
+      xhr.send();
+    } catch(e) { }
+  }
+
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
@@ -247,15 +295,17 @@
     if (_user) {
       payload.Details.User = _user;
     }
-    sendToRaygun(payload);
+
+    checkNetworkConnectivity(sendToRaygun, payload);
   }
 
   function sendToRaygun(data) {
     if (!isApiKeyConfigured()) {
       return;
     }
+
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
