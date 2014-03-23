@@ -136,7 +136,19 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 ### Source maps support
 
-Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. As at March 2014, this is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.
+Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.
+
+### Offline caching
+
+The provider has a feature where if errors are caught when there is no network activity they can be cached (in Local Storage). When an error arrives and connectivity is regained, previously cached errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
+
+#### Options
+
+Offline caching is **enabled by default.** To get or set this option, call the following after your init() call:
+
+```js
+Raygun.cacheIfOffline(*boolean*)
+```
 
 ## Release History
 

@@ -13,6 +13,7 @@
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _enableOfflineCache = true,
       _customData = {},
       _tags = [],
       _user,
@@ -99,6 +100,14 @@
     setVersion: function (version) {
       _version = version;
       return Raygun;
+    },
+
+    cacheIfOffline: function (enableOffline) {
+      if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
+        _enableOfflineCache = enableOffline;
+      }
+
+      return _enableOfflineCache;
     }
   };
 
@@ -296,7 +305,12 @@
       payload.Details.User = _user;
     }
 
-    checkNetworkConnectivity(sendToRaygun, payload);
+    if (_enableOfflineCache) {
+      checkNetworkConnectivity(sendToRaygun, payload);
+    } else {
+      sendToRaygun(payload);
+    }
+
   }
 
   function sendToRaygun(data) {
