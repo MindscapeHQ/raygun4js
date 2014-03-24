@@ -138,20 +138,21 @@ This will allow you to filter the errors in the dashboard by that version. You c
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.
 
-### Offline caching
+### Offline saving
 
-The provider has a feature where if errors are caught when there is no network activity they can be cached (in Local Storage). When an error arrives and connectivity is regained, previously cached errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
+The provider has a feature where if errors are caught when there is no network activity they can be saved (in Local Storage). When an error arrives and connectivity is regained, previously saved errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
 
 #### Options
 
-Offline caching is **enabled by default.** To get or set this option, call the following after your init() call:
+Offline saving is **enabled by default.** To get or set this option, call the following after your init() call:
 
 ```js
-Raygun.cacheIfOffline(*boolean*)
+Raygun.saveIfOffline(*boolean*)
 ```
 
 ## Release History
 
+- 1.8.0 - Add Offline Saving feature
 - 1.7.2 - Fixed tags not being included when error caught from global window.onerror handler
 - 1.7.1 - Fixed broken withTags when no other custom data provided on Send
 - 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
