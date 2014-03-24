@@ -147,7 +147,7 @@ The provider has a feature where if errors are caught when there is no network a
 Offline saving is **disabled by default.** To get or set this option, call the following after your init() call:
 
 ```js
-Raygun.saveIfOffline( *boolean* )
+Raygun.saveIfOffline(boolean)
 ```
 
 ## Release History
