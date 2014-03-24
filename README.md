@@ -152,7 +152,7 @@ Raygun.saveIfOffline(*boolean*)
 
 ## Release History
 
-- 1.8.0 - Add Offline Saving feature
+- 1.8.0 - Add Offline Saving feature; add support for WinJS
 - 1.7.2 - Fixed tags not being included when error caught from global window.onerror handler
 - 1.7.1 - Fixed broken withTags when no other custom data provided on Send
 - 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
