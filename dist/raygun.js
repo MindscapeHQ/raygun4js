@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.7.2 - 2014-03-06
+/*! Raygun4js - v1.8.0 - 2014-03-25
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -183,7 +183,7 @@ TraceKit.report = (function reportModuleWrapper() {
             };
         }
         }
-        
+
         notifyHandlers(stack, 'from window.onerror');
 
         if (_oldOnerrorHandler) {
@@ -604,6 +604,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     /**
      * Computes stack trace information from the stack property.
      * Chrome and Gecko use this property.
+     * Added WinJS regex for Raygun4JS's offline caching support
      * @param {Error} ex
      * @return {?Object.<string, *>} Stack trace information.
      */
@@ -614,6 +615,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
         var chrome = /^\s*at (?:((?:\[object object\])?\S+) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
+            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
@@ -636,6 +638,13 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     'line': +parts[3],
                     'column': parts[4] ? +parts[4] : null
                 };
+            } else if ((parts = winjs.exec(lines[i]))) {
+              element = {
+                'url': parts[2],
+                'func': parts[1] || UNKNOWN_FUNCTION,
+                'line': +parts[3],
+                'column': parts[4] ? +parts[4] : null
+              };
             } else {
                 continue;
             }
@@ -1239,10 +1248,12 @@ window.TraceKit = TraceKit;
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
   if ($) {
@@ -1324,6 +1335,14 @@ window.TraceKit = TraceKit;
     setVersion: function (version) {
       _version = version;
       return Raygun;
+    },
+
+    saveIfOffline: function (enableOffline) {
+      if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
+        _enableOfflineSave = enableOffline;
+      }
+
+      return _enableOfflineSave;
     }
   };
 
@@ -1453,7 +1472,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.7.2'
+          'Version': '1.8.0'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,
@@ -1473,6 +1492,7 @@ window.TraceKit = TraceKit;
     if (_user) {
       payload.Details.User = _user;
     }
+
     sendToRaygun(payload);
   }
 
@@ -1480,8 +1500,9 @@ window.TraceKit = TraceKit;
     if (!isApiKeyConfigured()) {
       return;
     }
+
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makeCorsRequest(url, JSON.stringify(data));
   }
 
@@ -1518,6 +1539,46 @@ window.TraceKit = TraceKit;
   // Make the actual CORS request.
   function makeCorsRequest(url, data) {
     var xhr = createCORSRequest('POST', url);
+
+    var offlineSave = function () {
+      var dateTime = new Date().toISOString();
+        var prefix = null;
+
+        while (localStorage['raygunjs=' + dateTime + prefix]) {
+          prefix += 1;
+        }
+
+        try {
+          if (prefix != null) {
+            localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
+          } else {
+            localStorage['raygunjs=' + dateTime] = data;
+          }
+        } catch (e) {
+          log('Raygun4JS: LocalStorage full, cannot save exception');
+        }
+    };
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+
+      if (xhr.status === 202) {
+        for (var key in localStorage) {
+          if (key.substring(0, 9) === 'raygunjs=') {
+            sendToRaygun(JSON.parse(localStorage[key]));
+
+            localStorage.removeItem(key);
+          }
+        }
+      } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+        offlineSave();
+      }
+    };
+
+    xhr.timeout = 10000;
+
     if (!xhr) {
       log('CORS not supported');
       return;

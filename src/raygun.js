@@ -13,12 +13,12 @@
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
-      _enableOfflineCache = true,
+      _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
-      _raygunApiUrl = 'http://api.raygun.dev',
+      _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
   if ($) {
@@ -102,12 +102,12 @@
       return Raygun;
     },
 
-    cacheIfOffline: function (enableOffline) {
+    saveIfOffline: function (enableOffline) {
       if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
-        _enableOfflineCache = enableOffline;
+        _enableOfflineSave = enableOffline;
       }
 
-      return _enableOfflineCache;
+      return _enableOfflineSave;
     }
   };
 
@@ -174,53 +174,6 @@
     return { width: x, height: y };
   }
 
-  function checkNetworkConnectivity(callback, payload) {
-    var xhr = createCORSRequest('HEAD', _raygunApiUrl);
-
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) {
-        return;
-      }
-
-      if (xhr.status === 200) {
-        if (payload) {
-          sendToRaygun(payload);
-        }
-
-        for (var key in localStorage) {
-          if (key.substring(0, 9) === 'raygunjs=') {
-            sendToRaygun(JSON.parse(localStorage[key]));
-
-            localStorage.removeItem(key);
-          }
-        }
-      } else {
-        var dateTime = new Date().toISOString();
-        var prefix = null;
-
-        while (localStorage['raygunjs=' + dateTime + prefix]) {
-          prefix += 1;
-        }
-
-        if (prefix != null) {
-          localStorage['raygunjs=' + dateTime + '=' + prefix] = JSON.stringify(payload);
-        } else {
-          localStorage['raygunjs=' + dateTime] = JSON.stringify(payload);
-        }
-
-      }
-    };
-
-    if (!xhr) {
-      log('CORS not supported');
-      return;
-    }
-
-    try {
-      xhr.send();
-    } catch(e) { }
-  }
-
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
@@ -284,7 +237,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.7.2'
+          'Version': '1.8.0'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,
@@ -305,12 +258,7 @@
       payload.Details.User = _user;
     }
 
-    if (_enableOfflineCache) {
-      checkNetworkConnectivity(sendToRaygun, payload);
-    } else {
-      sendToRaygun(payload);
-    }
-
+    sendToRaygun(payload);
   }
 
   function sendToRaygun(data) {
@@ -356,6 +304,46 @@
   // Make the actual CORS request.
   function makeCorsRequest(url, data) {
     var xhr = createCORSRequest('POST', url);
+
+    var offlineSave = function () {
+      var dateTime = new Date().toISOString();
+        var prefix = null;
+
+        while (localStorage['raygunjs=' + dateTime + prefix]) {
+          prefix += 1;
+        }
+
+        try {
+          if (prefix != null) {
+            localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
+          } else {
+            localStorage['raygunjs=' + dateTime] = data;
+          }
+        } catch (e) {
+          log('Raygun4JS: LocalStorage full, cannot save exception');
+        }
+    };
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+
+      if (xhr.status === 202) {
+        for (var key in localStorage) {
+          if (key.substring(0, 9) === 'raygunjs=') {
+            sendToRaygun(JSON.parse(localStorage[key]));
+
+            localStorage.removeItem(key);
+          }
+        }
+      } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+        offlineSave();
+      }
+    };
+
+    xhr.timeout = 10000;
+
     if (!xhr) {
       log('CORS not supported');
       return;
