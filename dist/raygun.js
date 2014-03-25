@@ -1507,13 +1507,54 @@ window.TraceKit = TraceKit;
   }
 
   // Create the XHR object.
-  function createCORSRequest(method, url) {
+  function createCORSRequest(method, url, data) {
     var xhr;
+
+    var offlineSave = function () {
+      var dateTime = new Date().toISOString();
+      var prefix = null;
+
+      while (localStorage['raygunjs=' + dateTime + prefix]) {
+        prefix += 1;
+      }
+
+      try {
+        if (prefix != null) {
+          localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
+        } else {
+          localStorage['raygunjs=' + dateTime] = data;
+        }
+      } catch (e) {
+        log('Raygun4JS: LocalStorage full, cannot save exception');
+      }
+    };
 
     xhr = new window.XMLHttpRequest();
     if ("withCredentials" in xhr) {
       // XHR for Chrome/Firefox/Opera/Safari.
       xhr.open(method, url, true);
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        if (xhr.status === 202) {
+          for (var key in localStorage) {
+            if (key.substring(0, 9) === 'raygunjs=') {
+              sendToRaygun(JSON.parse(localStorage[key]));
+
+              localStorage.removeItem(key);
+            }
+          }
+        } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+          offlineSave();
+        }
+      };
+
+      xhr.onload = function () {
+        log('logged error to Raygun');
+      };
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
       if (_allowInsecureSubmissions) {
@@ -1524,11 +1565,26 @@ window.TraceKit = TraceKit;
       }
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
+
+      xhr.ontimeout = function () {
+        if (_enableOfflineSave) {
+          offlineSave();
+        }
+      };
+
+      xhr.onload = function () {
+        for (var key in localStorage) {
+            if (key.substring(0, 9) === 'raygunjs=') {
+              sendToRaygun(JSON.parse(localStorage[key]));
+
+              localStorage.removeItem(key);
+            }
+        }
+      };
     }
 
-    xhr.onload = function () {
-      log('logged error to Raygun');
-    };
+    xhr.timeout = 1000;
+
     xhr.onerror = function () {
       log('failed to log error to Raygun');
     };
@@ -1538,46 +1594,7 @@ window.TraceKit = TraceKit;
 
   // Make the actual CORS request.
   function makeCorsRequest(url, data) {
-    var xhr = createCORSRequest('POST', url);
-
-    var offlineSave = function () {
-      var dateTime = new Date().toISOString();
-        var prefix = null;
-
-        while (localStorage['raygunjs=' + dateTime + prefix]) {
-          prefix += 1;
-        }
-
-        try {
-          if (prefix != null) {
-            localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
-          } else {
-            localStorage['raygunjs=' + dateTime] = data;
-          }
-        } catch (e) {
-          log('Raygun4JS: LocalStorage full, cannot save exception');
-        }
-    };
-
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) {
-        return;
-      }
-
-      if (xhr.status === 202) {
-        for (var key in localStorage) {
-          if (key.substring(0, 9) === 'raygunjs=') {
-            sendToRaygun(JSON.parse(localStorage[key]));
-
-            localStorage.removeItem(key);
-          }
-        }
-      } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
-        offlineSave();
-      }
-    };
-
-    xhr.timeout = 10000;
+    var xhr = createCORSRequest('POST', url, data);
 
     if (!xhr) {
       log('CORS not supported');
