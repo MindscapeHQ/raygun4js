@@ -324,7 +324,7 @@
       xhr.open(method, url);
     }
 
-    xhr.timeout = 500;
+    xhr.timeout = 10000;
 
     return xhr;
   }
