@@ -276,7 +276,7 @@
     var xhr;
 
     var offlineSave = function () {
-      var dateTime = new Date().toISOString();
+      var dateTime = new Date().toJSON();
       var prefix = null;
 
       while (localStorage['raygunjs=' + dateTime + prefix]) {

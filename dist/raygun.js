@@ -1511,7 +1511,7 @@ window.TraceKit = TraceKit;
     var xhr;
 
     var offlineSave = function () {
-      var dateTime = new Date().toISOString();
+      var dateTime = new Date().toJSON();
       var prefix = null;
 
       while (localStorage['raygunjs=' + dateTime + prefix]) {
@@ -1583,7 +1583,7 @@ window.TraceKit = TraceKit;
       };
     }
 
-    xhr.timeout = 1000;
+    xhr.timeout = 10000;
 
     xhr.onerror = function () {
       log('failed to log error to Raygun');
