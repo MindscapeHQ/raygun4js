@@ -150,6 +150,10 @@ Offline saving is **disabled by default.** To get or set this option, call the f
 Raygun.saveIfOffline(boolean)
 ```
 
+If an error is caught and no network connectivity is available (the Raygun API cannot be reached), or if the request times out after 10s, the error will be saved to LocalStorage. This is confirmed to work on Chrome, Firefox, IE10/11, Opera and WinJS.
+
+Limited support is available for IE 8 and 9 - errors will only be saved if the request times out.
+
 ## Release History
 
 - 1.8.0 - Add Offline Saving feature; add support for WinJS
