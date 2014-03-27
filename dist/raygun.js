@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.0 - 2014-03-25
+/*! Raygun4js - v1.8.0 - 2014-03-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1281,7 +1281,7 @@ window.TraceKit = TraceKit;
         }
       }
 
-      makeHeadCorsRequest(_raygunApiUrl);
+      sendSavedErrors();
 
       return Raygun;
     },
@@ -1403,6 +1403,10 @@ window.TraceKit = TraceKit;
     return true;
   }
 
+  function getRandomInt() {
+    return Math.floor(Math.random() * 9007199254740993);
+  }
+
   function getViewPort() {
     var e = document.documentElement,
     g = document.getElementsByTagName('body')[0],
@@ -1421,9 +1425,9 @@ window.TraceKit = TraceKit;
 
     try {
       if (prefix != null) {
-        localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
+        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
       } else {
-        localStorage['raygunjs=' + dateTime] = data;
+        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
       }
     } catch (e) {
       log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -1559,31 +1563,9 @@ window.TraceKit = TraceKit;
       xhr.open(method, url);
     }
 
-    xhr.timeout = 500;
+    xhr.timeout = 10000;
 
     return xhr;
-  }
-
-  function makeHeadCorsRequest(url) {
-    var xhr = createCORSRequest('GET', url);
-
-    if ('withCredentials' in xhr) {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-
-        if (xhr.status === 200) {
-          sendSavedErrors();
-        }
-      };
-    } else if (window.XDomainRequest) {
-      xhr.onload = function () {
-        sendSavedErrors();
-      };
-    }
-
-    xhr.send();
   }
 
   // Make the actual CORS request.

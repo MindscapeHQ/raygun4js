@@ -46,7 +46,7 @@
         }
       }
 
-      makeHeadCorsRequest(_raygunApiUrl);
+      sendSavedErrors();
 
       return Raygun;
     },
@@ -168,6 +168,10 @@
     return true;
   }
 
+  function getRandomInt() {
+    return Math.floor(Math.random() * 9007199254740993);
+  }
+
   function getViewPort() {
     var e = document.documentElement,
     g = document.getElementsByTagName('body')[0],
@@ -186,9 +190,9 @@
 
     try {
       if (prefix != null) {
-        localStorage['raygunjs=' + dateTime + '=' + prefix] = data;
+        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
       } else {
-        localStorage['raygunjs=' + dateTime] = data;
+        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
       }
     } catch (e) {
       log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -327,28 +331,6 @@
     xhr.timeout = 10000;
 
     return xhr;
-  }
-
-  function makeHeadCorsRequest(url) {
-    var xhr = createCORSRequest('GET', url);
-
-    if ('withCredentials' in xhr) {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-
-        if (xhr.status === 200) {
-          sendSavedErrors();
-        }
-      };
-    } else if (window.XDomainRequest) {
-      xhr.onload = function () {
-        sendSavedErrors();
-      };
-    }
-
-    xhr.send();
   }
 
   // Make the actual CORS request.
