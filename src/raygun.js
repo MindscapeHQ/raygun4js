@@ -182,17 +182,12 @@
 
   function offlineSave (data) {
     var dateTime = new Date().toJSON();
-    var prefix = null;
-
-    while (localStorage['raygunjs=' + dateTime + prefix]) {
-      prefix += 1;
-    }
 
     try {
-      if (prefix != null) {
-        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
-      } else {
-        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
+      var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+
+      if (typeof localStorage[key] === 'undefined') {
+        localStorage[key] = data;
       }
     } catch (e) {
       log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -358,11 +353,13 @@
     } else if (window.XDomainRequest) {
       xhr.ontimeout = function () {
         if (_enableOfflineSave) {
+          log('Raygun: saved error locally');
           offlineSave(data);
         }
       };
 
       xhr.onload = function () {
+        log('logged error to Raygun');
         sendSavedErrors();
       };
     }

@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.0 - 2014-04-01
+/*! Raygun4js - v1.8.0 - 2014-04-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1417,17 +1417,12 @@ window.TraceKit = TraceKit;
 
   function offlineSave (data) {
     var dateTime = new Date().toJSON();
-    var prefix = null;
-
-    while (localStorage['raygunjs=' + dateTime + prefix]) {
-      prefix += 1;
-    }
 
     try {
-      if (prefix != null) {
-        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
-      } else {
-        localStorage['raygunjs=' + dateTime + '=' + getRandomInt()] = data;
+      var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+
+      if (typeof localStorage[key] === 'undefined') {
+        localStorage[key] = data;
       }
     } catch (e) {
       log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -1593,11 +1588,13 @@ window.TraceKit = TraceKit;
     } else if (window.XDomainRequest) {
       xhr.ontimeout = function () {
         if (_enableOfflineSave) {
+          log('Raygun: saved error locally');
           offlineSave(data);
         }
       };
 
       xhr.onload = function () {
+        log('logged error to Raygun');
         sendSavedErrors();
       };
     }
