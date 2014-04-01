@@ -1344,7 +1344,7 @@ window.TraceKit = TraceKit;
         _enableOfflineSave = enableOffline;
       }
 
-      return _enableOfflineSave;
+      return Raygun;
     }
   };
 

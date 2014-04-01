@@ -109,7 +109,7 @@
         _enableOfflineSave = enableOffline;
       }
 
-      return _enableOfflineSave;
+      return Raygun;
     }
   };
 
