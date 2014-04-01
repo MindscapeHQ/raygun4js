@@ -1,5 +1,5 @@
-describe("A suite", function() {
-  it("contains spec with an expectation", function() {
+describe("Raygun suite", function() {
+  it("a test", function() {
     expect(true).toBe(true);
   });
 });

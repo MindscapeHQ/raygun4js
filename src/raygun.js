@@ -13,10 +13,12 @@
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
   if ($) {
@@ -43,6 +45,8 @@
           _debugMode = options.debugMode;
         }
       }
+
+      sendSavedErrors();
 
       return Raygun;
     },
@@ -97,6 +101,14 @@
 
     setVersion: function (version) {
       _version = version;
+      return Raygun;
+    },
+
+    saveIfOffline: function (enableOffline) {
+      if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
+        _enableOfflineSave = enableOffline;
+      }
+
       return Raygun;
     }
   };
@@ -156,12 +168,40 @@
     return true;
   }
 
+  function getRandomInt() {
+    return Math.floor(Math.random() * 9007199254740993);
+  }
+
   function getViewPort() {
     var e = document.documentElement,
     g = document.getElementsByTagName('body')[0],
     x = window.innerWidth || e.clientWidth || g.clientWidth,
     y = window.innerHeight || e.clientHeight || g.clientHeight;
     return { width: x, height: y };
+  }
+
+  function offlineSave (data) {
+    var dateTime = new Date().toJSON();
+
+    try {
+      var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+
+      if (typeof localStorage[key] === 'undefined') {
+        localStorage[key] = data;
+      }
+    } catch (e) {
+      log('Raygun4JS: LocalStorage full, cannot save exception');
+    }
+  }
+
+  function sendSavedErrors() {
+    for (var key in localStorage) {
+      if (key.substring(0, 9) === 'raygunjs=') {
+        sendToRaygun(JSON.parse(localStorage[key]));
+
+        localStorage.removeItem(key);
+      }
+    }
   }
 
   function processUnhandledException(stackTrace, options) {
@@ -227,7 +267,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.7.2'
+          'Version': '1.8.0'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,
@@ -247,6 +287,7 @@
     if (_user) {
       payload.Details.User = _user;
     }
+
     sendToRaygun(payload);
   }
 
@@ -254,9 +295,10 @@
     if (!isApiKeyConfigured()) {
       return;
     }
+
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
-    makeCorsRequest(url, JSON.stringify(data));
+    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    makePostCorsRequest(url, JSON.stringify(data));
   }
 
   // Create the XHR object.
@@ -267,6 +309,7 @@
     if ("withCredentials" in xhr) {
       // XHR for Chrome/Firefox/Opera/Safari.
       xhr.open(method, url, true);
+
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
       if (_allowInsecureSubmissions) {
@@ -275,23 +318,56 @@
         // on http
         url = url.slice(6);
       }
+
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
     }
 
-    xhr.onload = function () {
-      log('logged error to Raygun');
-    };
-    xhr.onerror = function () {
-      log('failed to log error to Raygun');
-    };
+    xhr.timeout = 10000;
 
     return xhr;
   }
 
   // Make the actual CORS request.
-  function makeCorsRequest(url, data) {
-    var xhr = createCORSRequest('POST', url);
+  function makePostCorsRequest(url, data) {
+    var xhr = createCORSRequest('POST', url, data);
+
+    if ('withCredentials' in xhr) {
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        if (xhr.status === 202) {
+          sendSavedErrors();
+        } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+          offlineSave(data);
+        }
+      };
+
+      xhr.onload = function () {
+        log('logged error to Raygun');
+      };
+
+    } else if (window.XDomainRequest) {
+      xhr.ontimeout = function () {
+        if (_enableOfflineSave) {
+          log('Raygun: saved error locally');
+          offlineSave(data);
+        }
+      };
+
+      xhr.onload = function () {
+        log('logged error to Raygun');
+        sendSavedErrors();
+      };
+    }
+
+    xhr.onerror = function () {
+      log('failed to log error to Raygun');
+    };
+
     if (!xhr) {
       log('CORS not supported');
       return;

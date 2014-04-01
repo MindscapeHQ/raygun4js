@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.7.2 - 2014-03-06
+/*! Raygun4js - v1.8.0 - 2014-04-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -183,7 +183,7 @@ TraceKit.report = (function reportModuleWrapper() {
             };
         }
         }
-        
+
         notifyHandlers(stack, 'from window.onerror');
 
         if (_oldOnerrorHandler) {
@@ -604,6 +604,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     /**
      * Computes stack trace information from the stack property.
      * Chrome and Gecko use this property.
+     * Added WinJS regex for Raygun4JS's offline caching support
      * @param {Error} ex
      * @return {?Object.<string, *>} Stack trace information.
      */
@@ -614,6 +615,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
         var chrome = /^\s*at (?:((?:\[object object\])?\S+) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
+            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
@@ -636,6 +638,13 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     'line': +parts[3],
                     'column': parts[4] ? +parts[4] : null
                 };
+            } else if ((parts = winjs.exec(lines[i]))) {
+              element = {
+                'url': parts[2],
+                'func': parts[1] || UNKNOWN_FUNCTION,
+                'line': +parts[3],
+                'column': parts[4] ? +parts[4] : null
+              };
             } else {
                 continue;
             }
@@ -1239,10 +1248,12 @@ window.TraceKit = TraceKit;
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
   if ($) {
@@ -1269,6 +1280,8 @@ window.TraceKit = TraceKit;
           _debugMode = options.debugMode;
         }
       }
+
+      sendSavedErrors();
 
       return Raygun;
     },
@@ -1323,6 +1336,14 @@ window.TraceKit = TraceKit;
 
     setVersion: function (version) {
       _version = version;
+      return Raygun;
+    },
+
+    saveIfOffline: function (enableOffline) {
+      if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
+        _enableOfflineSave = enableOffline;
+      }
+
       return Raygun;
     }
   };
@@ -1382,12 +1403,40 @@ window.TraceKit = TraceKit;
     return true;
   }
 
+  function getRandomInt() {
+    return Math.floor(Math.random() * 9007199254740993);
+  }
+
   function getViewPort() {
     var e = document.documentElement,
     g = document.getElementsByTagName('body')[0],
     x = window.innerWidth || e.clientWidth || g.clientWidth,
     y = window.innerHeight || e.clientHeight || g.clientHeight;
     return { width: x, height: y };
+  }
+
+  function offlineSave (data) {
+    var dateTime = new Date().toJSON();
+
+    try {
+      var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+
+      if (typeof localStorage[key] === 'undefined') {
+        localStorage[key] = data;
+      }
+    } catch (e) {
+      log('Raygun4JS: LocalStorage full, cannot save exception');
+    }
+  }
+
+  function sendSavedErrors() {
+    for (var key in localStorage) {
+      if (key.substring(0, 9) === 'raygunjs=') {
+        sendToRaygun(JSON.parse(localStorage[key]));
+
+        localStorage.removeItem(key);
+      }
+    }
   }
 
   function processUnhandledException(stackTrace, options) {
@@ -1453,7 +1502,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.7.2'
+          'Version': '1.8.0'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,
@@ -1473,6 +1522,7 @@ window.TraceKit = TraceKit;
     if (_user) {
       payload.Details.User = _user;
     }
+
     sendToRaygun(payload);
   }
 
@@ -1480,9 +1530,10 @@ window.TraceKit = TraceKit;
     if (!isApiKeyConfigured()) {
       return;
     }
+
     log('Sending exception data to Raygun:', data);
-    var url = 'https://api.raygun.io/entries?apikey=' + encodeURIComponent(_raygunApiKey);
-    makeCorsRequest(url, JSON.stringify(data));
+    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    makePostCorsRequest(url, JSON.stringify(data));
   }
 
   // Create the XHR object.
@@ -1493,6 +1544,7 @@ window.TraceKit = TraceKit;
     if ("withCredentials" in xhr) {
       // XHR for Chrome/Firefox/Opera/Safari.
       xhr.open(method, url, true);
+
     } else if (window.XDomainRequest) {
       // XDomainRequest for IE.
       if (_allowInsecureSubmissions) {
@@ -1501,23 +1553,56 @@ window.TraceKit = TraceKit;
         // on http
         url = url.slice(6);
       }
+
       xhr = new window.XDomainRequest();
       xhr.open(method, url);
     }
 
-    xhr.onload = function () {
-      log('logged error to Raygun');
-    };
-    xhr.onerror = function () {
-      log('failed to log error to Raygun');
-    };
+    xhr.timeout = 10000;
 
     return xhr;
   }
 
   // Make the actual CORS request.
-  function makeCorsRequest(url, data) {
-    var xhr = createCORSRequest('POST', url);
+  function makePostCorsRequest(url, data) {
+    var xhr = createCORSRequest('POST', url, data);
+
+    if ('withCredentials' in xhr) {
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        if (xhr.status === 202) {
+          sendSavedErrors();
+        } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+          offlineSave(data);
+        }
+      };
+
+      xhr.onload = function () {
+        log('logged error to Raygun');
+      };
+
+    } else if (window.XDomainRequest) {
+      xhr.ontimeout = function () {
+        if (_enableOfflineSave) {
+          log('Raygun: saved error locally');
+          offlineSave(data);
+        }
+      };
+
+      xhr.onload = function () {
+        log('logged error to Raygun');
+        sendSavedErrors();
+      };
+    }
+
+    xhr.onerror = function () {
+      log('failed to log error to Raygun');
+    };
+
     if (!xhr) {
       log('CORS not supported');
       return;
