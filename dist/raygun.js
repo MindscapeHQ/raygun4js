@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.0 - 2014-04-02
+/*! Raygun4js - v1.8.0 - 2014-04-12
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1350,12 +1350,31 @@ window.TraceKit = TraceKit;
 
   /* internals */
 
+  function truncateURL(url){
+      // truncate after fourth /, or 24 characters, whichever is shorter
+      // /api/1/diagrams/xyz/server becomes
+      // /api/1/diagrams/...
+      var truncated_parts = url.split('/').slice(0, 4).join('/');
+      var truncated_length = url.substring(0, 24);
+      var truncated = truncated_parts.length < truncated_length.length?
+                      truncated_parts : truncated_length;
+      if (truncated !== url) {
+          truncated += '...';
+      }
+      return truncated;
+  }
+
   function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+    var message = 'AJAX Error: ' +
+        (jqXHR.statusText || 'unknown') +' '+
+        (ajaxSettings.type || 'unknown') + ' '+
+        (truncateURL(ajaxSettings.url) || 'unknown');
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
+      message: message,
       contentType: ajaxSettings.contentType,
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
@@ -1477,13 +1496,14 @@ window.TraceKit = TraceKit;
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
+    var custom_message = options.customData && options.customData.message;
 
     var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': stackTrace.message || options.status || 'Script error',
+          'Message': custom_message || stackTrace.message || options.status || 'Script error',
           'StackTrace': stack
         },
         'Environment': {
@@ -1613,3 +1633,4 @@ window.TraceKit = TraceKit;
 
   window.Raygun = Raygun;
 })(window, window.jQuery);
+
