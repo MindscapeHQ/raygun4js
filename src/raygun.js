@@ -115,12 +115,31 @@
 
   /* internals */
 
+  function truncateURL(url){
+      // truncate after fourth /, or 24 characters, whichever is shorter
+      // /api/1/diagrams/xyz/server becomes
+      // /api/1/diagrams/...
+      var truncated_parts = url.split('/').slice(0, 4).join('/');
+      var truncated_length = url.substring(0, 24);
+      var truncated = truncated_parts.length < truncated_length.length?
+                      truncated_parts : truncated_length;
+      if (truncated !== url) {
+          truncated += '...';
+      }
+      return truncated;
+  }
+
   function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+    var message = 'AJAX Error: ' +
+        (jqXHR.statusText || 'unknown') +' '+
+        (ajaxSettings.type || 'unknown') + ' '+
+        (truncateURL(ajaxSettings.url) || 'unknown');
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
+      message: message,
       contentType: ajaxSettings.contentType,
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
@@ -248,7 +267,7 @@
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': stackTrace.message || options.status || 'Script error',
+          'Message': options.customData.message || stackTrace.message || options.status || 'Script error',
           'StackTrace': stack
         },
         'Environment': {
@@ -378,3 +397,4 @@
 
   window.Raygun = Raygun;
 })(window, window.jQuery);
+
