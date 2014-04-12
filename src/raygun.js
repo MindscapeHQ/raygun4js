@@ -261,13 +261,14 @@
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
+    var custom_message = options.customData && options.customData.message;
 
     var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': options.customData.message || stackTrace.message || options.status || 'Script error',
+          'Message': custom_message || stackTrace.message || options.status || 'Script error',
           'StackTrace': stack
         },
         'Environment': {
