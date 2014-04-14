@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.0 - 2014-04-02
+/*! Raygun4js - v1.8.0 - 2014-04-15
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1249,6 +1249,7 @@ window.TraceKit = TraceKit;
       _debugMode = false,
       _allowInsecureSubmissions = false,
       _enableOfflineSave = false,
+      _localStorageSupported,
       _customData = {},
       _tags = [],
       _user,
@@ -1280,6 +1281,8 @@ window.TraceKit = TraceKit;
           _debugMode = options.debugMode;
         }
       }
+
+      _localStorageSupported = localStorageSupported();
 
       sendSavedErrors();
 
@@ -1415,6 +1418,14 @@ window.TraceKit = TraceKit;
     return { width: x, height: y };
   }
 
+  function localStorageSupported() {
+    try {
+      return 'localStorage' in window && window['localStorage'] !== null;
+    } catch(e){
+      return false;
+    }
+  }
+
   function offlineSave (data) {
     var dateTime = new Date().toJSON();
 
@@ -1430,11 +1441,13 @@ window.TraceKit = TraceKit;
   }
 
   function sendSavedErrors() {
-    for (var key in localStorage) {
-      if (key.substring(0, 9) === 'raygunjs=') {
-        sendToRaygun(JSON.parse(localStorage[key]));
+    if (_localStorageSupported) {
+      for (var key in localStorage) {
+        if (key.substring(0, 9) === 'raygunjs=') {
+          sendToRaygun(JSON.parse(localStorage[key]));
 
-        localStorage.removeItem(key);
+          localStorage.removeItem(key);
+        }
       }
     }
   }
