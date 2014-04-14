@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.0 - 2014-04-02
+/*! Raygun4js - v1.8.0 - 2014-04-15
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1360,8 +1360,12 @@ window.TraceKit = TraceKit;
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
-  function log(message) {
+  function log(message, data) {
     if (window.console && window.console.log && _debugMode) {
+      if (data) {
+        window.console.log(message + data);
+      }
+
       window.console.log(message);
     }
   }

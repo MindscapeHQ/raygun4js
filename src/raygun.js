@@ -125,8 +125,12 @@
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
-  function log(message) {
+  function log(message, data) {
     if (window.console && window.console.log && _debugMode) {
+      if (data) {
+        window.console.log(message + data);
+      }
+
       window.console.log(message);
     }
   }
