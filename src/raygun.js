@@ -294,7 +294,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.8.0'
+          'Version': '1.8.1'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,

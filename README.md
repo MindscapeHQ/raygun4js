@@ -156,6 +156,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.8.1 - Added meaningful message for Ajax errors, fixed debugmode logging bug
 - 1.8.0 - Add Offline Saving feature; add support for WinJS
 - 1.7.2 - Fixed tags not being included when error caught from global window.onerror handler
 - 1.7.1 - Fixed broken withTags when no other custom data provided on Send
