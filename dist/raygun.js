@@ -1382,9 +1382,13 @@ window.TraceKit = TraceKit;
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
 
-  function log(message) {
+  function log(message, data) {
     if (window.console && window.console.log && _debugMode) {
       window.console.log(message);
+
+      if (data) {
+        window.console.log(data);
+      }
     }
   }
 
