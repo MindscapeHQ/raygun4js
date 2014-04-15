@@ -119,12 +119,15 @@
       // truncate after fourth /, or 24 characters, whichever is shorter
       // /api/1/diagrams/xyz/server becomes
       // /api/1/diagrams/...
-      var truncated_parts = url.split('/').slice(0, 4).join('/');
-      var truncated_length = url.substring(0, 24);
+      var path = url.split('//')[1];
+      var queryStart = path.indexOf('?');
+      var sanitizedPath = path.toString().substring(0, queryStart);
+      var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
+      var truncated_length = sanitizedPath.substring(0, 48);
       var truncated = truncated_parts.length < truncated_length.length?
                       truncated_parts : truncated_length;
-      if (truncated !== url) {
-          truncated += '...';
+      if (truncated !== sanitizedPath) {
+          truncated += '..';
       }
       return truncated;
   }
@@ -139,7 +142,7 @@
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
-      message: message,
+      ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
@@ -261,7 +264,7 @@
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
-    var custom_message = options.customData && options.customData.message;
+    var custom_message = options.customData && options.customData.ajaxErrorMessage;
 
     var payload = {
       'OccurredOn': new Date(),
