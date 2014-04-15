@@ -115,12 +115,34 @@
 
   /* internals */
 
+  function truncateURL(url){
+      // truncate after fourth /, or 24 characters, whichever is shorter
+      // /api/1/diagrams/xyz/server becomes
+      // /api/1/diagrams/...
+      var path = url.split('//')[1];
+      var queryStart = path.indexOf('?');
+      var sanitizedPath = path.toString().substring(0, queryStart);
+      var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
+      var truncated_length = sanitizedPath.substring(0, 48);
+      var truncated = truncated_parts.length < truncated_length.length?
+                      truncated_parts : truncated_length;
+      if (truncated !== sanitizedPath) {
+          truncated += '..';
+      }
+      return truncated;
+  }
+
   function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+    var message = 'AJAX Error: ' +
+        (jqXHR.statusText || 'unknown') +' '+
+        (ajaxSettings.type || 'unknown') + ' '+
+        (truncateURL(ajaxSettings.url) || 'unknown');
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
       type: ajaxSettings.type,
       url: ajaxSettings.url,
+      ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
       data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
   }
@@ -242,13 +264,14 @@
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
+    var custom_message = options.customData && options.customData.ajaxErrorMessage;
 
     var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': stackTrace.message || options.status || 'Script error',
+          'Message': custom_message || stackTrace.message || options.status || 'Script error',
           'StackTrace': stack
         },
         'Environment': {
@@ -378,3 +401,4 @@
 
   window.Raygun = Raygun;
 })(window, window.jQuery);
+
