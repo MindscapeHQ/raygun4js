@@ -127,11 +127,11 @@
 
   function log(message, data) {
     if (window.console && window.console.log && _debugMode) {
-      if (data) {
-        window.console.log(message + data);
-      }
-
       window.console.log(message);
+
+      if (data) {
+        window.console.log(data);
+      }
     }
   }
 
