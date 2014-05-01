@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.1 - 2014-04-15
+/*! Raygun4js - v1.8.2 - 2014-05-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -344,6 +344,9 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             // URL needs to be able to fetched within the acceptable domain.  Otherwise,
             // cross-domain errors will be triggered.
             var source = '';
+
+            url = url || "";
+
             if (url.indexOf(document.domain) !== -1) {
                 source = loadSource(url);
             }

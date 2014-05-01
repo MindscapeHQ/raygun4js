@@ -346,6 +346,9 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             // URL needs to be able to fetched within the acceptable domain.  Otherwise,
             // cross-domain errors will be triggered.
             var source = '';
+
+            url = url || "";
+
             if (url.indexOf(document.domain) !== -1) {
                 source = loadSource(url);
             }
