@@ -1320,7 +1320,9 @@ window.TraceKit = TraceKit;
     send: function (ex, customData, tags) {
       try {
         processUnhandledException(_traceKit.computeStackTrace(ex), {
-          customData: merge(_customData, customData),
+          customData: typeof _customData === 'function' ?
+            merge(_customData(), customData) :
+            merge(_customData, customData),
           tags: mergeArray(_tags, tags)
         });
       }
