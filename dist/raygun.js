@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.2 - 2014-05-05
+/*! Raygun4js - v1.8.3 - 2014-05-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1320,9 +1320,7 @@ window.TraceKit = TraceKit;
     send: function (ex, customData, tags) {
       try {
         processUnhandledException(_traceKit.computeStackTrace(ex), {
-          customData: typeof _customData === 'function' ?
-            merge(_customData(), customData) :
-            merge(_customData, customData),
+          customData: merge(_customData, customData),
           tags: mergeArray(_tags, tags)
         });
       }
@@ -1359,16 +1357,21 @@ window.TraceKit = TraceKit;
       // truncate after fourth /, or 24 characters, whichever is shorter
       // /api/1/diagrams/xyz/server becomes
       // /api/1/diagrams/...
+      var truncated = url;
       var path = url.split('//')[1];
-      var queryStart = path.indexOf('?');
-      var sanitizedPath = path.toString().substring(0, queryStart);
-      var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
-      var truncated_length = sanitizedPath.substring(0, 48);
-      var truncated = truncated_parts.length < truncated_length.length?
-                      truncated_parts : truncated_length;
-      if (truncated !== sanitizedPath) {
-          truncated += '..';
+
+      if (path) {
+        var queryStart = path.indexOf('?');
+        var sanitizedPath = path.toString().substring(0, queryStart);
+        var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
+        var truncated_length = sanitizedPath.substring(0, 48);
+        truncated = truncated_parts.length < truncated_length.length?
+                        truncated_parts : truncated_length;
+        if (truncated !== sanitizedPath) {
+            truncated += '..';
+        }
       }
+
       return truncated;
   }
 
@@ -1500,11 +1503,7 @@ window.TraceKit = TraceKit;
     }
 
     if (isEmpty(options.customData)) {
-      if (typeof _customData === 'function') {
-        options.customData = _customData();
-      } else {
-        options.customData = _customData;
-      }
+      options.customData = _customData;
     }
 
     if (isEmpty(options.tags)) {

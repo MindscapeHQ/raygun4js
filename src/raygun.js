@@ -121,16 +121,21 @@
       // truncate after fourth /, or 24 characters, whichever is shorter
       // /api/1/diagrams/xyz/server becomes
       // /api/1/diagrams/...
+      var truncated = url;
       var path = url.split('//')[1];
-      var queryStart = path.indexOf('?');
-      var sanitizedPath = path.toString().substring(0, queryStart);
-      var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
-      var truncated_length = sanitizedPath.substring(0, 48);
-      var truncated = truncated_parts.length < truncated_length.length?
-                      truncated_parts : truncated_length;
-      if (truncated !== sanitizedPath) {
-          truncated += '..';
+
+      if (path) {
+        var queryStart = path.indexOf('?');
+        var sanitizedPath = path.toString().substring(0, queryStart);
+        var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
+        var truncated_length = sanitizedPath.substring(0, 48);
+        truncated = truncated_parts.length < truncated_length.length?
+                        truncated_parts : truncated_length;
+        if (truncated !== sanitizedPath) {
+            truncated += '..';
+        }
       }
+
       return truncated;
   }
 
