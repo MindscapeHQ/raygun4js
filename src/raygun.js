@@ -82,7 +82,9 @@
     send: function (ex, customData, tags) {
       try {
         processUnhandledException(_traceKit.computeStackTrace(ex), {
-          customData: merge(_customData, customData),
+          customData: typeof _customData === 'function' ?
+            merge(_customData(), customData) :
+            merge(_customData, customData),
           tags: mergeArray(_tags, tags)
         });
       }
@@ -260,7 +262,11 @@
     }
 
     if (isEmpty(options.customData)) {
-      options.customData = _customData;
+      if (typeof _customData === 'function') {
+        options.customData = _customData();
+      } else {
+        options.customData = _customData;
+      }
     }
 
     if (isEmpty(options.tags)) {
@@ -294,7 +300,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.8.1'
+          'Version': '1.8.3'
         },
         'UserCustomData': options.customData,
         'Tags': options.tags,
