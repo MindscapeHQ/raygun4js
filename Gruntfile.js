@@ -21,8 +21,10 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['tracekit/tracekit.js', 'src/<%= pkg.name %>.tracekit.jquery.js', 'src/<%= pkg.name %>.js'],
-        dest: 'dist/<%= pkg.name %>.js'
+        files: {
+          'dist/<%= pkg.name %>.js': ['tracekit/tracekit.js', 'src/<%= pkg.name %>.tracekit.jquery.js', 'src/<%= pkg.name %>.js'],
+          'dist/<%= pkg.name %>.vanilla.js': ['tracekit/tracekit.js', 'src/<%= pkg.name %>.js']
+        }
       },
     },
     uglify: {
@@ -30,8 +32,10 @@ module.exports = function(grunt) {
         banner: '<%= banner %>'
       },
       dist: {
-        src: '<%= concat.dist.dest %>',
-        dest: 'dist/<%= pkg.name %>.min.js'
+        files: {
+          'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js'],
+          'dist/<%= pkg.name %>.vanilla.min.js': ['dist/<%= pkg.name %>.vanilla.js']
+        }
       },
     },
     jshint: {
