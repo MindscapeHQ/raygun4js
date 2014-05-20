@@ -14,10 +14,14 @@ Visual Studio users can get it by opening the Package Manager Console and typing
 
 ### Manual download
 
-Download the [production version][min] or the [development version][max].
+Download the [production version][min] or the [development version][max]. You can also download a version without
+the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a
+[production version][min.vanilla] or [development version][max.vanilla].
 
 [min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
 [max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
+[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
+[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
 
 ## Usage
 
