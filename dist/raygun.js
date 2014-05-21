@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.4 - 2014-05-20
+/*! Raygun4js - v1.8.4 - 2014-05-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1462,8 +1462,9 @@ window.TraceKit = TraceKit;
     try {
       JSON.stringify(finalCustomData);
     } catch (e) {
-      finalCustomData = null;
-      log('Raygun4JS: Cannot add custom data; may contain circular reference');
+      var msg = 'Cannot add custom data; may contain circular reference';
+      finalCustomData = { error: msg };
+      log('Raygun4JS: ' + msg);
     }
 
     var payload = {
