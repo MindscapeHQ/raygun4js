@@ -285,8 +285,9 @@
     try {
       JSON.stringify(finalCustomData);
     } catch (e) {
-      finalCustomData = null;
-      log('Raygun4JS: Cannot add custom data; may contain circular reference');
+      var msg = 'Cannot add custom data; may contain circular reference';
+      finalCustomData = JSON.stringify({error: msg});
+      log('Raygun4JS: ' + msg);
     }
 
     var payload = {
