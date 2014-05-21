@@ -156,6 +156,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.8.4 - Guard against circular reference in custom data
 - 1.8.3 - Allow withCustomData to accept a function to provide a customdata object; fix undefined URL issue from Ajax; rm duplicated Tracekit ajax hook
 - 1.8.2 - Fixed bug in Tracekit which caused 'Cannot call method indexOf' of undefined error
 - 1.8.1 - Added meaningful message for Ajax errors, fixed debugmode logging bug
