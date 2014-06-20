@@ -146,7 +146,7 @@
         (jqXHR.statusText || 'unknown') +' '+
         (ajaxSettings.type || 'unknown') + ' '+
         (truncateURL(ajaxSettings.url) || 'unknown');
-    // ignroe ajax abort if set in the options
+    // ignore ajax abort if set in the options
     if (_ignoreAjaxAbort) {
       if (!jqXHR.getAllResponseHeaders()) {
          return;
