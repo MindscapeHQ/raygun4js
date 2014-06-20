@@ -12,6 +12,7 @@
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
+      _ignoreAjaxAbort = false,
       _allowInsecureSubmissions = false,
       _enableOfflineSave = false,
       _customData = {},
@@ -39,6 +40,7 @@
 
       if (options)
       {
+        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         if (options.debugMode)
         {
@@ -144,6 +146,12 @@
         (jqXHR.statusText || 'unknown') +' '+
         (ajaxSettings.type || 'unknown') + ' '+
         (truncateURL(ajaxSettings.url) || 'unknown');
+    // ignore ajax abort if set in the options
+    if (_ignoreAjaxAbort) {
+      if (!jqXHR.getAllResponseHeaders()) {
+         return;
+       }
+    }     
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
