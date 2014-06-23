@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.3 - 2014-05-20
+/*! Raygun4js - v1.9.0 - 2014-06-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1125,6 +1125,7 @@ window.TraceKit = TraceKit;
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
+      _ignoreAjaxAbort = false,
       _allowInsecureSubmissions = false,
       _enableOfflineSave = false,
       _customData = {},
@@ -1152,7 +1153,9 @@ window.TraceKit = TraceKit;
 
       if (options)
       {
+        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
+
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -1257,6 +1260,14 @@ window.TraceKit = TraceKit;
         (jqXHR.statusText || 'unknown') +' '+
         (ajaxSettings.type || 'unknown') + ' '+
         (truncateURL(ajaxSettings.url) || 'unknown');
+
+    // ignore ajax abort if set in the options
+    if (_ignoreAjaxAbort) {
+      if (!jqXHR.getAllResponseHeaders()) {
+         return;
+       }
+    }
+
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
@@ -1393,6 +1404,15 @@ window.TraceKit = TraceKit;
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
     var custom_message = options.customData && options.customData.ajaxErrorMessage;
+    var finalCustomData = options.customData;
+
+    try {
+      JSON.stringify(finalCustomData);
+    } catch (e) {
+      var msg = 'Cannot add custom data; may contain circular reference';
+      finalCustomData = { error: msg };
+      log('Raygun4JS: ' + msg);
+    }
 
     var payload = {
       'OccurredOn': new Date(),
@@ -1418,9 +1438,9 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.8.3'
+          'Version': '1.9.0'
         },
-        'UserCustomData': options.customData,
+        'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
           'Url': document.location.href,

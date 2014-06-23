@@ -76,6 +76,26 @@ Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 
 ## Documentation
 
+### Initialization Options
+
+Pass in an object as the second parameter to init() containing one or more of these keys and a boolean to customize the behavior:
+
+`allowInsecureSubmissions` - posts error payloads over HTTP. This allows **IE8** to send JS errors
+
+`ignoreAjaxAbort` - User-aborted Ajax calls result in errors - if this option is true, these will not be sent.
+
+`debugMode` - Raygun4JS will log to the console when sending errors.
+
+An example:
+
+```javascript
+Raygun.init('apikey', {
+  allowInsecureSubmissions: true,
+  ignoreAjaxAbort: true,
+  debugMode: true
+}).attach();
+```
+
 ### Sending custom data
 
 **On initialization:**
@@ -160,6 +180,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.9.0 - Add ignoreAjaxAbort option; provide vanilla build without jQuery hooks
 - 1.8.4 - Guard against circular reference in custom data
 - 1.8.3 - Allow withCustomData to accept a function to provide a customdata object; fix undefined URL issue from Ajax; rm duplicated Tracekit ajax hook
 - 1.8.2 - Fixed bug in Tracekit which caused 'Cannot call method indexOf' of undefined error
