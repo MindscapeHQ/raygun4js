@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.9.0 - 2014-06-24
+/*! Raygun4js - v1.9.1 - 2014-06-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1467,7 +1467,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.0'
+          'Version': '1.9.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
