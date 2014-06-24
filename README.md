@@ -158,6 +158,16 @@ Raygun.setVersion('1.0.0.0');
 
 This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
 
+### Filter sensitive request data
+
+The library automatically transmits query string key-values. To filter sensitive keys from this, call:
+
+```javascript
+Raygun.filterSensitiveData(['pwd']);
+```
+
+It accepts an array of strings. If a key in the query string matches any in this array, it won't be sent.
+
 ### Source maps support
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.
@@ -180,7 +190,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
-- 1.9.0 - Add ignoreAjaxAbort option; provide vanilla build without jQuery hooks
+- 1.9.0 - Add ignoreAjaxAbort option; added function to filter sensitive query string; provide vanilla build without jQuery hooks
 - 1.8.4 - Guard against circular reference in custom data
 - 1.8.3 - Allow withCustomData to accept a function to provide a customdata object; fix undefined URL issue from Ajax; rm duplicated Tracekit ajax hook
 - 1.8.2 - Fixed bug in Tracekit which caused 'Cannot call method indexOf' of undefined error

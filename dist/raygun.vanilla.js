@@ -1467,7 +1467,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.1'
+          'Version': '1.9.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
