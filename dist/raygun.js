@@ -1189,13 +1189,14 @@ window.TraceKit = TraceKit;
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
-      _ignoreAjaxAbort = false,
       _allowInsecureSubmissions = false,
+      _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _filteredKeys,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
@@ -1217,8 +1218,8 @@ window.TraceKit = TraceKit;
 
       if (options)
       {
-        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
+        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
 
         if (options.debugMode)
         {
@@ -1291,6 +1292,10 @@ window.TraceKit = TraceKit;
         _enableOfflineSave = enableOffline;
       }
 
+      return Raygun;
+    },
+    filterSensitiveData: function (filteredKeys) {
+      _filteredKeys = filteredKeys;
       return Raygun;
     }
   };
@@ -1415,12 +1420,22 @@ window.TraceKit = TraceKit;
     }
   }
 
-  function sendSavedErrors() {
-    for (var key in localStorage) {
-      if (key.substring(0, 9) === 'raygunjs=') {
-        sendToRaygun(JSON.parse(localStorage[key]));
+  function localStorageAvailable(){
+    try {
+      return ('localStorage' in window) && window['localStorage'] !== null;
+    } catch(e){
+      return false;
+    }
+  }
 
-        localStorage.removeItem(key);
+  function sendSavedErrors() {
+    if (localStorageAvailable() && localStorage.length > 0) {
+        for (var key in localStorage) {
+        if (key.substring(0, 9) === 'raygunjs=') {
+          sendToRaygun(JSON.parse(localStorage[key]));
+
+          localStorage.removeItem(key);
+        }
       }
     }
   }
@@ -1445,7 +1460,21 @@ window.TraceKit = TraceKit;
       forEach(window.location.search.substring(1).split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
-          qs[decodeURIComponent(parts[0])] = parts[1];
+          var key = decodeURIComponent(parts[0]);
+          var value = parts[1];
+
+          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
+            if (_filteredKeys.indexOf(key) === -1) {
+               qs[key] = value;
+            }
+          } else {
+            for (i = 0; i < _filteredKeys.length; i++) {
+              if (_filteredKeys[i] === key) {
+                 qs[key] = value;
+              }
+            }
+          }
+
         }
       });
     }
