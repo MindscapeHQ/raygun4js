@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.8.4 - 2014-06-09
+/*! Raygun4js - v1.9.0 - 2014-06-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 ;(function(window, undefined) {
@@ -1190,11 +1190,13 @@ window.TraceKit = TraceKit;
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _filteredKeys,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
@@ -1217,6 +1219,8 @@ window.TraceKit = TraceKit;
       if (options)
       {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
+        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
+
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -1289,6 +1293,10 @@ window.TraceKit = TraceKit;
       }
 
       return Raygun;
+    },
+    filterSensitiveData: function (filteredKeys) {
+      _filteredKeys = filteredKeys;
+      return Raygun;
     }
   };
 
@@ -1321,6 +1329,14 @@ window.TraceKit = TraceKit;
         (jqXHR.statusText || 'unknown') +' '+
         (ajaxSettings.type || 'unknown') + ' '+
         (truncateURL(ajaxSettings.url) || 'unknown');
+
+    // ignore ajax abort if set in the options
+    if (_ignoreAjaxAbort) {
+      if (!jqXHR.getAllResponseHeaders()) {
+         return;
+       }
+    }
+
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
@@ -1444,7 +1460,21 @@ window.TraceKit = TraceKit;
       forEach(window.location.search.substring(1).split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
-          qs[decodeURIComponent(parts[0])] = parts[1];
+          var key = decodeURIComponent(parts[0]);
+          var value = parts[1];
+
+          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
+            if (_filteredKeys.indexOf(key) === -1) {
+               qs[key] = value;
+            }
+          } else {
+            for (i = 0; i < _filteredKeys.length; i++) {
+              if (_filteredKeys[i] === key) {
+                 qs[key] = value;
+              }
+            }
+          }
+
         }
       });
     }
@@ -1501,7 +1531,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.8.5'
+          'Version': '1.9.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

@@ -13,11 +13,13 @@
       _raygunApiKey,
       _debugMode = false,
       _allowInsecureSubmissions = false,
+      _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
+      _filteredKeys,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
@@ -40,6 +42,8 @@
       if (options)
       {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
+        _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
+
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -112,6 +116,10 @@
       }
 
       return Raygun;
+    },
+    filterSensitiveData: function (filteredKeys) {
+      _filteredKeys = filteredKeys;
+      return Raygun;
     }
   };
 
@@ -144,6 +152,14 @@
         (jqXHR.statusText || 'unknown') +' '+
         (ajaxSettings.type || 'unknown') + ' '+
         (truncateURL(ajaxSettings.url) || 'unknown');
+
+    // ignore ajax abort if set in the options
+    if (_ignoreAjaxAbort) {
+      if (!jqXHR.getAllResponseHeaders()) {
+         return;
+       }
+    }
+
     Raygun.send(thrownError || event.type, {
       status: jqXHR.status,
       statusText: jqXHR.statusText,
@@ -267,7 +283,21 @@
       forEach(window.location.search.substring(1).split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
-          qs[decodeURIComponent(parts[0])] = parts[1];
+          var key = decodeURIComponent(parts[0]);
+          var value = parts[1];
+
+          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
+            if (_filteredKeys.indexOf(key) === -1) {
+               qs[key] = value;
+            }
+          } else {
+            for (i = 0; i < _filteredKeys.length; i++) {
+              if (_filteredKeys[i] === key) {
+                 qs[key] = value;
+              }
+            }
+          }
+
         }
       });
     }
@@ -324,7 +354,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.8.5'
+          'Version': '1.9.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
