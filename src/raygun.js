@@ -286,16 +286,20 @@
           var key = decodeURIComponent(parts[0]);
           var value = parts[1];
 
-          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
-            if (_filteredKeys.indexOf(key) === -1) {
-               qs[key] = value;
-            }
-          } else {
-            for (i = 0; i < _filteredKeys.length; i++) {
-              if (_filteredKeys[i] === key) {
+          if (_filteredKeys) {
+            if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
+              if (_filteredKeys.indexOf(key) === -1) {
                  qs[key] = value;
               }
+            } else {
+              for (i = 0; i < _filteredKeys.length; i++) {
+                if (_filteredKeys[i] === key) {
+                   qs[key] = value;
+                }
+              }
             }
+          } else {
+            qs[key] = value;
           }
 
         }
@@ -354,7 +358,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.1'
+          'Version': '1.9.2'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
