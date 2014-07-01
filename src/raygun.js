@@ -100,8 +100,15 @@
       return Raygun;
     },
 
-    setUser: function (user) {
-      _user = { 'Identifier': user };
+    setUser: function (identifier, isAnonymous, email, uuid, fullName, firstName) {
+      _user = { 
+      	'Identifier': user,
+	'IsAnonymous' : isAnonymous,
+	'Email' : email,
+	'FullName' : fullName,
+	'FirstName' : firstName,
+	'UUID' : uuid
+      };
       return Raygun;
     },
 
