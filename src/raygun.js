@@ -100,15 +100,26 @@
       return Raygun;
     },
 
-    setUser: function (user, isAnonymous, email, uuid, fullName, firstName) {
+    setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
       _user = { 
       	'Identifier': user,
-	'IsAnonymous' : isAnonymous,
-	'Email' : email,
-	'FullName' : fullName,
-	'FirstName' : firstName,
-	'UUID' : uuid
       };
+      if(isAnonymous) {
+        _user['IsAnonymous'] = isAnonymous;
+      }
+      if(email) {
+        _user['Email'] = email;
+      }
+      if(fullName) {
+        _user['FullName'] = fullName;
+      }
+      if(firstName) {
+        _user['FirstName'] = firstName;
+      }
+      if(uuid) {
+        _user['UUID'] = uuid;
+      }
+
       return Raygun;
     },
 
