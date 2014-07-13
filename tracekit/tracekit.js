@@ -106,6 +106,7 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {Function} handler
      */
     function subscribe(handler) {
+        installGlobalHandler();
         handlers.push(handler);
     }
 
@@ -145,7 +146,7 @@ TraceKit.report = (function reportModuleWrapper() {
         }
     }
 
-    var _oldOnerrorHandler = window.onerror;
+    var _oldOnerrorHandler, _onErrorHandlerInstalled;
 
     /**
      * Ensures all global unhandled exceptions are recorded.
@@ -155,7 +156,7 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {(number|string)} lineNo The line number at which the error
      * occurred.
      */
-    window.onerror = function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
+    function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
         var stack = null;
 
         if (errorObj) {
@@ -193,7 +194,17 @@ TraceKit.report = (function reportModuleWrapper() {
         }
 
         return false;
-    };
+    }
+
+    function installGlobalHandler ()
+    {
+        if (_onErrorHandlerInstalled === true) {
+           return;
+        }
+        _oldOnerrorHandler = window.onerror;
+        window.onerror = traceKitWindowOnError;
+        _onErrorHandlerInstalled = true;
+    }
 
     /**
      * Reports an unhandled Error to TraceKit.
