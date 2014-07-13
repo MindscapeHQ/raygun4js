@@ -140,11 +140,29 @@ Raygun.send(err, null, ['tag']];
 
 ### Unique user tracking
 
-You can provide the user name or email address of the currently logged in user to Raygun by calling:
+You can provide additional information about the currently logged in user to Raygun by calling:
 
 ```javascript
-Raygun.setUser('username_or_email');
+Raygun.setUser('unique_user_identifier');
 ```
+
+This method takes additional parameters that are used when reporting over the affected users. the full method signature is
+
+```javascript
+setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
+```
+
+`user` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
+
+`isAnonymous` is a bool indicating whether the user is anonymous or actually has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
+
+`email` is the user's email address.
+
+`fullName` is the user's full name.
+
+`firstName` is the user's first or preferred name.
+
+`uuid` is the identifier of the device the app is running on. This could be used to correlate user accounts over multiple machines.
 
 This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no user tracking will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
