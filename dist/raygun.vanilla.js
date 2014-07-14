@@ -1,7 +1,7 @@
-/*! Raygun4js - v1.9.2 - 2014-06-24
+/*! Raygun4js - v1.10.0 - 2014-07-14
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
-;(function(window, undefined) {
+(function(window, undefined) {
 
 
 var TraceKit = {};
@@ -104,6 +104,7 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {Function} handler
      */
     function subscribe(handler) {
+        installGlobalHandler();
         handlers.push(handler);
     }
 
@@ -143,7 +144,7 @@ TraceKit.report = (function reportModuleWrapper() {
         }
     }
 
-    var _oldOnerrorHandler = window.onerror;
+    var _oldOnerrorHandler, _onErrorHandlerInstalled;
 
     /**
      * Ensures all global unhandled exceptions are recorded.
@@ -153,7 +154,7 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {(number|string)} lineNo The line number at which the error
      * occurred.
      */
-    window.onerror = function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
+    function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
         var stack = null;
 
         if (errorObj) {
@@ -191,7 +192,17 @@ TraceKit.report = (function reportModuleWrapper() {
         }
 
         return false;
-    };
+    }
+
+    function installGlobalHandler ()
+    {
+        if (_onErrorHandlerInstalled === true) {
+           return;
+        }
+        _oldOnerrorHandler = window.onerror;
+        window.onerror = traceKitWindowOnError;
+        _onErrorHandlerInstalled = true;
+    }
 
     /**
      * Reports an unhandled Error to TraceKit.
@@ -316,14 +327,14 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return '';
         }
         try {
-            function getXHR() {
+            var getXHR = function() {
                 try {
                     return new window.XMLHttpRequest();
                 } catch (e) {
                     // explicitly bubble up the exception if not found
                     return new window.ActiveXObject('Microsoft.XMLHTTP');
                 }
-            }
+            };
 
             var request = getXHR();
             request.open('GET', url, false);
@@ -616,7 +627,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (?:((?:\[object object\])?\S+) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
@@ -1059,8 +1070,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         } catch (ex) {
             return computeStackTrace(ex, depth + 1);
         }
-
-        return null;
     }
 
     computeStackTrace.augmentStackTraceWithInitialElement = augmentStackTraceWithInitialElement;
@@ -1213,8 +1222,26 @@ window.TraceKit = TraceKit;
       return Raygun;
     },
 
-    setUser: function (user) {
-      _user = { 'Identifier': user };
+    setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
+      _user = {
+        'Identifier': user
+      };
+      if(isAnonymous) {
+        _user['IsAnonymous'] = isAnonymous;
+      }
+      if(email) {
+        _user['Email'] = email;
+      }
+      if(fullName) {
+        _user['FullName'] = fullName;
+      }
+      if(firstName) {
+        _user['FirstName'] = firstName;
+      }
+      if(uuid) {
+        _user['UUID'] = uuid;
+      }
+
       return Raygun;
     },
 
@@ -1471,7 +1498,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.2'
+          'Version': '1.10.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

@@ -101,8 +101,8 @@
     },
 
     setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
-      _user = { 
-      	'Identifier': user,
+      _user = {
+        'Identifier': user
       };
       if(isAnonymous) {
         _user['IsAnonymous'] = isAnonymous;
@@ -376,7 +376,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.2'
+          'Version': '1.10.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

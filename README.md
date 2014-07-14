@@ -208,6 +208,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.10.0 - Added enhanced affected user data to setUser; ported latest Tracekit improvements
 - 1.9.2 - Fix bug in filter query
 - 1.9.1 - Added function to filter sensitive query string
 - 1.9.0 - Add ignoreAjaxAbort option; provide vanilla build without jQuery hooks
