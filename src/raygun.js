@@ -100,8 +100,26 @@
       return Raygun;
     },
 
-    setUser: function (user) {
-      _user = { 'Identifier': user };
+    setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
+      _user = {
+        'Identifier': user
+      };
+      if(isAnonymous) {
+        _user['IsAnonymous'] = isAnonymous;
+      }
+      if(email) {
+        _user['Email'] = email;
+      }
+      if(fullName) {
+        _user['FullName'] = fullName;
+      }
+      if(firstName) {
+        _user['FirstName'] = firstName;
+      }
+      if(uuid) {
+        _user['UUID'] = uuid;
+      }
+
       return Raygun;
     },
 
@@ -358,7 +376,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.9.2'
+          'Version': '1.10.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
