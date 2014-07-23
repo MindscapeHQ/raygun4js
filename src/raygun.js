@@ -310,10 +310,15 @@
                  qs[key] = value;
               }
             } else {
+              var included = true;
               for (i = 0; i < _filteredKeys.length; i++) {
                 if (_filteredKeys[i] === key) {
-                   qs[key] = value;
+                   included = false;
+                   break;
                 }
+              }
+              if (included) {
+                   qs[key] = value;
               }
             }
           } else {
