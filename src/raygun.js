@@ -290,7 +290,7 @@
     var stack = [],
         qs = {};
 
-    if (_ignore3rdPartyErrors && !stackTrace.stack && !stackTrace.stack.length) {
+    if (_ignore3rdPartyErrors && (!stackTrace.stack || !stackTrace.stack.length) {
       return;
     }
     
