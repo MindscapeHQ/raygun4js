@@ -15,6 +15,7 @@
       _allowInsecureSubmissions = false,
       _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
+      _ignore3rdPartyErrors = false,
       _customData = {},
       _tags = [],
       _user,
@@ -47,6 +48,10 @@
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
+        }
+        if(options.ignore3rdPartyErrors)
+        {
+          _ignore3rdPartyErrors = true;
         }
       }
 
@@ -285,6 +290,10 @@
     var stack = [],
         qs = {};
 
+    if (_ignore3rdPartyErrors && !stackTrace.stack && !stackTrace.stack.length) {
+      return;
+    }
+    
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({

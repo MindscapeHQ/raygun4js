@@ -86,13 +86,18 @@ Pass in an object as the second parameter to init() containing one or more of th
 
 `debugMode` - Raygun4JS will log to the console when sending errors.
 
+`ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely 
+within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
+and will still be sent.
+
 An example:
 
 ```javascript
 Raygun.init('apikey', {
   allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
-  debugMode: true
+  debugMode: true,
+  ignore3rdPartyErrors: false
 }).attach();
 ```
 
