@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.10.0 - 2014-07-24
+/*! Raygun4js - v1.11.0 - 2014-08-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -627,7 +627,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
@@ -1412,7 +1412,7 @@ window.TraceKit = TraceKit;
     var stack = [],
         qs = {};
 
-    if (_ignore3rdPartyErrors && !stackTrace.stack && !stackTrace.stack.length) {
+    if (_ignore3rdPartyErrors && (!stackTrace.stack || !stackTrace.stack.length)) {
       return;
     }
     
@@ -1441,10 +1441,15 @@ window.TraceKit = TraceKit;
                  qs[key] = value;
               }
             } else {
+              var included = true;
               for (i = 0; i < _filteredKeys.length; i++) {
                 if (_filteredKeys[i] === key) {
-                   qs[key] = value;
+                   included = false;
+                   break;
                 }
+              }
+              if (included) {
+                   qs[key] = value;
               }
             }
           } else {
