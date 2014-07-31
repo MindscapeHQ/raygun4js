@@ -213,6 +213,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.11.0 - Add ignoring 3rd party scripts, fix bug with filtering keys on some browsers, support chrome extension stack parsing
 - 1.10.0 - Added enhanced affected user data to setUser; ported latest Tracekit improvements
 - 1.9.2 - Fix bug in filter query
 - 1.9.1 - Added function to filter sensitive query string
