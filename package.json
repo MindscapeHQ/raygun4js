@@ -1,5 +1,6 @@
 {
   "name": "raygun4js",
+  "main": "dist/raygun.js",
   "title": "Raygun4js",
   "description": "Raygun.io plugin for JavaScript",
   "version": "1.10.0",
