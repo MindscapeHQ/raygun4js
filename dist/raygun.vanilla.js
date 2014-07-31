@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.10.0 - 2014-07-14
+/*! Raygun4js - v1.10.0 - 2014-07-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1137,6 +1137,7 @@ window.TraceKit = TraceKit;
       _allowInsecureSubmissions = false,
       _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
+      _ignore3rdPartyErrors = false,
       _customData = {},
       _tags = [],
       _user,
@@ -1169,6 +1170,10 @@ window.TraceKit = TraceKit;
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
+        }
+        if(options.ignore3rdPartyErrors)
+        {
+          _ignore3rdPartyErrors = true;
         }
       }
 
@@ -1407,6 +1412,10 @@ window.TraceKit = TraceKit;
     var stack = [],
         qs = {};
 
+    if (_ignore3rdPartyErrors && !stackTrace.stack && !stackTrace.stack.length) {
+      return;
+    }
+    
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
