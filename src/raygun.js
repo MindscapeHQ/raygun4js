@@ -191,7 +191,7 @@
       ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
       requestData: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined,
-      responseData: jqXHR.responseText });
+      responseData: jqXHR.responseText ? jqXHR.responseText.slice(0, 10240) : undefined });
   }
 
   function log(message, data) {
