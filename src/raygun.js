@@ -46,9 +46,9 @@
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
 
 		if (options.apiEndPoint)
-		{
-			_apiEndPoint = options.apiEndPoint;
-		}
+        {
+          _apiEndPoint = options.apiEndPoint;
+        }
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
