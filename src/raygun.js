@@ -21,7 +21,7 @@
       _user,
       _version,
       _filteredKeys,
-      _raygunApiUrl = 'https://api.raygun.io',
+      _apiEndPoint = 'https://api.raygun.io/entries',
       $document;
 
   if ($) {
@@ -45,6 +45,10 @@
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
 
+		if (options.apiEndPoint)
+		{
+			_apiEndPoint = options.apiEndPoint;
+		}
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
@@ -420,7 +424,7 @@
     }
 
     log('Sending exception data to Raygun:', data);
-    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
+    var url = _apiEndPoint + '?apikey=' + encodeURIComponent(_raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
   }
 
