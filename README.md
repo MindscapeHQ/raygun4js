@@ -80,6 +80,8 @@ Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 
 Pass in an object as the second parameter to init() containing one or more of these keys and a boolean to customize the behavior:
 
+`apiEndPoint` - specify a custom Api endpoint.
+
 `allowInsecureSubmissions` - posts error payloads over HTTP. This allows **IE8** to send JS errors
 
 `ignoreAjaxAbort` - User-aborted Ajax calls result in errors - if this option is true, these will not be sent.
@@ -94,6 +96,7 @@ An example:
 
 ```javascript
 Raygun.init('apikey', {
+  apiEndPoint: 'https://api.raygun.io/entries',
   allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
   debugMode: true,
