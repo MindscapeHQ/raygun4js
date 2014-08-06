@@ -45,7 +45,7 @@
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
 
-		if (options.apiEndPoint)
+        if (options.apiEndPoint)
         {
           _apiEndPoint = options.apiEndPoint;
         }
