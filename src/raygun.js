@@ -329,6 +329,9 @@
               if (included) {
                    qs[key] = value;
               }
+              else {
+                qs[key] = '<removed by filter>';
+              }
             }
           } else {
             qs[key] = value;
