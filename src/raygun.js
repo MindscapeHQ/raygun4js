@@ -294,7 +294,7 @@
     if (_ignore3rdPartyErrors && (!stackTrace.stack || !stackTrace.stack.length)) {
       return;
     }
-    
+
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
@@ -394,7 +394,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.10.0'
+          'Version': '1.11.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
