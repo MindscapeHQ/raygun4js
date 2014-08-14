@@ -190,7 +190,8 @@
       url: ajaxSettings.url,
       ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
-      data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
+      requestData: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined,
+      responseData: jqXHR.responseText ? jqXHR.responseText.slice(0, 10240) : undefined });
   }
 
   function log(message, data) {
