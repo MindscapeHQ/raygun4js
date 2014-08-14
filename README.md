@@ -86,7 +86,7 @@ Pass in an object as the second parameter to init() containing one or more of th
 
 `debugMode` - Raygun4JS will log to the console when sending errors.
 
-`ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely 
+`ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
 
@@ -213,6 +213,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.11.1 - Ajax errors now transmit response text; filtered keys are now transmitted with the value sanitized instead of having the whole object removed
 - 1.11.0 - Add ignoring 3rd party scripts, fix bug with filtering keys on some browsers, support chrome extension stack parsing
 - 1.10.0 - Added enhanced affected user data to setUser; ported latest Tracekit improvements
 - 1.9.2 - Fix bug in filter query

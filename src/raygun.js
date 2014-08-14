@@ -190,7 +190,8 @@
       url: ajaxSettings.url,
       ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
-      data: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined });
+      requestData: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined,
+      responseData: jqXHR.responseText ? jqXHR.responseText.slice(0, 10240) : undefined });
   }
 
   function log(message, data) {
@@ -293,7 +294,7 @@
     if (_ignore3rdPartyErrors && (!stackTrace.stack || !stackTrace.stack.length)) {
       return;
     }
-    
+
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
@@ -328,6 +329,9 @@
               }
               if (included) {
                    qs[key] = value;
+              }
+              else {
+                qs[key] = '<removed by filter>';
               }
             }
           } else {
@@ -390,7 +394,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.10.0'
+          'Version': '1.11.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
