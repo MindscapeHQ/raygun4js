@@ -360,7 +360,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
             url = url || "";
 
-            if (url.indexOf(document.domain) !== -1) {
+            if (url.indexOf && url.indexOf(document.domain) !== -1) {
                 source = loadSource(url);
             }
             sourceCache[url] = source ? source.split('\n') : [];
