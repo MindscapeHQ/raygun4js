@@ -67,11 +67,12 @@
 
     withTags: function (tags) {
       _tags = tags;
+      return Raygun;
     },
 
     attach: function () {
       if (!isApiKeyConfigured()) {
-        return;
+        return Raygun;
       }
       _traceKit.report.subscribe(processUnhandledException);
       if ($document) {
@@ -140,6 +141,7 @@
 
       return Raygun;
     },
+
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
       return Raygun;
