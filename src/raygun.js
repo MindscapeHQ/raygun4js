@@ -192,8 +192,8 @@
       url: ajaxSettings.url,
       ajaxErrorMessage: message,
       contentType: ajaxSettings.contentType,
-      requestData: ajaxSettings.data ? ajaxSettings.data.slice(0, 10240) : undefined,
-      responseData: jqXHR.responseText ? jqXHR.responseText.slice(0, 10240) : undefined });
+      requestData: ajaxSettings.data && ajaxSettings.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
+      responseData: jqXHR.responseText && ajaxSettings.slice ? jqXHR.responseText.slice(0, 10240) : undefined });
   }
 
   function log(message, data) {
@@ -396,7 +396,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.11.2'
+          'Version': '1.11.3'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
