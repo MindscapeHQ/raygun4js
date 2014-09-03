@@ -422,7 +422,7 @@
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
-          'Url': document.location.href,
+          'Url': [location.protocol, '//', location.host, location.pathname].join(''),
           'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,

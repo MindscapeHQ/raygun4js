@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.11.2 - 2014-09-04
+/*! Raygun4js - v1.11.2 - 2014-09-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1189,11 +1189,12 @@ window.TraceKit = TraceKit;
 
     withTags: function (tags) {
       _tags = tags;
+      return Raygun;
     },
 
     attach: function () {
       if (!isApiKeyConfigured()) {
-        return;
+        return Raygun;
       }
       _traceKit.report.subscribe(processUnhandledException);
       if ($document) {
@@ -1262,6 +1263,7 @@ window.TraceKit = TraceKit;
 
       return Raygun;
     },
+
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
       return Raygun;
@@ -1409,6 +1411,50 @@ window.TraceKit = TraceKit;
     }
   }
 
+  function filterValue(key, value) {
+      if (_filteredKeys) {
+          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
+              if (_filteredKeys.indexOf(key) !== -1) {
+                  return '[removed by filter]';
+              }
+          } else {
+              for (var i = 0; i < _filteredKeys.length; i++) {
+                  if (_filteredKeys[i] === key) {
+                      return '[removed by filter]';
+                  }
+              }
+          }
+      }
+
+      return value;
+  }
+
+  function filterObject(reference) {
+      if (reference == null) {
+          return reference;
+      }
+
+      if (Object.prototype.toString.call(reference) !== '[object Object]') {
+          return reference;
+      }
+
+      for (var propertyName in reference) {
+          var propertyValue = reference[propertyName];
+
+          if (propertyValue == null) {
+              continue;
+          }
+
+          if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
+              reference[propertyName] = filterObject(propertyValue);
+          } else {
+              reference[propertyName] = filterValue(propertyName, propertyValue);
+          }
+      }
+
+      return reference;
+  }
+
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
@@ -1434,32 +1480,9 @@ window.TraceKit = TraceKit;
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
           var key = decodeURIComponent(parts[0]);
-          var value = parts[1];
+          var value = filterValue(key, parts[1]);
 
-          if (_filteredKeys) {
-            if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
-              if (_filteredKeys.indexOf(key) === -1) {
-                 qs[key] = value;
-              }
-            } else {
-              var included = true;
-              for (i = 0; i < _filteredKeys.length; i++) {
-                if (_filteredKeys[i] === key) {
-                   included = false;
-                   break;
-                }
-              }
-              if (included) {
-                   qs[key] = value;
-              }
-              else {
-                qs[key] = '<removed by filter>';
-              }
-            }
-          } else {
-            qs[key] = value;
-          }
-
+          qs[key] = value;
         }
       });
     }
@@ -1482,7 +1505,7 @@ window.TraceKit = TraceKit;
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
     var custom_message = options.customData && options.customData.ajaxErrorMessage;
-    var finalCustomData = options.customData;
+    var finalCustomData = filterObject(options.customData);
 
     try {
       JSON.stringify(finalCustomData);
@@ -1521,7 +1544,7 @@ window.TraceKit = TraceKit;
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
-          'Url': document.location.href,
+          'Url': [location.protocol, '//', location.host, location.pathname].join(''),
           'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,
