@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.11.1 - 2014-08-28
+/*! Raygun4js - v1.11.2 - 2014-09-03
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1189,11 +1189,12 @@ window.TraceKit = TraceKit;
 
     withTags: function (tags) {
       _tags = tags;
+      return Raygun;
     },
 
     attach: function () {
       if (!isApiKeyConfigured()) {
-        return;
+        return Raygun;
       }
       _traceKit.report.subscribe(processUnhandledException);
       if ($document) {
@@ -1262,6 +1263,7 @@ window.TraceKit = TraceKit;
 
       return Raygun;
     },
+
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
       return Raygun;
@@ -1521,7 +1523,7 @@ window.TraceKit = TraceKit;
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
-          'Url': document.location.href,
+          'Url': [location.protocol, '//', location.host, location.pathname].join(''),
           'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,
