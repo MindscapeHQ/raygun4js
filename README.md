@@ -215,6 +215,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 - 1.12.0 - Custom data is now filtered by filterSensitiveData (recursively) too
          - Guard against 'settings' in ajax errors being undefined, leading to failed sends
+         - Add support for unique stack trace format in iOS 7 UIWebView for anonymous functions
 - 1.11.2 - Guard against another possible undefined string in Tracekit causing an 'indexOf' error
 - 1.11.1 - Ajax errors now transmit response text; filtered keys are now transmitted with the value sanitized instead of having the whole object removed
 - 1.11.0 - Add ignoring 3rd party scripts, fix bug with filtering keys on some browsers, support chrome extension stack parsing
