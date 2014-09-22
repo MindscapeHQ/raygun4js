@@ -159,6 +159,10 @@ Pass tags in as the third parameter:
 Raygun.send(err, null, ['tag']];
 ```
 
+### Adding tags with a callback function
+
+As above for custom data, withTags() can now also accept a callback function. This will be called when the provider is about to send, to construct the tags. The function you pass to withTags() should return an array (ideally of strings/Numbers/Dates).
+
 ### Unique user tracking
 
 You can provide additional information about the currently logged in user to Raygun by calling:
@@ -229,7 +233,8 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
-- 1.12.0 - Custom data is now filtered by filterSensitiveData (recursively) too
+- 1.12.0 - withTags() can now take a callback function
+         - Custom data is now filtered by filterSensitiveData (recursively) too
          - Guard against 'settings' in ajax errors being undefined, leading to failed sends
          - Add support for unique stack trace format in iOS 7 UIWebView for anonymous functions
 - 1.11.2 - Guard against another possible undefined string in Tracekit causing an 'indexOf' error

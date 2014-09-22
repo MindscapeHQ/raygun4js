@@ -378,7 +378,11 @@
     }
 
     if (isEmpty(options.tags)) {
-      options.tags = _tags;
+      if (typeof _tags === 'function') {
+        options.tags = _tags();
+      } else {
+        options.tags = _tags;
+      }
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
