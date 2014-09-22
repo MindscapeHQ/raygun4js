@@ -21,6 +21,7 @@
       _user,
       _version,
       _filteredKeys,
+      _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
@@ -144,6 +145,12 @@
 
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
+      return Raygun;
+    },
+
+    onBeforeSend: function (callback) {
+      _beforeSendCallback = callback;
+
       return Raygun;
     }
   };
@@ -442,7 +449,15 @@
       payload.Details.User = _user;
     }
 
-    sendToRaygun(payload);
+    if (typeof _beforeSendCallback === 'function') {
+      var mutatedPayload = _beforeSendCallback(payload);
+
+      if (mutatedPayload) {
+        sendToRaygun(mutatedPayload);
+      }
+    } else {
+      sendToRaygun(payload);
+    }
   }
 
   function sendToRaygun(data) {
