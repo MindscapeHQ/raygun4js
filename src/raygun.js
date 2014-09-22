@@ -296,7 +296,7 @@
                   return '[removed by filter]';
               }
           } else {
-              for (i = 0; i < _filteredKeys.length; i++) {
+              for (var i = 0; i < _filteredKeys.length; i++) {
                   if (_filteredKeys[i] === key) {
                       return '[removed by filter]';
                   }
@@ -417,7 +417,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.11.3'
+          'Version': '1.12.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
