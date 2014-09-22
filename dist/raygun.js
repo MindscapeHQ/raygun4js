@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.11.2 - 2014-09-22
+/*! Raygun4js - v1.12.0 - 2014-09-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -628,7 +628,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
+            gecko = /^\s*(\S*)(?:\((.*?)\))?@?((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -1207,6 +1207,7 @@ window.TraceKit = TraceKit;
       _user,
       _version,
       _filteredKeys,
+      _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
@@ -1330,6 +1331,12 @@ window.TraceKit = TraceKit;
 
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
+      return Raygun;
+    },
+
+    onBeforeSend: function (callback) {
+      _beforeSendCallback = callback;
+
       return Raygun;
     }
   };
@@ -1564,7 +1571,11 @@ window.TraceKit = TraceKit;
     }
 
     if (isEmpty(options.tags)) {
-      options.tags = _tags;
+      if (typeof _tags === 'function') {
+        options.tags = _tags();
+      } else {
+        options.tags = _tags;
+      }
     }
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
@@ -1603,7 +1614,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.11.3'
+          'Version': '1.12.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -1624,7 +1635,15 @@ window.TraceKit = TraceKit;
       payload.Details.User = _user;
     }
 
-    sendToRaygun(payload);
+    if (typeof _beforeSendCallback === 'function') {
+      var mutatedPayload = _beforeSendCallback(payload);
+
+      if (mutatedPayload) {
+        sendToRaygun(mutatedPayload);
+      }
+    } else {
+      sendToRaygun(payload);
+    }
   }
 
   function sendToRaygun(data) {
