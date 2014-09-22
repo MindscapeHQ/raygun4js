@@ -101,6 +101,29 @@ Raygun.init('apikey', {
 }).attach();
 ```
 
+### Callback Events
+
+#### onBeforeSend
+
+Call `Raygun.onBeforeSend()`, passing in a function which takes one parameter (see the example below). This callback function will be called immediately before the payload is sent. The one parameter it gets will be the payload that is about to be sent. Thus from your function you can inspect the payload and decide whether or not to send it.
+
+From the supplied function, you should return either the payload (intact or mutated as per your needs), or `false`.
+
+If your function returns a truthy object, Raygun4JS will attempt to send it as supplied. Thus, you can mutate it as per your needs - preferably only the values if you wish to filter out data that is not taken care of by `filterSensitiveData()`. You can also of course return it as supplied.
+
+If, after inspecting the payload, you wish to discard it and abort the send to Raygun, simply return `false`.
+
+By example:
+
+```javascript
+var myBeforeSend = function (payload) {
+  console.log(payload); // Modify the payload here if necessary
+  return payload; // Return false here to abort the send
+}
+
+Raygun.onBeforeSend(myBeforeSend);
+```
+
 ### Sending custom data
 
 **On initialization:**
@@ -125,6 +148,22 @@ You can also pass custom data with manual send calls, with the second parameter.
 Raygun.send(err, [{customName: 'customData'}];
 ```
 
+#### Providing custom data with a callback
+
+To send the state of variables at the time an error occurs, you can pass withCustomData a callback function. This needs to return an object. By example:
+
+```javascript
+var desiredNum = 1;
+
+function getMyData() {
+ return { num: desiredNum };
+}
+
+Raygun.init('apikey').attach().withCustomData(getMyData);
+```
+
+`getMyData` will be called when Raygun4JS is about to send an error, which will construct the custom data. This will be merged with any custom data provided on a Raygun.send() call.
+
 ### Adding tags
 
 The Raygun dashboard can also display tags for errors. These are arrays of strings or Numbers. This is done similar to the above custom data, like so:
@@ -142,6 +181,10 @@ Pass tags in as the third parameter:
 ```javascript
 Raygun.send(err, null, ['tag']];
 ```
+
+#### Adding tags with a callback function
+
+As above for custom data, withTags() can now also accept a callback function. This will be called when the provider is about to send, to construct the tags. The function you pass to withTags() should return an array (ideally of strings/Numbers/Dates).
 
 ### Unique user tracking
 
@@ -213,6 +256,11 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.12.0 - Added new onBeforeSend() callback function
+         - withTags() can now take a callback function
+         - Custom data is now filtered by filterSensitiveData (recursively) too
+         - Guard against 'settings' in ajax errors being undefined, leading to failed sends
+         - Add support for unique stack trace format in iOS 7 UIWebView for anonymous functions
 - 1.11.2 - Guard against another possible undefined string in Tracekit causing an 'indexOf' error
 - 1.11.1 - Ajax errors now transmit response text; filtered keys are now transmitted with the value sanitized instead of having the whole object removed
 - 1.11.0 - Add ignoring 3rd party scripts, fix bug with filtering keys on some browsers, support chrome extension stack parsing
