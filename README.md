@@ -125,6 +125,22 @@ You can also pass custom data with manual send calls, with the second parameter.
 Raygun.send(err, [{customName: 'customData'}];
 ```
 
+### Providing custom data with a callback
+
+To send the state of variables at the time an error occurs, you can pass withCustomData a callback function. This needs to return an object. By example:
+
+```javascript
+var desiredNum = 1;
+
+function getMyData() {
+ return { num: desiredNum };
+}
+
+Raygun.init('apikey').attach().withCustomData(getMyData);
+```
+
+`getMyData` will be called when Raygun4JS is about to send an error, which will construct the custom data. This will be merged with any custom data provided on a Raygun.send() call.
+
 ### Adding tags
 
 The Raygun dashboard can also display tags for errors. These are arrays of strings or Numbers. This is done similar to the above custom data, like so:
