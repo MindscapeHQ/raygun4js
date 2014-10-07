@@ -348,7 +348,7 @@
   }
 
   function sendSavedErrors() {
-    if (localStorageAvailable() && localStorage.length > 0) {
+    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
         if (key.substring(0, 9) === 'raygunjs=') {
           sendToRaygun(JSON.parse(localStorage[key]));
@@ -432,7 +432,7 @@
         return;
       }
 
-      // Chrome
+      // Chrome and IE
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
@@ -447,7 +447,6 @@
         log('Raygun4JS: ' + cancelMsg);
         return;
       }
-
     }
 
     if (stackTrace.stack && stackTrace.stack.length) {
