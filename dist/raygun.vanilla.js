@@ -1407,7 +1407,7 @@ window.TraceKit = TraceKit;
   }
 
   function sendSavedErrors() {
-    if (localStorageAvailable() && localStorage.length > 0) {
+    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
         if (key.substring(0, 9) === 'raygunjs=') {
           sendToRaygun(JSON.parse(localStorage[key]));
@@ -1466,8 +1466,6 @@ window.TraceKit = TraceKit;
     var stack = [],
         qs = {};
 
-
-
     if (_ignore3rdPartyErrors) {
       var cancelMsg = 'Third-party script error, cancelling send';
       if (!stackTrace.stack || !stackTrace.stack.length) {
@@ -1475,10 +1473,18 @@ window.TraceKit = TraceKit;
         return;
       }
 
+      // Chrome and IE
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
         stackTrace.stack[0].line === 0 || stackTrace.stack[0].line === null) {
+        log('Raygun4JS: ' + cancelMsg);
+        return;
+      }
+
+      // Firefox
+      var host = window.location.href;
+      if (stackTrace.stack[0].url.indexOf(host) === -1 && stackTrace.stack[0].func === '?') {
         log('Raygun4JS: ' + cancelMsg);
         return;
       }
