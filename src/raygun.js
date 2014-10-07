@@ -344,8 +344,22 @@
     var stack = [],
         qs = {};
 
-    if (_ignore3rdPartyErrors && (!stackTrace.stack || !stackTrace.stack.length)) {
-      return;
+
+
+    if (_ignore3rdPartyErrors) {
+      var cancelMsg = 'Third-party script error, cancelling send';
+      if (!stackTrace.stack || !stackTrace.stack.length) {
+        log('Raygun4JS: ' + cancelMsg);
+        return;
+      }
+
+      var scriptError = 'Script error';
+      var msg = stackTrace.message || options.status || scriptError;
+      if (msg.substring(0, scriptError.length) === scriptError &&
+        stackTrace.stack[0].line === 0 || stackTrace.stack[0].line === null) {
+        log('Raygun4JS: ' + cancelMsg);
+        return;
+      }
     }
 
     if (stackTrace.stack && stackTrace.stack.length) {
