@@ -256,6 +256,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.12.1 - More errors in third-party scripts (not hosted on origin domain) are now stopped from being sent (flag still must === true)
 - 1.12.0 - Added new onBeforeSend() callback function
          - withTags() can now take a callback function
          - Custom data is now filtered by filterSensitiveData (recursively) too
