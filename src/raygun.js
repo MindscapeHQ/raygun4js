@@ -432,6 +432,7 @@
         return;
       }
 
+      // Chrome
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
@@ -439,6 +440,14 @@
         _private.log('Raygun4JS: ' + cancelMsg);
         return;
       }
+
+      // Firefox
+      var host = window.location.href;
+      if (stackTrace.stack[0].url.indexOf(host) === -1 && stackTrace.stack[0].func === '?') {
+        log('Raygun4JS: ' + cancelMsg);
+        return;
+      }
+
     }
 
     if (stackTrace.stack && stackTrace.stack.length) {
