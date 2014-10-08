@@ -7,6 +7,8 @@
  */
 
 (function (window, $, undefined) {
+
+
   // pull local copy of TraceKit to handle stack trace collection
   var _traceKit = TraceKit.noConflict(),
       _raygun = window.Raygun,
@@ -22,7 +24,7 @@
       _version,
       _filteredKeys,
       _beforeSendCallback,
-      _raygunApiUrl = 'https://api.raygun.io',
+      _raygunApiUrl = 'http://localhost:3001',
       $document;
 
   if ($) {
@@ -130,6 +132,10 @@
       return Raygun;
     },
 
+    resetAnonymousUser: function () {
+      _private.clearCookie('raygunjsuserid');
+    },
+
     setVersion: function (version) {
       _version = version;
       return Raygun;
@@ -152,6 +158,71 @@
       _beforeSendCallback = callback;
 
       return Raygun;
+    }
+  };
+
+  var _private = Raygun._private = Raygun._private || {},
+    _seal = Raygun._seal = Raygun._seal || function () {
+      delete Raygun._private;
+      delete Raygun._seal;
+      delete Raygun._unseal;
+    },
+    _unseal = Raygun._unseal = Raygun._unseal || function () {
+      Raygun._private = _private;
+      Raygun._seal = _seal;
+      Raygun._unseal = _unseal;
+    };
+
+  // internals shared with Analytics
+
+  _private.getUuid = function () {
+      function _p8(s) {
+          var p = (Math.random().toString(16)+"000000000").substr(2,8);
+          return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
+      }
+      return _p8() + _p8(true) + _p8(true) + _p8();
+  };
+
+  _private.createCookie = function (name,value,hours) {
+    var expires;
+      if (hours) {
+        var date = new Date();
+        date.setTime(date.getTime()+(hours*60*60*1000));
+        expires = "; expires="+date.toGMTString();
+      }
+      else {
+        expires = "";
+      }
+
+      document.cookie = name+"="+value+expires+"; path=/";
+  };
+
+  _private.readCookie = function (name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for(var i=0;i < ca.length;i++) {
+          var c = ca[i];
+          while (c.charAt(0) === ' ') {
+            c = c.substring(1,c.length);
+          }
+          if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length,c.length);
+          }
+      }
+      return null;
+  };
+
+  _private.clearCookie = function (key) {
+      _private.createCookie(key, '',-1);
+  };
+
+  _private.log = function(message, data) {
+    if (window.console && window.console.log && _debugMode) {
+      window.console.log(message);
+
+      if (data) {
+        window.console.log(data);
+      }
     }
   };
 
@@ -203,21 +274,13 @@
       responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined });
   }
 
-  function log(message, data) {
-    if (window.console && window.console.log && _debugMode) {
-      window.console.log(message);
 
-      if (data) {
-        window.console.log(data);
-      }
-    }
-  }
 
   function isApiKeyConfigured() {
     if (_raygunApiKey && _raygunApiKey !== '') {
       return true;
     }
-    log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
+    _private.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
     return false;
   }
 
@@ -254,41 +317,12 @@
     return Math.floor(Math.random() * 9007199254740993);
   }
 
-  function getViewPort() {
+  function getViewPort () {
     var e = document.documentElement,
     g = document.getElementsByTagName('body')[0],
     x = window.innerWidth || e.clientWidth || g.clientWidth,
     y = window.innerHeight || e.clientHeight || g.clientHeight;
     return { width: x, height: y };
-  }
-
-  function createCookie(name,value,days) {
-    var expires;
-      if (days) {
-        var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        expires = "; expires="+date.toGMTString();
-      }
-      else {
-        expires = "";
-      }
-
-      document.cookie = name+"="+value+expires+"; path=/";
-  }
-
-  function readCookie(name) {
-      var nameEQ = name + "=";
-      var ca = document.cookie.split(';');
-      for(var i=0;i < ca.length;i++) {
-          var c = ca[i];
-          while (c.charAt(0) === ' ') {
-            c = c.substring(1,c.length);
-          }
-          if (c.indexOf(nameEQ) === 0) {
-            return c.substring(nameEQ.length,c.length);
-          }
-      }
-      return null;
   }
 
   function offlineSave (data) {
@@ -301,7 +335,7 @@
         localStorage[key] = data;
       }
     } catch (e) {
-      log('Raygun4JS: LocalStorage full, cannot save exception');
+      _private.log('Raygun4JS: LocalStorage full, cannot save exception');
     }
   }
 
@@ -327,19 +361,19 @@
 
   function ensureUser() {
     if (!_user) {
-      var userKey = 'raygunjsuserid';
-      var rgUserId = readCookie(userKey);
+      var userKey = 'raygun4js_userid';
+      var rgUserId = _private.readCookie(userKey);
       var anonymousUuid;
 
       if (!rgUserId) {
-        anonymousUuid = getRandomInt();
+        anonymousUuid = _private.getUuid();
 
-        createCookie(userKey, anonymousUuid, 1);
+        _private.createCookie(userKey, anonymousUuid, 24);
       } else {
         anonymousUuid = rgUserId;
       }
 
-      this.setUser(anonymousUuid, true, null, null, null, anonymousUuid);
+      Raygun.setUser(anonymousUuid, true, null, null, null, anonymousUuid);
     }
   }
 
@@ -394,7 +428,7 @@
     if (_ignore3rdPartyErrors) {
       var cancelMsg = 'Third-party script error, cancelling send';
       if (!stackTrace.stack || !stackTrace.stack.length) {
-        log('Raygun4JS: ' + cancelMsg);
+        _private.log('Raygun4JS: ' + cancelMsg);
         return;
       }
 
@@ -402,7 +436,7 @@
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
         stackTrace.stack[0].line === 0 || stackTrace.stack[0].line === null) {
-        log('Raygun4JS: ' + cancelMsg);
+        _private.log('Raygun4JS: ' + cancelMsg);
         return;
       }
     }
@@ -460,7 +494,7 @@
     } catch (e) {
       var msg = 'Cannot add custom data; may contain circular reference';
       finalCustomData = { error: msg };
-      log('Raygun4JS: ' + msg);
+      _private.log('Raygun4JS: ' + msg);
     }
 
     var payload = {
@@ -523,7 +557,7 @@
       return;
     }
 
-    log('Sending exception data to Raygun:', data);
+    _private.log('Sending exception data to Raygun:', data);
     var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
   }
@@ -574,29 +608,29 @@
       };
 
       xhr.onload = function () {
-        log('logged error to Raygun');
+        _private.log('logged error to Raygun');
       };
 
     } else if (window.XDomainRequest) {
       xhr.ontimeout = function () {
         if (_enableOfflineSave) {
-          log('Raygun: saved error locally');
+          _private.log('Raygun: saved error locally');
           offlineSave(data);
         }
       };
 
       xhr.onload = function () {
-        log('logged error to Raygun');
+        _private.log('logged error to Raygun');
         sendSavedErrors();
       };
     }
 
     xhr.onerror = function () {
-      log('failed to log error to Raygun');
+      _private.log('failed to _private.log error to Raygun');
     };
 
     if (!xhr) {
-      log('CORS not supported');
+      _private.log('CORS not supported');
       return;
     }
 
@@ -604,5 +638,6 @@
   }
 
   window.Raygun = Raygun;
+
 })(window, window.jQuery);
 
