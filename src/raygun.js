@@ -173,8 +173,6 @@
       Raygun._unseal = _unseal;
     };
 
-  // internals shared with Analytics
-
   _private.getUuid = function () {
       function _p8(s) {
           var p = (Math.random().toString(16)+"000000000").substr(2,8);
@@ -368,7 +366,7 @@
       if (!rgUserId) {
         anonymousUuid = _private.getUuid();
 
-        _private.createCookie(userKey, anonymousUuid, 24);
+        _private.createCookie(userKey, anonymousUuid, 24 * 31);
       } else {
         anonymousUuid = rgUserId;
       }
