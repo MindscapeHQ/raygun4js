@@ -18,13 +18,14 @@
       _ignoreAjaxAbort = false,
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
+      _disableAnonymousUserTracking = false,
       _customData = {},
       _tags = [],
       _user,
       _version,
       _filteredKeys,
       _beforeSendCallback,
-      _raygunApiUrl = 'http://localhost:3001',
+      _raygunApiUrl = 'https://api.raygun.io',
       $document;
 
   if ($) {
@@ -47,6 +48,7 @@
       {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
+        _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
 
         if (options.debugMode)
         {
@@ -358,7 +360,7 @@
   }
 
   function ensureUser() {
-    if (!_user) {
+    if (!_user && !_disableAnonymousUserTracking) {
       var userKey = 'raygun4js_userid';
       var rgUserId = _private.readCookie(userKey);
       var anonymousUuid;
@@ -636,6 +638,8 @@
   }
 
   window.Raygun = Raygun;
+
+  Raygun._seal();
 
 })(window, window.jQuery);
 
