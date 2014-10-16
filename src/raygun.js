@@ -521,7 +521,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.12.1'
+          'Version': '1.12.2'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -626,7 +626,7 @@
     }
 
     xhr.onerror = function () {
-      _private.log('failed to _private.log error to Raygun');
+      _private.log('failed to log error to Raygun');
     };
 
     if (!xhr) {

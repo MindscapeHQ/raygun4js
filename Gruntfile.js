@@ -22,8 +22,8 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.analytics.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.analytics.js']
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js'],
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js']
         }
       },
     },
@@ -53,7 +53,7 @@ module.exports = function(grunt) {
       },
     },
     jasmine : {
-      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.analytics.js'],
+      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js'],
       options : {
         specs : 'spec/**/*.js',
         vendor : ['tracekit/tracekit.js'],
