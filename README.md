@@ -256,6 +256,8 @@ There is also an option to whitelist domains which you do want to allow transmis
 Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistExternalScriptDomains(["http://cdn.mydomain.com"]);
 ```js
 
+Note that this currently does not work in Chrome as that browser does not provide the domain of the script that threw the error.
+
 #### Options
 
 Offline saving is **disabled by default.** To get or set this option, call the following after your init() call:
