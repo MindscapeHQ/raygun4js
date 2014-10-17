@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.12.1 - 2014-10-08
+/*! Raygun4js - v1.12.1 - 2014-10-17
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1207,6 +1207,7 @@ window.TraceKit = TraceKit;
       _user,
       _version,
       _filteredKeys,
+      _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
       $document;
@@ -1331,6 +1332,11 @@ window.TraceKit = TraceKit;
 
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
+      return Raygun;
+    },
+
+    whitelistExternalScriptDomains: function (whitelist) {
+      _whitelistedScriptDomains = whitelist;
       return Raygun;
     },
 
@@ -1537,20 +1543,21 @@ window.TraceKit = TraceKit;
         return;
       }
 
-      // Chrome and IE
-      var scriptError = 'Script error';
-      var msg = stackTrace.message || options.status || scriptError;
-      if (msg.substring(0, scriptError.length) === scriptError &&
-        stackTrace.stack[0].line === 0 || stackTrace.stack[0].line === null) {
-        log('Raygun4JS: ' + cancelMsg);
-        return;
-      }
-
-      // Firefox
       var host = window.location.href;
       if (stackTrace.stack[0].url.indexOf(host) === -1 && stackTrace.stack[0].func === '?') {
-        log('Raygun4JS: ' + cancelMsg);
-        return;
+        var allowedDomainFound = false;
+
+        for (var i in _whitelistedScriptDomains) {
+          if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
+            allowedDomainFound = true;
+          }
+        }
+
+        if (!allowedDomainFound) {
+          log('Raygun4JS: ' + cancelMsg);
+
+          return;
+        }
       }
     }
 

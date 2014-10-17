@@ -242,11 +242,25 @@ Raygun4JS now features source maps support through the transmission of column nu
 
 The provider has a feature where if errors are caught when there is no network activity they can be saved (in Local Storage). When an error arrives and connectivity is regained, previously saved errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
 
+### Errors in scripts on other domains
+
+Some browsers (Chrome and IE) do not provide stack traces and other data for errors that occur in scripts located on domains that are not the origin, which will be listed in Raygun as 'Script Error'. You can filter out these errors by settings this:
+
+```javascript
+Raygun.init('apikey', { ignore3rdPartyErrors: true });
+```js
+
+There is also an option to whitelist domains which you do want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
+
+```javascript
+Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistExternalScriptDomains(["http://cdn.mydomain.com"]);
+```js
+
 #### Options
 
 Offline saving is **disabled by default.** To get or set this option, call the following after your init() call:
 
-```js
+```javascript
 Raygun.saveIfOffline(boolean)
 ```
 
@@ -256,7 +270,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
-- 1.12.1 - More errors in third-party scripts (not hosted on origin domain) are now stopped from being sent (flag still must === true)
+- 1.12.1 - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
 - 1.12.0 - Added new onBeforeSend() callback function
          - withTags() can now take a callback function
          - Custom data is now filtered by filterSensitiveData (recursively) too
