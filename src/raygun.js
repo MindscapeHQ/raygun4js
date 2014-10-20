@@ -457,7 +457,7 @@
         }
 
         if (!allowedDomainFound) {
-          log('Raygun4JS: ' + cancelMsg);
+          _private.log('Raygun4JS: ' + cancelMsg);
 
           return;
         }
