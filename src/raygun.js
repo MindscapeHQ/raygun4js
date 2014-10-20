@@ -432,22 +432,24 @@
         qs = {};
 
     if (_ignore3rdPartyErrors) {
-      var cancelMsg = 'Third-party script error, cancelling send';
       if (!stackTrace.stack || !stackTrace.stack.length) {
-        _private.log('Raygun4JS: ' + cancelMsg);
+        _private.log('Raygun4JS: Cancelling send due to null stacktrace');
         return;
       }
+
+      var domain = _private.parseUrl('domain');
 
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
-        stackTrace.stack[0].line === 0 || stackTrace.stack[0].line === null) {
-        _private.log('Raygun4JS: ' + cancelMsg);
+        stackTrace.stack[0].url.indexOf(domain) === -1 &&
+        (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
+        _private.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
         return;
       }
 
-      var host = window.location.href;
-      if (stackTrace.stack[0].url.indexOf(host) === -1 && stackTrace.stack[0].func === '?') {
+
+      if (stackTrace.stack[0].url.indexOf(domain) === -1) {
         var allowedDomainFound = false;
 
         for (var i in _whitelistedScriptDomains) {
@@ -457,7 +459,7 @@
         }
 
         if (!allowedDomainFound) {
-          _private.log('Raygun4JS: ' + cancelMsg);
+          _private.log('Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain');
 
           return;
         }
@@ -661,8 +663,6 @@
   }
 
   window.Raygun = Raygun;
-
-  Raygun._seal();
 
 })(window, window.jQuery);
 

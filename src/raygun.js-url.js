@@ -1,11 +1,11 @@
 (function (window, Raygun) {
 
-  Raygun._private.parseUrl = function() {
+  Raygun._private.parseUrl = function(arg, url) {
     function isNumeric(arg) {
       return !isNaN(parseFloat(arg)) && isFinite(arg);
     }
 
-    return function(arg, url) {
+    return (function(arg, url) {
         var _ls = url || window.location.toString();
 
         if (!arg) { return _ls; }
@@ -73,7 +73,9 @@
         }
 
         return '';
-    };
+    })(arg, url);
 };
+
+window.Raygun._seal();
 
 })(window, window.Raygun);
