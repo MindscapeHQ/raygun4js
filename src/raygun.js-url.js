@@ -1,4 +1,6 @@
-window.url = (function() {
+(function (window, Raygun) {
+
+  Raygun._private.parseUrl = function() {
     function isNumeric(arg) {
       return !isNaN(parseFloat(arg)) && isFinite(arg);
     }
@@ -72,10 +74,6 @@ window.url = (function() {
 
         return '';
     };
-})();
+};
 
-if(typeof jQuery !== 'undefined') {
-    jQuery.extend({
-        url: function(arg, url) { return window.url(arg, url); }
-    });
-}
+})(window, window.Raygun);
