@@ -258,13 +258,13 @@ Browsers have varying behavior for errors that occur in scripts located on domai
 
 ```javascript
 Raygun.init('apikey', { ignore3rdPartyErrors: true });
-```js
+```
 
 There is also an option to whitelist domains which you **do** want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
 
 ```javascript
 Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistCrossOriginDomains(["jquery.com"]);
-```js
+```
 
 This can be used to allow errors from remote sites and CDNs.
 
