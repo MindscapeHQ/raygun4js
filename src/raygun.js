@@ -546,7 +546,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.12.1'
+          'Version': '1.13.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

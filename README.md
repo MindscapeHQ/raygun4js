@@ -188,6 +188,16 @@ As above for custom data, withTags() can now also accept a callback function. Th
 
 ### Unique user tracking
 
+By default, Raygun4JS assigns a unique anonymous ID for the current user. This is stored as a cookie. If the current user changes, to reset it and assign a new ID you can call:
+
+```js
+Raygun.resetAnonymousUser();
+```
+
+To disable anonymous user tracking, call `Rayygun.init('apikey', { disableAnonymousUserTracking: true });`.
+
+#### Rich user data
+
 You can provide additional information about the currently logged in user to Raygun by calling:
 
 ```javascript
@@ -286,7 +296,8 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
-- 1.12.1 - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
+- 1.13.0 - Added anonymous user tracking, enabled by default
+         - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
 - 1.12.0 - Added new onBeforeSend() callback function
          - withTags() can now take a callback function
          - Custom data is now filtered by filterSensitiveData (recursively) too
