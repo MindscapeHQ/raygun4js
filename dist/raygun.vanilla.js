@@ -1258,7 +1258,7 @@ window.TraceKit = TraceKit;
     },
 
     resetAnonymousUser: function () {
-      _private.clearCookie('raygunjsuserid');
+      _private.clearCookie('raygun4js-userid');
     },
 
     setVersion: function (version) {
@@ -1788,6 +1788,8 @@ window.TraceKit = TraceKit;
 
 })(window, window.jQuery);
 
+
+// js-url - see LICENSE file
 
 (function (window, Raygun) {
 
