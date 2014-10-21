@@ -244,7 +244,7 @@ The provider has a feature where if errors are caught when there is no network a
 
 ### Errors in scripts on other domains
 
-Some browsers (Chrome and IE) do not provide stack traces and other data for errors that occur in scripts located on domains that are not the origin, which will be listed in Raygun as 'Script Error'. You can filter out these errors by settings this:
+Browsers have varying behavior for errors that occur in scripts located on domains that are not the origin. Many of these will be listed in Raygun as 'Script Error', or will contain junk stack traces. You can filter out these errors by settings this:
 
 ```javascript
 Raygun.init('apikey', { ignore3rdPartyErrors: true });
@@ -264,9 +264,13 @@ To get full stack traces from cross-origin domains or subdomains, these requirem
 
 * The remote domain should have `Access-Control-Allow-Origin` set (to include the domain where raygun4js is loaded from).
 
-* For Chrome and recent releases of Firefox, the `script` tag must have `crossOrigin="Anonymous"` set.
+* For Chrome the `script` tag must also have `crossOrigin="Anonymous"` set.
 
-In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent. Other browsers may send on a best-effort basis (version dependent), potentially without a useful stacktrace.
+* Recent versions of Firefox (>= 31) will transmit errors from remote domains will full stack traces if the header is set (`crossOrigin` on script tag not needed).
+
+In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent.
+
+Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provide will cancel the send if no data is available.
 
 #### Options
 
