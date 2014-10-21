@@ -194,7 +194,7 @@ By default, Raygun4JS assigns a unique anonymous ID for the current user. This i
 Raygun.resetAnonymousUser();
 ```
 
-To disable anonymous user tracking, call `Rayygun.init('apikey', { disableAnonymousUserTracking: true });`.
+To disable anonymous user tracking, call `Raygun.init('apikey', { disableAnonymousUserTracking: true });`.
 
 #### Rich user data
 
@@ -280,7 +280,7 @@ To get full stack traces from cross-origin domains or subdomains, these requirem
 
 In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent.
 
-Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provide will cancel the send if no data is available.
+Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provider will cancel the send if no data is available.
 
 #### Options
 
