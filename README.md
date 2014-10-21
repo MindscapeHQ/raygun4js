@@ -188,6 +188,16 @@ As above for custom data, withTags() can now also accept a callback function. Th
 
 ### Unique user tracking
 
+By default, Raygun4JS assigns a unique anonymous ID for the current user. This is stored as a cookie. If the current user changes, to reset it and assign a new ID you can call:
+
+```js
+Raygun.resetAnonymousUser();
+```
+
+To disable anonymous user tracking, call `Raygun.init('apikey', { disableAnonymousUserTracking: true });`.
+
+#### Rich user data
+
 You can provide additional information about the currently logged in user to Raygun by calling:
 
 ```javascript
@@ -242,11 +252,41 @@ Raygun4JS now features source maps support through the transmission of column nu
 
 The provider has a feature where if errors are caught when there is no network activity they can be saved (in Local Storage). When an error arrives and connectivity is regained, previously saved errors are then sent. This is useful in environments like WinJS, where a mobile device's internet connection is not constant.
 
+### Errors in scripts on other domains
+
+Browsers have varying behavior for errors that occur in scripts located on domains that are not the origin. Many of these will be listed in Raygun as 'Script Error', or will contain junk stack traces. You can filter out these errors by settings this:
+
+```javascript
+Raygun.init('apikey', { ignore3rdPartyErrors: true });
+```js
+
+There is also an option to whitelist domains which you **do** want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
+
+```javascript
+Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistCrossOriginDomains(["jquery.com"]);
+```js
+
+This can be used to allow errors from remote sites and CDNs.
+
+The provider will default to attempt to send errors from subdomains - for instance if the page is loaded from foo.com, and a script is loaded from cdn.foo.com, that error will be transmitted on a best-effort basis.
+
+To get full stack traces from cross-origin domains or subdomains, these requirements should be met:
+
+* The remote domain should have `Access-Control-Allow-Origin` set (to include the domain where raygun4js is loaded from).
+
+* For Chrome the `script` tag must also have `crossOrigin="Anonymous"` set.
+
+* Recent versions of Firefox (>= 31) will transmit errors from remote domains will full stack traces if the header is set (`crossOrigin` on script tag not needed).
+
+In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent.
+
+Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provider will cancel the send if no data is available.
+
 #### Options
 
 Offline saving is **disabled by default.** To get or set this option, call the following after your init() call:
 
-```js
+```javascript
 Raygun.saveIfOffline(boolean)
 ```
 
@@ -256,6 +296,8 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.13.0 - Added anonymous user tracking, enabled by default
+         - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
 - 1.12.0 - Added new onBeforeSend() callback function
          - withTags() can now take a callback function
          - Custom data is now filtered by filterSensitiveData (recursively) too
