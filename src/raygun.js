@@ -157,7 +157,7 @@
       return Raygun;
     },
 
-    whitelistExternalScriptDomains: function (whitelist) {
+    whitelistCrossOriginDomains: function (whitelist) {
       _whitelistedScriptDomains = whitelist;
       return Raygun;
     },
@@ -546,7 +546,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.12.2'
+          'Version': '1.12.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

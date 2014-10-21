@@ -250,13 +250,23 @@ Some browsers (Chrome and IE) do not provide stack traces and other data for err
 Raygun.init('apikey', { ignore3rdPartyErrors: true });
 ```js
 
-There is also an option to whitelist domains which you do want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
+There is also an option to whitelist domains which you **do** want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
 
 ```javascript
-Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistExternalScriptDomains(["http://cdn.mydomain.com"]);
+Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistCrossOriginDomains(["jquery.com"]);
 ```js
 
-Note that this currently does not work in Chrome as that browser does not provide the domain of the script that threw the error.
+This can be used to allow errors from remote sites and CDNs.
+
+The provider will default to attempt to send errors from subdomains - for instance if the page is loaded from foo.com, and a script is loaded from cdn.foo.com, that error will be transmitted on a best-effort basis.
+
+To get full stack traces from cross-origin domains or subdomains, these requirements should be met:
+
+* The remote domain should have `Access-Control-Allow-Origin` set (to include the domain where raygun4js is loaded from).
+
+* For Chrome and recent releases of Firefox, the `script` tag must have `crossOrigin="Anonymous"` set.
+
+In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent. Other browsers may send on a best-effort basis (version dependent), potentially without a useful stacktrace.
 
 #### Options
 
