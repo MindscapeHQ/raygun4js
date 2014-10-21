@@ -136,7 +136,7 @@
     },
 
     resetAnonymousUser: function () {
-      _private.clearCookie('raygunjsuserid');
+      _private.clearCookie('raygun4js-userid');
     },
 
     setVersion: function (version) {
