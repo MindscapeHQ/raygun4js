@@ -1,3 +1,5 @@
+// js-url - see LICENSE file
+
 (function (window, Raygun) {
 
   Raygun._private.parseUrl = function(arg, url) {
