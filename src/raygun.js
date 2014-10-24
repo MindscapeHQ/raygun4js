@@ -582,6 +582,13 @@
       return;
     }
 
+    try {
+      JSON.stringify(data);
+    } catch (e) {
+      _private.log('Raygun4JS: Aborting send as error payload contains circular reference');
+      return;
+    }
+
     _private.log('Sending exception data to Raygun:', data);
     var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));

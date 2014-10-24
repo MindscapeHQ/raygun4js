@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.13.0 - 2014-10-21
+/*! Raygun4js - v1.13.0 - 2014-10-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2014 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1765,6 +1765,13 @@ window.TraceKit = TraceKit;
 
   function sendToRaygun(data) {
     if (!isApiKeyConfigured()) {
+      return;
+    }
+
+    try {
+      JSON.stringify(data);
+    } catch (e) {
+      _private.log('Raygun4JS: Aborting send as error payload contains circular reference');
       return;
     }
 
