@@ -1732,7 +1732,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.13.0'
+          'Version': '1.13.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
