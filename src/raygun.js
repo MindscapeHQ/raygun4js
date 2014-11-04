@@ -442,6 +442,7 @@
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
+        stackTrace.stack[0].url !== null &&
         stackTrace.stack[0].url.indexOf(domain) === -1 &&
         (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
         _private.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
@@ -449,7 +450,7 @@
       }
 
 
-      if (stackTrace.stack[0].url.indexOf(domain) === -1) {
+      if (stackTrace.stack[0].url !== null && stackTrace.stack[0].url.indexOf(domain) === -1) {
         var allowedDomainFound = false;
 
         for (var i in _whitelistedScriptDomains) {
