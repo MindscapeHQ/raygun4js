@@ -478,8 +478,10 @@
       });
     }
 
-    if (window.location.search && window.location.search.length > 1) {
-      forEach(window.location.search.substring(1).split('&'), function (i, segment) {
+    var queryString = _private.parseUrl('?');
+
+    if (queryString.length > 0) {
+      forEach(queryString.split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
           var key = decodeURIComponent(parts[0]);
@@ -546,7 +548,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.13.0'
+          'Version': '1.13.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
