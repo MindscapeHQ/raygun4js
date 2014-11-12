@@ -442,6 +442,7 @@
       var scriptError = 'Script error';
       var msg = stackTrace.message || options.status || scriptError;
       if (msg.substring(0, scriptError.length) === scriptError &&
+        stackTrace.stack[0].url !== null &&
         stackTrace.stack[0].url.indexOf(domain) === -1 &&
         (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
         _private.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
@@ -449,7 +450,7 @@
       }
 
 
-      if (stackTrace.stack[0].url.indexOf(domain) === -1) {
+      if (stackTrace.stack[0].url !== null && stackTrace.stack[0].url.indexOf(domain) === -1) {
         var allowedDomainFound = false;
 
         for (var i in _whitelistedScriptDomains) {
@@ -478,8 +479,10 @@
       });
     }
 
-    if (window.location.search && window.location.search.length > 1) {
-      forEach(window.location.search.substring(1).split('&'), function (i, segment) {
+    var queryString = _private.parseUrl('?');
+
+    if (queryString.length > 0) {
+      forEach(queryString.split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
           var key = decodeURIComponent(parts[0]);
@@ -546,7 +549,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.13.0'
+          'Version': '1.13.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

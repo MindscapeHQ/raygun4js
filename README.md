@@ -296,6 +296,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.13.1 - Provide querystrings from AngularJS too (hash in URL broke previous logic)
 - 1.13.0 - Added anonymous user tracking, enabled by default
          - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
 - 1.12.0 - Added new onBeforeSend() callback function
