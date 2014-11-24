@@ -367,7 +367,7 @@
 
   function ensureUser() {
     if (!_user && !_disableAnonymousUserTracking) {
-      var userKey = 'raygun4js_userid';
+      var userKey = 'raygun4js-userid';
       var rgUserId = _private.readCookie(userKey);
       var anonymousUuid;
 
