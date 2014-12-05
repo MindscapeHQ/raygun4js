@@ -6,11 +6,11 @@
  * Licensed under the MIT license.
  */
 
-(function (window, $, undefined) {
+var raygunFactory = function (window, $, undefined) {
 
 
   // pull local copy of TraceKit to handle stack trace collection
-  var _traceKit = TraceKit.noConflict(),
+  var _traceKit = TraceKit,
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
@@ -675,7 +675,13 @@
     xhr.send(data);
   }
 
-  window.Raygun = Raygun;
+  if (!window.Raygun) {
+    window.Raygun = Raygun;
+  }
 
-})(window, window.jQuery);
+  return Raygun;
+
+};
+
+raygunFactory(window, window.jQuery);
 
