@@ -41,6 +41,14 @@ var raygunFactory = function (window, $, undefined) {
       return Raygun;
     },
 
+    constructNewRaygun: function () {
+      var rgInstance = window.raygunFactory(window, window.jQuery);
+      window.raygunJsUrlFactory(window, rgInstance);
+
+      return rgInstance;
+    },
+
+
     init: function(key, options, customdata) {
       _raygunApiKey = key;
       _traceKit.remoteFetching = false;

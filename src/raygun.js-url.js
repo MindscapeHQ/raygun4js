@@ -1,6 +1,6 @@
 // js-url - see LICENSE file
 
-(function (window, Raygun) {
+var raygunJsUrlFactory = function (window, Raygun) {
 
   Raygun._private.parseUrl = function(arg, url) {
     function isNumeric(arg) {
@@ -78,6 +78,7 @@
     })(arg, url);
 };
 
-window.Raygun._seal();
+};
 
-})(window, window.Raygun);
+raygunJsUrlFactory(window, window.Raygun);
+window.Raygun._seal();
