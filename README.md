@@ -8,6 +8,16 @@ Raygun.io plugin for JavaScript
 
 Run `bower install raygun4js`
 
+### CDN
+
+Raygun4JS is now available from our content delivery network:
+
+```html
+<script type="text/javascript" src="http://cdn.raygun.io/raygun4js/raygun.min.js"></script>
+```
+
+You can reference any of the scripts below. The scripts in the /raygun4js/ directory will always be the latest release, and specific releases are available undern /raygun4js/1.x.x/.
+
 ### From NuGet
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
