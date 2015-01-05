@@ -20,6 +20,7 @@
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
       _wrapAsynchronousCallbacks = true,
+      _errorHandlerCallback = function() {},
       _customData = {},
       _tags = [],
       _user,
@@ -63,6 +64,10 @@
         if (options.ignore3rdPartyErrors)
         {
           _ignore3rdPartyErrors = true;
+        }
+        if (options.errorHandlerCallback)
+        {
+          _errorHandlerCallback = options.errorHandlerCallback;
         }
       }
 
@@ -588,6 +593,8 @@
     } else {
       sendToRaygun(payload);
     }
+
+    _errorHandlerCallback(payload);
   }
 
   function sendToRaygun(data) {
@@ -678,4 +685,3 @@
   window.Raygun = Raygun;
 
 })(window, window.jQuery);
-
