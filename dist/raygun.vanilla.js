@@ -1,6 +1,6 @@
-/*! Raygun4js - v1.13.1 - 2014-11-12
+/*! Raygun4js - v1.14.0 - 2015-01-05
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2014 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -1084,7 +1084,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
  * Extends support for global error handling for asynchronous browser
  * functions. Adopted from Closure Library's errorhandler.js
  */
-(function extendToAsynchronousCallbacks() {
+TraceKit.extendToAsynchronousCallbacks = function () {
     var _helper = function _helper(fnName) {
         var originalFn = window[fnName];
         window[fnName] = function traceKitAsyncExtension() {
@@ -1107,7 +1107,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
     _helper('setTimeout');
     _helper('setInterval');
-}());
+};
 
 //Default options:
 if (!TraceKit.remoteFetching) {
@@ -1141,6 +1141,7 @@ window.TraceKit = TraceKit;
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
+      _wrapAsynchronousCallbacks = true,
       _customData = {},
       _tags = [],
       _user,
@@ -1173,11 +1174,15 @@ window.TraceKit = TraceKit;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
 
+        if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
+          _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
+        }
+
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
         }
-        if(options.ignore3rdPartyErrors)
+        if (options.ignore3rdPartyErrors)
         {
           _ignore3rdPartyErrors = true;
         }
@@ -1203,6 +1208,11 @@ window.TraceKit = TraceKit;
         return Raygun;
       }
       _traceKit.report.subscribe(processUnhandledException);
+
+      if (_wrapAsynchronousCallbacks) {
+        _traceKit.extendToAsynchronousCallbacks();
+      }
+
       if ($document) {
         $document.ajaxError(processJQueryAjaxError);
       }
@@ -1489,7 +1499,7 @@ window.TraceKit = TraceKit;
 
   function ensureUser() {
     if (!_user && !_disableAnonymousUserTracking) {
-      var userKey = 'raygun4js_userid';
+      var userKey = 'raygun4js-userid';
       var rgUserId = _private.readCookie(userKey);
       var anonymousUuid;
 
@@ -1671,7 +1681,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.13.1'
+          'Version': '1.14.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

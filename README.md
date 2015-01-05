@@ -96,6 +96,8 @@ Pass in an object as the second parameter to init() containing one or more of th
 
 `debugMode` - Raygun4JS will log to the console when sending errors.
 
+`wrapAsynchronousCallbacks` - if set to `false`, async callback functions triggered by setTimeout/setInterval will not be wrapped when attach() is called. _Defaults to true_
+
 `ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
@@ -306,6 +308,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.14.0 - Add wrapAsynchronousCallbacks option for disabling wrapping of setTimeout/setInterval callbacks
 - 1.13.1 - Provide querystrings from AngularJS too (hash in URL broke previous logic); fix stacktrace bug from Firefox that caused source maps to not be processed correctly
 - 1.13.0 - Added anonymous user tracking, enabled by default
          - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)

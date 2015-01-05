@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>raygun4js</id>
-    <version>1.13.1</version>
+    <version>1.14.0</version>
     <title>Raygun4js</title>
     <authors>Mindscape Limited</authors>
     <owners>Mindscape Limited</owners>
