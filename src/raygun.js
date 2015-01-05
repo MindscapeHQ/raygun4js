@@ -19,6 +19,7 @@
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
+      _wrapAsynchronousCallbacks = true,
       _customData = {},
       _tags = [],
       _user,
@@ -51,11 +52,15 @@
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
 
+        if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
+          _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
+        }
+
         if (options.debugMode)
         {
           _debugMode = options.debugMode;
         }
-        if(options.ignore3rdPartyErrors)
+        if (options.ignore3rdPartyErrors)
         {
           _ignore3rdPartyErrors = true;
         }
@@ -81,6 +86,11 @@
         return Raygun;
       }
       _traceKit.report.subscribe(processUnhandledException);
+
+      if (_wrapAsynchronousCallbacks) {
+        _traceKit.extendToAsynchronousCallbacks();
+      }
+
       if ($document) {
         $document.ajaxError(processJQueryAjaxError);
       }
@@ -549,7 +559,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.13.1'
+          'Version': '1.14.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
