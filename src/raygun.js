@@ -27,6 +27,7 @@
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
+      _excludedServers = [],
       $document;
 
   if ($) {
@@ -50,6 +51,7 @@
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
+        _excludedServers = options.excludedServers || false;
 
         if (options.debugMode)
         {
@@ -462,6 +464,15 @@
         if (!allowedDomainFound) {
           _private.log('Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain');
 
+          return;
+        }
+      }
+    }
+
+    if(_excludedServers.length > 0){
+      for(var serverIndex in _excludedServers){
+        if(stackTrace.url.indexOf(_excludedServers[serverIndex]) !== -1){
+          _private.log('Raygun4JS: cancelling send as its source is an excluded server');
           return;
         }
       }
