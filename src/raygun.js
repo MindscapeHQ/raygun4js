@@ -487,7 +487,7 @@ var raygunFactory = function (window, $, undefined) {
       }
     }
 
-    if(_excludedServers.length > 0){
+    if (_excludedServers instanceof Array) {
       for(var serverIndex in _excludedServers){
         if(stackTrace.url.indexOf(_excludedServers[serverIndex]) !== -1){
           _private.log('Raygun4JS: cancelling send as its source is an excluded server');
