@@ -113,6 +113,20 @@ Raygun.init('apikey', {
 }).attach();
 ```
 
+### Multiple Raygun objects on a single page
+
+You can now have multiple Raygun objects in global scope. This lets you set them up with different API keys for instance, and allow you to send different errors to more than one application in the Raygun web app.
+
+To create a new Raygun object and use it call:
+
+```javascript
+var secondRaygun = Raygun.constructNewRaygun();
+secondRaygun.init('apikey');
+secondRaygun.send(...)
+```
+
+Only one Raygun object can be attached as the window.onerror handler at one time, as *onerror* can only be bound to one function at once. Whichever Raygun object had `attach()` called on it last will handle the unhandle errors for the page.
+
 ### Callback Events
 
 #### onBeforeSend
