@@ -567,7 +567,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.14.0'
+          'Version': '1.15.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
