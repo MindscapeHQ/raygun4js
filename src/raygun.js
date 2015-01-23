@@ -489,7 +489,7 @@ var raygunFactory = function (window, $, undefined) {
 
     if (_excludedHostnames instanceof Array) {
       for(var hostIndex in _excludedHostnames){
-        if(stackTrace.url.indexOf(_excludedHostnames[hostIndex]) !== -1){
+        if(window.location.hostname && window.location.hostname === _excludedHostnames[hostIndex]){
           _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
           return;

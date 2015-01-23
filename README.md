@@ -102,7 +102,7 @@ Pass in an object as the second parameter to init() containing one or more of th
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
 
-`excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings here.
+`excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings here. Each string should match the host name you want to exclude (including the TLD but excluding the protocol).
 
 An example:
 
