@@ -325,6 +325,7 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
+- 1.15.0 - Support multiple Raygun objects on one page; jQuery Ajax errors now have better method names (the function signature) for anonymous functions; added init option to exclude hostnames to prevent sending from certain environments
 - 1.14.0 - Add wrapAsynchronousCallbacks option for disabling wrapping of setTimeout/setInterval callbacks
 - 1.13.1 - Provide querystrings from AngularJS too (hash in URL broke previous logic); fix stacktrace bug from Firefox that caused source maps to not be processed correctly
 - 1.13.0 - Added anonymous user tracking, enabled by default
