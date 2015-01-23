@@ -28,7 +28,7 @@ var raygunFactory = function (window, $, undefined) {
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
-      _excludedServers = [],
+      _excludedHostnames = [],
       $document;
 
   if ($) {
@@ -60,7 +60,7 @@ var raygunFactory = function (window, $, undefined) {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
-        _excludedServers = options.excludedServers || false;
+        _excludedHostnames = options.excludedHostnames || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -487,10 +487,11 @@ var raygunFactory = function (window, $, undefined) {
       }
     }
 
-    if (_excludedServers instanceof Array) {
-      for(var serverIndex in _excludedServers){
-        if(stackTrace.url.indexOf(_excludedServers[serverIndex]) !== -1){
-          _private.log('Raygun4JS: cancelling send as its source is an excluded server');
+    if (_excludedHostnames instanceof Array) {
+      for(var hostIndex in _excludedHostnames){
+        if(stackTrace.url.indexOf(_excludedHostnames[hostIndex]) !== -1){
+          _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
           return;
         }
       }

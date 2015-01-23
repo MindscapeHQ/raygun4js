@@ -102,6 +102,8 @@ Pass in an object as the second parameter to init() containing one or more of th
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
 
+`excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings here.
+
 An example:
 
 ```javascript
@@ -109,7 +111,8 @@ Raygun.init('apikey', {
   allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
   debugMode: true,
-  ignore3rdPartyErrors: false
+  ignore3rdPartyErrors: false,
+  excludedHostnames: ['localhost']
 }).attach();
 ```
 
