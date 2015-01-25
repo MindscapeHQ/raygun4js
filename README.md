@@ -325,42 +325,4 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 
 ## Release History
 
-- 1.15.0 - Support multiple Raygun objects on one page; jQuery Ajax errors now have better method names (the function signature) for anonymous functions; added init option to exclude hostnames to prevent sending from certain environments
-- 1.14.0 - Add wrapAsynchronousCallbacks option for disabling wrapping of setTimeout/setInterval callbacks
-- 1.13.1 - Provide querystrings from AngularJS too (hash in URL broke previous logic); fix stacktrace bug from Firefox that caused source maps to not be processed correctly
-- 1.13.0 - Added anonymous user tracking, enabled by default
-         - Errors in third-party scripts (not hosted on origin domain) are now stopped from being sent correctly (flag still must be set true)
-- 1.12.0 - Added new onBeforeSend() callback function
-         - withTags() can now take a callback function
-         - Custom data is now filtered by filterSensitiveData (recursively) too
-         - Guard against 'settings' in ajax errors being undefined, leading to failed sends
-         - Add support for unique stack trace format in iOS 7 UIWebView for anonymous functions
-- 1.11.2 - Guard against another possible undefined string in Tracekit causing an 'indexOf' error
-- 1.11.1 - Ajax errors now transmit response text; filtered keys are now transmitted with the value sanitized instead of having the whole object removed
-- 1.11.0 - Add ignoring 3rd party scripts, fix bug with filtering keys on some browsers, support chrome extension stack parsing
-- 1.10.0 - Added enhanced affected user data to setUser; ported latest Tracekit improvements
-- 1.9.2 - Fix bug in filter query
-- 1.9.1 - Added function to filter sensitive query string
-- 1.9.0 - Add ignoreAjaxAbort option; provide vanilla build without jQuery hooks
-- 1.8.4 - Guard against circular reference in custom data
-- 1.8.3 - Allow withCustomData to accept a function to provide a customdata object; fix undefined URL issue from Ajax; rm duplicated Tracekit ajax hook
-- 1.8.2 - Fixed bug in Tracekit which caused 'Cannot call method indexOf' of undefined error
-- 1.8.1 - Added meaningful message for Ajax errors, fixed debugmode logging bug
-- 1.8.0 - Add Offline Saving feature; add support for WinJS
-- 1.7.2 - Fixed tags not being included when error caught from global window.onerror handler
-- 1.7.1 - Fixed broken withTags when no other custom data provided on Send
-- 1.7.0 - Added source maps support by transmitting column numbers (from supported browsers)
-- 1.6.1 - Fixed an issue with not supplying options to processUnhandledException
-- 1.6.0 - Added support for attaching Tags, added NuGet package
-- 1.5.2 - Added Bower package; minor bugfix for Ajax functionality
-- 1.5.1 - Capture data submitted by jQuery AJAX calls
-- 1.5.0 - Allow IE8 to submit errors over HTTP, updated TraceKit to the latest revision
-- 1.4.1 - Fix bug with using jQuery AJAX calls with >= v1.5 of jQuery
-- 1.4.0 - AJAX errors will display status code instead of script error
-- 1.3.3 - Fixed regression where send()) would no longer attach a custom data object parameter
-- 1.3.2 - Fixed the need to call attach() (if only using manual sending)
-- 1.3.1 - Added user tracking and version tracking functionality
-- 1.3.0 - Updated to latest TraceKit, included removed jQuery support from TraceKit
-- 1.2.1 - Added jQuery AJAX error support
-- 1.2.0 - Changed from QueryString approach to sending data to using an ajax post with CORS
-- 1.0.1 - Initial Release
+[View the changelog here](CHANGELOG.md)
