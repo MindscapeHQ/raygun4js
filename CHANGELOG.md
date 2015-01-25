@@ -2,6 +2,8 @@
   - Support multiple Raygun objects on one page
   - jQuery Ajax errors now have better method names (the function signature) for anonymous functions
   - Added init option to exclude hostnames to prevent sending from certain environments
+  - wrapAsynchronousCallbacks now defaults to false
+  - Split the changelog out into this file
 
 * v1.14.0
   - Add wrapAsynchronousCallbacks option for disabling wrapping of setTimeout/setInterval callbacks
