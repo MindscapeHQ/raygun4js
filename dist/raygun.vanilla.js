@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.14.0 - 2015-01-05
+/*! Raygun4js - v1.15.0 - 2015-01-26
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -956,6 +956,12 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 item.func = parts[1];
             }
 
+            if (typeof item.func === 'undefined') {
+              try {
+                item.func = parts.input.substring(0, parts.input.indexOf('{'))
+              } catch (e) { }
+            }
+
             if ((source = findSourceByFunctionBody(curr))) {
                 item.url = source.url;
                 item.line = source.line;
@@ -1128,11 +1134,11 @@ window.TraceKit = TraceKit;
 
 }(window));
 
-(function (window, $, undefined) {
+var raygunFactory = function (window, $, undefined) {
 
 
   // pull local copy of TraceKit to handle stack trace collection
-  var _traceKit = TraceKit.noConflict(),
+  var _traceKit = TraceKit,
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
@@ -1141,7 +1147,7 @@ window.TraceKit = TraceKit;
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
-      _wrapAsynchronousCallbacks = true,
+      _wrapAsynchronousCallbacks = false,
       _customData = {},
       _tags = [],
       _user,
@@ -1150,6 +1156,7 @@ window.TraceKit = TraceKit;
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
+      _excludedHostnames = [],
       $document;
 
   if ($) {
@@ -1163,6 +1170,14 @@ window.TraceKit = TraceKit;
       return Raygun;
     },
 
+    constructNewRaygun: function () {
+      var rgInstance = window.raygunFactory(window, window.jQuery);
+      window.raygunJsUrlFactory(window, rgInstance);
+
+      return rgInstance;
+    },
+
+
     init: function(key, options, customdata) {
       _raygunApiKey = key;
       _traceKit.remoteFetching = false;
@@ -1173,6 +1188,7 @@ window.TraceKit = TraceKit;
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
+        _excludedHostnames = options.excludedHostnames || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1599,6 +1615,16 @@ window.TraceKit = TraceKit;
       }
     }
 
+    if (_excludedHostnames instanceof Array) {
+      for(var hostIndex in _excludedHostnames){
+        if(window.location.hostname && window.location.hostname === _excludedHostnames[hostIndex]){
+          _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+          return;
+        }
+      }
+    }
+
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
@@ -1681,7 +1707,7 @@ window.TraceKit = TraceKit;
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.14.0'
+          'Version': '1.15.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -1797,14 +1823,20 @@ window.TraceKit = TraceKit;
     xhr.send(data);
   }
 
-  window.Raygun = Raygun;
+  if (!window.Raygun) {
+    window.Raygun = Raygun;
+  }
 
-})(window, window.jQuery);
+  return Raygun;
+
+};
+
+raygunFactory(window, window.jQuery);
 
 
 // js-url - see LICENSE file
 
-(function (window, Raygun) {
+var raygunJsUrlFactory = function (window, Raygun) {
 
   Raygun._private.parseUrl = function(arg, url) {
     function isNumeric(arg) {
@@ -1882,6 +1914,7 @@ window.TraceKit = TraceKit;
     })(arg, url);
 };
 
-window.Raygun._seal();
+};
 
-})(window, window.Raygun);
+raygunJsUrlFactory(window, window.Raygun);
+window.Raygun._seal();

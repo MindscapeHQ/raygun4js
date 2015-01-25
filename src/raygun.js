@@ -6,11 +6,11 @@
  * Licensed under the MIT license.
  */
 
-(function (window, $, undefined) {
+var raygunFactory = function (window, $, undefined) {
 
 
   // pull local copy of TraceKit to handle stack trace collection
-  var _traceKit = TraceKit.noConflict(),
+  var _traceKit = TraceKit,
       _raygun = window.Raygun,
       _raygunApiKey,
       _debugMode = false,
@@ -19,7 +19,7 @@
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
-      _wrapAsynchronousCallbacks = true,
+      _wrapAsynchronousCallbacks = false,
       _customData = {},
       _tags = [],
       _user,
@@ -28,6 +28,7 @@
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
+      _excludedHostnames = [],
       $document;
 
   if ($) {
@@ -41,6 +42,14 @@
       return Raygun;
     },
 
+    constructNewRaygun: function () {
+      var rgInstance = window.raygunFactory(window, window.jQuery);
+      window.raygunJsUrlFactory(window, rgInstance);
+
+      return rgInstance;
+    },
+
+
     init: function(key, options, customdata) {
       _raygunApiKey = key;
       _traceKit.remoteFetching = false;
@@ -51,6 +60,7 @@
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
+        _excludedHostnames = options.excludedHostnames || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -477,6 +487,16 @@
       }
     }
 
+    if (_excludedHostnames instanceof Array) {
+      for(var hostIndex in _excludedHostnames){
+        if(window.location.hostname && window.location.hostname === _excludedHostnames[hostIndex]){
+          _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+          return;
+        }
+      }
+    }
+
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
         stack.push({
@@ -559,7 +579,7 @@
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.14.0'
+          'Version': '1.15.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -675,7 +695,13 @@
     xhr.send(data);
   }
 
-  window.Raygun = Raygun;
+  if (!window.Raygun) {
+    window.Raygun = Raygun;
+  }
 
-})(window, window.jQuery);
+  return Raygun;
+
+};
+
+raygunFactory(window, window.jQuery);
 
