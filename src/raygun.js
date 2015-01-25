@@ -19,7 +19,7 @@ var raygunFactory = function (window, $, undefined) {
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
-      _wrapAsynchronousCallbacks = true,
+      _wrapAsynchronousCallbacks = false,
       _customData = {},
       _tags = [],
       _user,
