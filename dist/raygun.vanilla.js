@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.15.0 - 2015-01-26
+/*! Raygun4js - v1.15.0 - 2015-02-09
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1144,6 +1144,7 @@ var raygunFactory = function (window, $, undefined) {
       _debugMode = false,
       _allowInsecureSubmissions = false,
       _ignoreAjaxAbort = false,
+      _ignoreAjaxError = false,
       _enableOfflineSave = false,
       _ignore3rdPartyErrors = false,
       _disableAnonymousUserTracking = false,
@@ -1187,6 +1188,7 @@ var raygunFactory = function (window, $, undefined) {
       {
         _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
+        _ignoreAjaxError = options.ignoreAjaxError || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
 
@@ -1229,7 +1231,7 @@ var raygunFactory = function (window, $, undefined) {
         _traceKit.extendToAsynchronousCallbacks();
       }
 
-      if ($document) {
+      if ($document && !_ignoreAjaxError) {
         $document.ajaxError(processJQueryAjaxError);
       }
       return Raygun;
@@ -1707,7 +1709,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.15.0'
+          'Version': '1.16.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
