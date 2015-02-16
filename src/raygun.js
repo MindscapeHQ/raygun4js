@@ -500,16 +500,16 @@ var raygunFactory = function (window, $, undefined) {
         }
       }
     }
-    
+
     if (_excludedUserAgents instanceof Array) {
       for(var userAgentIndex in _excludedUserAgents) {
-        if(navigator.userAgent.toLowerCase().indexOf(_excludedUserAgents[userAgentIndex]) > -1) {
+        if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
           _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-          
+
           return;
         }
       }
-    }    
+    }
 
     if (stackTrace.stack && stackTrace.stack.length) {
       forEach(stackTrace.stack, function (i, frame) {
