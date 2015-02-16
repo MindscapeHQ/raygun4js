@@ -1158,6 +1158,7 @@ var raygunFactory = function (window, $, undefined) {
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = [],
+      _excludedUserAgents = [],
       $document;
 
   if ($) {
@@ -1191,6 +1192,7 @@ var raygunFactory = function (window, $, undefined) {
         _ignoreAjaxError = options.ignoreAjaxError || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
+        _excludedUserAgents = options.excludedUserAgents || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1618,9 +1620,19 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     if (_excludedHostnames instanceof Array) {
-      for(var hostIndex in _excludedHostnames){
+      for(var hostIndex in _excludedHostnames) {
         if(window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])){
           _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+          return;
+        }
+      }
+    }
+
+    if (_excludedUserAgents instanceof Array) {
+      for(var userAgentIndex in _excludedUserAgents) {
+        if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+          _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
 
           return;
         }
