@@ -1,3 +1,8 @@
+* v1.16.0
+  - Add new ignoreAjaxError option to stop auto sending of Ajax 400/500 errors when attached
+  - excludedHostnames now takes regexes for partial matching
+  - Add new excludedUserAgents to prevent sends from certain clients (supports regexes as above)
+
 * v1.15.0
   - Support multiple Raygun objects on one page
   - jQuery Ajax errors now have better method names (the function signature) for anonymous functions

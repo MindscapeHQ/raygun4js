@@ -94,6 +94,8 @@ Pass in an object as the second parameter to init() containing one or more of th
 
 `ignoreAjaxAbort` - User-aborted Ajax calls result in errors - if this option is true, these will not be sent.
 
+`ignoreAjaxError` - Ajax requests that return error codes will not be sent as errors to Raygun if this options is true.
+
 `debugMode` - Raygun4JS will log to the console when sending errors.
 
 `wrapAsynchronousCallbacks` - if set to `false`, async callback functions triggered by setTimeout/setInterval will not be wrapped when attach() is called. _Defaults to true_
@@ -102,7 +104,8 @@ Pass in an object as the second parameter to init() containing one or more of th
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
 
-`excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings here. Each string should match the host name you want to exclude (including the TLD but excluding the protocol).
+`excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings or RegExp
+objects (for partial matches). Each should match the hostname or TLD that you want to exclude. Note that protocols are not tested.
 
 An example:
 
@@ -110,9 +113,10 @@ An example:
 Raygun.init('apikey', {
   allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
+  ignoreAjaxError: true,
   debugMode: true,
   ignore3rdPartyErrors: false,
-  excludedHostnames: ['localhost']
+  excludedHostnames: ['localhost', '\.development']
 }).attach();
 ```
 
