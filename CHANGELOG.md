@@ -1,5 +1,6 @@
 * v1.16.0
   - Add new ignoreAjaxError option to stop auto sending of Ajax 400/500 errors when attached
+  - excludedHostnames() now takes regexes for partial matching
 
 * v1.15.0
   - Support multiple Raygun objects on one page

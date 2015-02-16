@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.15.0 - 2015-02-09
+/*! Raygun4js - v1.16.0 - 2015-02-17
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1683,7 +1683,7 @@ var raygunFactory = function (window, $, undefined) {
 
     if (_excludedHostnames instanceof Array) {
       for(var hostIndex in _excludedHostnames){
-        if(window.location.hostname && window.location.hostname === _excludedHostnames[hostIndex]){
+        if(window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])){
           _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
           return;
