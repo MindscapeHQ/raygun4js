@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.16.0 - 2015-02-17
+/*! Raygun4js - v1.16.0 - 2015-02-19
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1157,8 +1157,8 @@ var raygunFactory = function (window, $, undefined) {
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
-      _excludedHostnames = [],
-      _excludedUserAgents = [],
+      _excludedHostnames = null,
+      _excludedUserAgents = null,
       $document;
 
   if ($) {
@@ -1721,7 +1721,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.16.0'
+          'Version': '1.16.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
