@@ -1,3 +1,6 @@
+* v1.16.1
+  - Guard against a runtime error when no options are specified
+
 * v1.16.0
   - Add new ignoreAjaxError option to stop auto sending of Ajax 400/500 errors when attached
   - excludedHostnames now takes regexes for partial matching

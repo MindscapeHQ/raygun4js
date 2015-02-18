@@ -29,8 +29,8 @@ var raygunFactory = function (window, $, undefined) {
       _whitelistedScriptDomains = [],
       _beforeSendCallback,
       _raygunApiUrl = 'https://api.raygun.io',
-      _excludedHostnames = [],
-      _excludedUserAgents = [],
+      _excludedHostnames = null,
+      _excludedUserAgents = null,
       $document;
 
   if ($) {
@@ -593,7 +593,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.16.0'
+          'Version': '1.16.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
