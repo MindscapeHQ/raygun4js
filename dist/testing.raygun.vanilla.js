@@ -1182,10 +1182,11 @@ var raygunFactory = function (window, $, undefined) {
 
 
     init: function(key, options, customdata) {
-      options.errorsLimit = 5;
       _raygunApiKey = key;
       _traceKit.remoteFetching = false;
       _customData = customdata;
+      options.errorsLimit = 4;
+      options.debugMode = true;
 
       if (options)
       {
@@ -1763,11 +1764,11 @@ var raygunFactory = function (window, $, undefined) {
   function isErrorsLimitExceeded() {
     if (_private.isNumeric(_errorsLimit)) {
       if (_errorsLimit <= 0) {
-        return false;
+        return true;
       }
       _errorsLimit--;
     }
-    return true;
+    return false;
   }
 
   function sendToRaygun(data) {
