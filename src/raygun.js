@@ -672,11 +672,11 @@ var raygunFactory = function (window, $, undefined) {
   function isErrorsLimitExceeded() {
     if (_private.isNumeric(_errorsLimit)) {
       if (_errorsLimit <= 0) {
-        return false;
+        return true;
       }
       _errorsLimit--;
     }
-    return true;
+    return false;
   }
 
   function sendToRaygun(data) {
