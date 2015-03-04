@@ -218,7 +218,7 @@ var raygunFactory = function (window, $, undefined) {
   // Returns true if the number (n) is a normal number
   _private.isNumeric = function(n) {
       return !isNaN(parseFloat(n)) && isFinite(n);
-  }
+  };
 
   _private.getUuid = function () {
       function _p8(s) {
