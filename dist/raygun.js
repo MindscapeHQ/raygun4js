@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.16.1 - 2015-02-19
+/*! Raygun4js - v1.16.1 - 2015-03-03
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1223,6 +1223,7 @@ var raygunFactory = function (window, $, undefined) {
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = null,
       _excludedUserAgents = null,
+      _errorsLimit = null,
       $document;
 
   if ($) {
@@ -1257,6 +1258,7 @@ var raygunFactory = function (window, $, undefined) {
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
         _excludedUserAgents = options.excludedUserAgents || false;
+        _errorsLimit = options.errorsLimit || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1396,6 +1398,11 @@ var raygunFactory = function (window, $, undefined) {
       Raygun._seal = _seal;
       Raygun._unseal = _unseal;
     };
+
+  // Returns true if the number (n) is a normal number
+  _private.isNumeric = function(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+  };
 
   _private.getUuid = function () {
       function _p8(s) {
@@ -1816,10 +1823,25 @@ var raygunFactory = function (window, $, undefined) {
     }
   }
 
+  function isErrorsLimitExceeded() {
+    if (_private.isNumeric(_errorsLimit)) {
+      if (_errorsLimit <= 0) {
+        return false;
+      }
+      _errorsLimit--;
+    }
+    return true;
+  }
+
   function sendToRaygun(data) {
     if (!isApiKeyConfigured()) {
       return;
     }
+
+    if (isErrorsLimitExceeded()) {
+      return;
+    }
+  
 
     _private.log('Sending exception data to Raygun:', data);
     var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
