@@ -670,13 +670,13 @@ var raygunFactory = function (window, $, undefined) {
   }
 
   function isErrorsLimitExceeded() {
+    return _private.isNumeric(_errorsLimit) && _errorsLimit <= 0;
+  }
+
+  function decrementErrorsLimit() {
     if (_private.isNumeric(_errorsLimit)) {
-      if (_errorsLimit <= 0) {
-        return true;
-      }
       _errorsLimit--;
     }
-    return false;
   }
 
   function sendToRaygun(data) {
@@ -687,11 +687,11 @@ var raygunFactory = function (window, $, undefined) {
     if (isErrorsLimitExceeded()) {
       return;
     }
-  
 
     _private.log('Sending exception data to Raygun:', data);
     var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
+    decrementErrorsLimit();
   }
 
   // Create the XHR object.
