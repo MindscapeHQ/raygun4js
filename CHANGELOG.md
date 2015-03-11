@@ -1,3 +1,7 @@
+* v1.16.2
+  - setUser now accepts empty strings/falsey values for logout scenarios
+  - Max message size of 512 in payload
+
 * v1.16.1
   - Guard against a runtime error when no options are specified
 

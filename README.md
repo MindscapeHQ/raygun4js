@@ -257,6 +257,8 @@ setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 
 This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no user tracking will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
+**Resetting the user:** you can now pass in empty strings (or false to `isAnonymous`) to reset the current user for login/logout scenarios.
+
 ### Version filtering
 
 You can set a version for your app by calling:

@@ -569,12 +569,15 @@ var raygunFactory = function (window, $, undefined) {
       _private.log('Raygun4JS: ' + msg);
     }
 
+    var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
+    finalMessage = finalMessage.substring(0, 512);
+
     var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': custom_message || stackTrace.message || options.status || 'Script error',
+          'Message': finalMessage,
           'StackTrace': stack
         },
         'Environment': {
@@ -593,7 +596,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.16.1'
+          'Version': '1.16.2'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
