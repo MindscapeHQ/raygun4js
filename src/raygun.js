@@ -140,19 +140,19 @@ var raygunFactory = function (window, $, undefined) {
       _user = {
         'Identifier': user
       };
-      if(isAnonymous) {
+      if(typeof isAnonymous !== 'undefined') {
         _user['IsAnonymous'] = isAnonymous;
       }
-      if(email) {
+      if(typeof email !== 'undefined') {
         _user['Email'] = email;
       }
-      if(fullName) {
+      if(typeof fullName !== 'undefined') {
         _user['FullName'] = fullName;
       }
-      if(firstName) {
+      if(typeof firstName !== 'undefined') {
         _user['FirstName'] = firstName;
       }
-      if(uuid) {
+      if(typeof uuid !== 'undefined') {
         _user['UUID'] = uuid;
       }
 
