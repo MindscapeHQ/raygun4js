@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.16.1 - 2015-02-19
+/*! Raygun4js - v1.16.2 - 2015-03-12
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1268,19 +1268,19 @@ var raygunFactory = function (window, $, undefined) {
       _user = {
         'Identifier': user
       };
-      if(isAnonymous) {
+      if(typeof isAnonymous !== 'undefined') {
         _user['IsAnonymous'] = isAnonymous;
       }
-      if(email) {
+      if(typeof email !== 'undefined') {
         _user['Email'] = email;
       }
-      if(fullName) {
+      if(typeof fullName !== 'undefined') {
         _user['FullName'] = fullName;
       }
-      if(firstName) {
+      if(typeof firstName !== 'undefined') {
         _user['FirstName'] = firstName;
       }
-      if(uuid) {
+      if(typeof uuid !== 'undefined') {
         _user['UUID'] = uuid;
       }
 
@@ -1697,12 +1697,15 @@ var raygunFactory = function (window, $, undefined) {
       _private.log('Raygun4JS: ' + msg);
     }
 
+    var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
+    finalMessage = finalMessage.substring(0, 512);
+
     var payload = {
       'OccurredOn': new Date(),
       'Details': {
         'Error': {
           'ClassName': stackTrace.name,
-          'Message': custom_message || stackTrace.message || options.status || 'Script error',
+          'Message': finalMessage,
           'StackTrace': stack
         },
         'Environment': {
@@ -1721,7 +1724,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.16.1'
+          'Version': '1.16.2'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
