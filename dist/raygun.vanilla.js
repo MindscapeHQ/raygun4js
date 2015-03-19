@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.16.2 - 2015-03-12
+/*! Raygun4js - v1.17.0 - 2015-03-20
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1729,7 +1729,7 @@ var raygunFactory = function (window, $, undefined) {
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
-          'Url': [location.protocol, '//', location.host, location.pathname].join(''),
+          'Url': [location.protocol, '//', location.host, location.pathname, location.hash].join(''),
           'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,
