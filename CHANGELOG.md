@@ -1,3 +1,6 @@
+* v1.17.0
+  - Add location.hash to Request.Url before payload is sent
+
 * v1.16.2
   - setUser now accepts empty strings/falsey values for logout scenarios
   - Max message size of 512 in payload
