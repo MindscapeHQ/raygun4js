@@ -601,7 +601,7 @@ var raygunFactory = function (window, $, undefined) {
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
         'Request': {
-          'Url': [location.protocol, '//', location.host, location.pathname].join(''),
+          'Url': [location.protocol, '//', location.host, location.pathname, location.hash].join(''),
           'QueryString': qs,
           'Headers': {
             'User-Agent': navigator.userAgent,
