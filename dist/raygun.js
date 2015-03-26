@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.17.0 - 2015-03-20
+/*! Raygun4js - v1.18.0 - 2015-03-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1223,6 +1223,7 @@ var raygunFactory = function (window, $, undefined) {
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = null,
       _excludedUserAgents = null,
+      _filterScope = 'customData',
       $document;
 
   if ($) {
@@ -1370,6 +1371,13 @@ var raygunFactory = function (window, $, undefined) {
 
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
+      return Raygun;
+    },
+
+    setFilterScope: function (scope) {
+      if (scope === 'customData' || scope === 'all') {
+        _filterScope = scope;
+      }
       return Raygun;
     },
 
@@ -1617,7 +1625,7 @@ var raygunFactory = function (window, $, undefined) {
       return value;
   }
 
-  function filterObject(reference) {
+  function filterObject(reference, parentKey) {
       if (reference == null) {
           return reference;
       }
@@ -1634,9 +1642,13 @@ var raygunFactory = function (window, $, undefined) {
           }
 
           if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
-              reference[propertyName] = filterObject(propertyValue);
+            if ((parentKey !== 'Details' || propertyName !== 'Client')) {
+              reference[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+            }
           } else {
+            if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
               reference[propertyName] = filterValue(propertyName, propertyValue);
+            }
           }
       }
 
@@ -1751,7 +1763,13 @@ var raygunFactory = function (window, $, undefined) {
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
     var custom_message = options.customData && options.customData.ajaxErrorMessage;
-    var finalCustomData = filterObject(options.customData);
+
+    var finalCustomData;
+    if (_filterScope === 'customData') {
+      finalCustomData = filterObject(options.customData, 'UserCustomData');
+    } else {
+      finalCustomData = options.customData;
+    }
 
     try {
       JSON.stringify(finalCustomData);
@@ -1788,7 +1806,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.16.2'
+          'Version': '1.18.0'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -1807,6 +1825,10 @@ var raygunFactory = function (window, $, undefined) {
 
     ensureUser();
     payload.Details.User = _user;
+
+    if (_filterScope === 'all') {
+      payload = filterObject(payload);
+    }
 
     if (typeof _beforeSendCallback === 'function') {
       var mutatedPayload = _beforeSendCallback(payload);
