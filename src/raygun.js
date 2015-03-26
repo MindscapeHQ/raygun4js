@@ -451,6 +451,44 @@ var raygunFactory = function (window, $, undefined) {
       return reference;
   }
 
+  function sanitizePayload (errorPayload) {
+    var hasFiltered = false;
+
+    var getFilter = function (keysToSanitize) {
+      var recursiveMap = function (value, key, list) {
+        if (_.contains(keysToSanitize, key)) {
+          hasFiltered = true;
+
+          if (typeof list[key] === 'object') {
+            return list[key] = '<filtered>';
+          } else {
+            return list[key] = '<filtered>';
+          }
+
+        } else if (typeof value === 'object') {
+          return list[key] =  _.each(value, arguments.callee);
+        }
+        else {
+          return list[key] = value
+        }
+      };
+
+      return recursiveMap;
+    };
+
+    var keysToFilter = ['username', 'password', 'cvv', 'Url', 'QueryString', 'Version', 'User'];
+
+    var filteredDetails = _.mapObject(errorPayload.Details, getFilter(_keysToSanitize));
+
+    if (hasFiltered) {
+      filteredDetails.Tags.push('Filtered');
+
+      errorPayload.Details = filteredDetails;
+    }
+
+    return errorPayload;
+  }
+
   function processUnhandledException(stackTrace, options) {
     var stack = [],
         qs = {};
