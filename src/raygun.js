@@ -31,6 +31,7 @@ var raygunFactory = function (window, $, undefined) {
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = null,
       _excludedUserAgents = null,
+      _filterScope = 'customData',
       $document;
 
   if ($) {
@@ -178,6 +179,13 @@ var raygunFactory = function (window, $, undefined) {
 
     filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
+      return Raygun;
+    },
+
+    setFilterScope: function (scope) {
+      if (scope === 'customData' || scope === 'all') {
+        _filterScope = scope;
+      }
       return Raygun;
     },
 
@@ -425,7 +433,7 @@ var raygunFactory = function (window, $, undefined) {
       return value;
   }
 
-  function filterObject(reference) {
+  function filterObject(reference, parentKey) {
       if (reference == null) {
           return reference;
       }
@@ -442,51 +450,17 @@ var raygunFactory = function (window, $, undefined) {
           }
 
           if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
-              reference[propertyName] = filterObject(propertyValue);
+            if ((parentKey !== 'Details' || propertyName !== 'Client')) {
+              reference[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+            }
           } else {
+            if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
               reference[propertyName] = filterValue(propertyName, propertyValue);
+            }
           }
       }
 
       return reference;
-  }
-
-  function sanitizePayload (errorPayload) {
-    var hasFiltered = false;
-
-    var getFilter = function (keysToSanitize) {
-      var recursiveMap = function (value, key, list) {
-        if (_.contains(keysToSanitize, key)) {
-          hasFiltered = true;
-
-          if (typeof list[key] === 'object') {
-            return list[key] = '<filtered>';
-          } else {
-            return list[key] = '<filtered>';
-          }
-
-        } else if (typeof value === 'object') {
-          return list[key] =  _.each(value, arguments.callee);
-        }
-        else {
-          return list[key] = value
-        }
-      };
-
-      return recursiveMap;
-    };
-
-    var keysToFilter = ['username', 'password', 'cvv', 'Url', 'QueryString', 'Version', 'User'];
-
-    var filteredDetails = _.mapObject(errorPayload.Details, getFilter(_keysToSanitize));
-
-    if (hasFiltered) {
-      filteredDetails.Tags.push('Filtered');
-
-      errorPayload.Details = filteredDetails;
-    }
-
-    return errorPayload;
   }
 
   function processUnhandledException(stackTrace, options) {
@@ -597,7 +571,13 @@ var raygunFactory = function (window, $, undefined) {
 
     var screen = window.screen || { width: getViewPort().width, height: getViewPort().height, colorDepth: 8 };
     var custom_message = options.customData && options.customData.ajaxErrorMessage;
-    var finalCustomData = filterObject(options.customData);
+
+    var finalCustomData;
+    if (_filterScope === 'customData') {
+      finalCustomData = filterObject(options.customData, 'UserCustomData');
+    } else {
+      finalCustomData = options.customData;
+    }
 
     try {
       JSON.stringify(finalCustomData);
@@ -653,6 +633,10 @@ var raygunFactory = function (window, $, undefined) {
 
     ensureUser();
     payload.Details.User = _user;
+
+    if (_filterScope === 'all') {
+      payload = filterObject(payload);
+    }
 
     if (typeof _beforeSendCallback === 'function') {
       var mutatedPayload = _beforeSendCallback(payload);
