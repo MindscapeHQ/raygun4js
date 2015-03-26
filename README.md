@@ -269,15 +269,23 @@ Raygun.setVersion('1.0.0.0');
 
 This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
 
-### Filter sensitive request data
+### Filtering sensitive data
 
-The library automatically transmits query string key-values. To filter sensitive keys from this, call:
+You can blacklist keys to prevent their values from being sent it the payload by providing an array of key names:
 
 ```javascript
-Raygun.filterSensitiveData(['pwd']);
+Raygun.filterSensitiveData(['password', 'credit_card']);
 ```
 
-It accepts an array of strings. If a key in the query string matches any in this array, it won't be sent.
+By default this is applied to the UserCustomData object only (legacy behavior). To apply this to any key-value pair, you can change the filtering scope:
+
+```javascript
+// Filter any key in the payload
+Raygun.setFilterScope('all');
+
+// Just filter the custom data (default)
+Raygun.setFilterScope('customData');
+```
 
 ### Source maps support
 
