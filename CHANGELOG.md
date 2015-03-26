@@ -1,3 +1,6 @@
+* v1.18.0
+  - Add new setFilterScope() function for supporting applying the filterSensitiveData keys across the entire payload (supported scopes are 'all' and 'customData')
+
 * v1.17.0
   - Add location.hash to Request.Url before payload is sent
 
