@@ -287,6 +287,14 @@ Raygun.setFilterScope('all');
 Raygun.setFilterScope('customData');
 ```
 
+You can also pass RegExp objects in the array to `filterSensitiveData`, for fuzzy matching of keys:
+
+```javascript
+// Remove any keys that begin with 'credit'
+var creditCardDataRegex = /credit\D*/;
+Raygun.filterSensitiveData([creditCardDataRegex]);
+```
+
 ### Source maps support
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the Raygun dashboard or documentation for more information.

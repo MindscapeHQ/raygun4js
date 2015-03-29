@@ -416,21 +416,20 @@ var raygunFactory = function (window, $, undefined) {
   }
 
   function filterValue(key, value) {
-      if (_filteredKeys) {
-          if (Array.prototype.indexOf && _filteredKeys.indexOf === Array.prototype.indexOf) {
-              if (_filteredKeys.indexOf(key) !== -1) {
-                  return '[removed by filter]';
-              }
-          } else {
-              for (var i = 0; i < _filteredKeys.length; i++) {
-                  if (_filteredKeys[i] === key) {
-                      return '[removed by filter]';
-                  }
-              }
+    if (_filteredKeys) {
+      for (var i = 0; i < _filteredKeys.length; i++) {
+        if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
+          if (_filteredKeys[i].exec(key) !== null) {
+            return '[removed by filter]';
           }
+        }
+        else if (_filteredKeys[i] === key) {
+            return '[removed by filter]';
+        }
       }
+    }
 
-      return value;
+    return value;
   }
 
   function filterObject(reference, parentKey) {
@@ -614,7 +613,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.0'
+          'Version': '1.18.1'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

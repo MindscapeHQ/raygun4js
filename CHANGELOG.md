@@ -1,3 +1,6 @@
+* v1.18.1
+  - filterSensitiveData now also accepts RegExp objects in its param array
+
 * v1.18.0
   - Add new setFilterScope() function for supporting applying the filterSensitiveData keys across the entire payload (supported scopes are 'all' and 'customData')
 
