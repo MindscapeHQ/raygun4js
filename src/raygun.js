@@ -504,21 +504,25 @@ var raygunFactory = function (window, $, undefined) {
 
     if (_excludedHostnames instanceof Array) {
       for(var hostIndex in _excludedHostnames) {
-        if(window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])){
-          _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+		if (_excludedHostnames.hasOwnProperty(hostIndex)) {
+			if(window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])){
+			  _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
-          return;
-        }
+			  return;
+			}
+		}
       }
     }
 
     if (_excludedUserAgents instanceof Array) {
       for(var userAgentIndex in _excludedUserAgents) {
-        if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
-          _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+		if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+			if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+			  _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
 
-          return;
-        }
+			  return;
+			}
+		}
       }
     }
 
