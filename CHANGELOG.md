@@ -1,3 +1,6 @@
+* v1.18.2
+  - Safer implementations of _excludedHostnames and _excludedUserAgents when there are prototype functions on the arrays passed to these keys
+
 * v1.18.1
   - filterSensitiveData now also accepts RegExp objects in its param array
 
