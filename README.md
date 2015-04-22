@@ -219,7 +219,7 @@ Raygun.send(err, null, ['tag']];
 
 As above for custom data, withTags() can now also accept a callback function. This will be called when the provider is about to send, to construct the tags. The function you pass to withTags() should return an array (ideally of strings/Numbers/Dates).
 
-### Unique user tracking
+### Affected user tracking
 
 By default, Raygun4JS assigns a unique anonymous ID for the current user. This is stored as a cookie. If the current user changes, to reset it and assign a new ID you can call:
 
