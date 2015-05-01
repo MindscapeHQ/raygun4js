@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>raygun4js</id>
-    <version>1.18.2</version>
+    <version>1.18.3</version>
     <title>Raygun4js</title>
     <authors>Mindscape Limited</authors>
     <owners>Mindscape Limited</owners>
@@ -18,7 +18,9 @@
   <files>
     <file src="dist\raygun.js" target="content\scripts\raygun.js" />
     <file src="dist\raygun.min.js" target="content\scripts\raygun.min.js" />
+    <file src="dist\raygun.min.js.map" target="content\scripts\raygun.min.js.map">
     <file src="dist\raygun.vanilla.js" target="content\scripts\raygun.vanilla.js" />
     <file src="dist\raygun.vanilla.min.js" target="content\scripts\raygun.vanilla.min.js" />
+    <file src="dist\raygun.vanilla.min.js.map" target="content\scripts\raygun.vanilla.min.js.map" />
   </files>
 </package>

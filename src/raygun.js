@@ -302,14 +302,16 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     Raygun.send(thrownError || event.type, {
-      status: jqXHR.status,
-      statusText: jqXHR.statusText,
-      type: ajaxSettings.type,
-      url: ajaxSettings.url,
-      ajaxErrorMessage: message,
-      contentType: ajaxSettings.contentType,
-      requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
-      responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined });
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        type: ajaxSettings.type,
+        url: ajaxSettings.url,
+        ajaxErrorMessage: message,
+        contentType: ajaxSettings.contentType,
+        requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
+        responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
+        activeTarget: event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined
+      });
   }
 
 
@@ -617,7 +619,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.2'
+          'Version': '1.18.3'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

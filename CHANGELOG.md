@@ -1,3 +1,9 @@
+* v1.18.3
+  - Published to npm
+  - Ajax errors: custom data now includes the markup of the tag which caused the error
+  - Various improvements to the internal Tracekit fork for Firefox and Chrome
+  - Added generation of source maps
+
 * v1.18.2
   - Safer implementations of _excludedHostnames and _excludedUserAgents when there are prototype functions on the arrays passed to these keys
 
