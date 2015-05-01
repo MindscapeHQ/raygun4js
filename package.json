@@ -31,5 +31,5 @@
     "grunt-template-jasmine-istanbul": "^0.3.3"
   },
   "dependencies": {},
-  "keywords": []
+  "keywords": ["error", "tracking", "raygun", "clientside"]
 }
