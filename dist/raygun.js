@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.2 - 2015-04-07
+/*! Raygun4js - v1.18.3 - 2015-05-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -162,27 +162,27 @@ TraceKit.report = (function reportModuleWrapper() {
         }
         else
         {
-        if (lastExceptionStack) {
-            TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
-            stack = lastExceptionStack;
-            lastExceptionStack = null;
-            lastException = null;
-        } else {
-            var location = {
-                'url': url,
-                'line': lineNo,
-                'column': columnNo
-            };
-            location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
-            location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
-            stack = {
-                'mode': 'onerror',
-                'message': message,
-                'url': document.location.href,
-                'stack': [location],
-                'useragent': navigator.userAgent
-            };
-        }
+            if (lastExceptionStack) {
+                TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
+                stack = lastExceptionStack;
+                lastExceptionStack = null;
+                lastException = null;
+            } else {
+                var location = {
+                    'url': url,
+                    'line': lineNo,
+                    'column': columnNo
+                };
+                location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
+                location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
+                stack = {
+                    'mode': 'onerror',
+                    'message': message,
+                    'url': document.location.href,
+                    'stack': [location],
+                    'useragent': navigator.userAgent
+                };
+            }
         }
 
         notifyHandlers(stack, 'from window.onerror');
@@ -323,6 +323,10 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @return {string} Source contents.
      */
     function loadSource(url) {
+        if (typeof url !== 'string') {
+          return [];
+        }
+        
         if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
             return '';
         }
@@ -627,8 +631,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(\S*)(?:\((.*?)\))?@?((?:file|http|https):.*?):(\d+)(?::(\d+))?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|http|https|chrome):.*?):(\d+)(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -676,6 +680,9 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
         if (stack[0] && stack[0].line && !stack[0].column && reference) {
             stack[0].column = findSourceInLine(reference[1], stack[0].url, stack[0].line);
+        } else if (!stack[0].column && typeof ex.columnNumber !== 'undefined') {
+            // Firefox column number
+            stack[0].column = ex.columnNumber + 1;
         }
 
         if (!stack.length) {
@@ -1494,14 +1501,16 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     Raygun.send(thrownError || event.type, {
-      status: jqXHR.status,
-      statusText: jqXHR.statusText,
-      type: ajaxSettings.type,
-      url: ajaxSettings.url,
-      ajaxErrorMessage: message,
-      contentType: ajaxSettings.contentType,
-      requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
-      responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined });
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        type: ajaxSettings.type,
+        url: ajaxSettings.url,
+        ajaxErrorMessage: message,
+        contentType: ajaxSettings.contentType,
+        requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
+        responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
+        activeTarget: event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined
+      });
   }
 
 
@@ -1809,7 +1818,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.2'
+          'Version': '1.18.3'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
