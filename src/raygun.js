@@ -704,7 +704,8 @@ var raygunFactory = function (window, $, undefined) {
 
         if (xhr.status === 202) {
           sendSavedErrors();
-        } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+        } else if (_enableOfflineSave && xhr.status !== 403 &&
+                   xhr.status !== 400 && xhr.status !== 429) {
           offlineSave(data);
         }
       };
