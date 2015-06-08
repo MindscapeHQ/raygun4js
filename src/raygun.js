@@ -391,9 +391,17 @@ var raygunFactory = function (window, $, undefined) {
     if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
         if (key.substring(0, 9) === 'raygunjs=') {
-          sendToRaygun(JSON.parse(localStorage[key]));
-
-          localStorage.removeItem(key);
+          try {
+            sendToRaygun(JSON.parse(localStorage[key]));
+          } catch(e) {
+            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+          }
+          
+          try {
+            localStorage.removeItem(key);
+          } catch(e) {
+            _private.log('Raygun4JS: Unable to remove error');
+          }
         }
       }
     }
