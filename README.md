@@ -13,8 +13,10 @@ Run `bower install raygun4js`
 Raygun4JS is now available from our content delivery network:
 
 ```html
-<script type="text/javascript" src="http://cdn.raygun.io/raygun4js/raygun.min.js"></script>
+<script type="text/javascript" src="//cdn.raygun.io/raygun4js/raygun.min.js"></script>
 ```
+
+It is available over both HTTP and HTTPS.
 
 You can reference any of the scripts below. The scripts in the /raygun4js/ directory will always be the latest release, and specific releases are available undern /raygun4js/1.x.x/.
 
