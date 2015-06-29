@@ -714,7 +714,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         var stacktrace = ex.stacktrace;
 
         var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
-            lines = stacktrace.split('\n'),
+            lines = stacktrace !== null ? stacktrace.split('\n') : stacktrace,
             stack = [],
             parts;
 
