@@ -1,5 +1,6 @@
 * v1.18.4
   - Error payloads are no longer persisted in localStorage if sending failed due to RG plan hitting its monthly cap
+  - Guard against invalid JSON being persisted in localStorage on send failure
   - Guard against incorrect (non-function) types being passed in as callback handler to wrapped $.event
   - Guard aginst null stacktraces in JS Windows Store apps
 
