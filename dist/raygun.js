@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.3 - 2015-05-01
+/*! Raygun4js - v1.18.4 - 2015-06-30
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -712,7 +712,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         var stacktrace = ex.stacktrace;
 
         var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
-            lines = stacktrace.split('\n'),
+            lines = stacktrace !== null ? stacktrace.split('\n') : stacktrace,
             stack = [],
             parts;
 
@@ -1150,6 +1150,10 @@ window.TraceKit = TraceKit;
 
   var _oldEventAdd = $.event.add;
   $.event.add = function traceKitEventAdd(elem, types, handler, data, selector) {
+    if (typeof handler !== 'function' && typeof handler.handler !== 'function') {
+      _oldEventAdd.call(this, elem, types, handler, data, selector);
+    }
+    
     var _handler;
 
     if (handler.handler) {
@@ -1818,7 +1822,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.3'
+          'Version': '1.18.4'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
@@ -1903,7 +1907,8 @@ var raygunFactory = function (window, $, undefined) {
 
         if (xhr.status === 202) {
           sendSavedErrors();
-        } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400) {
+        } else if (_enableOfflineSave && xhr.status !== 403 &&
+                   xhr.status !== 400 && xhr.status !== 429) {
           offlineSave(data);
         }
       };
