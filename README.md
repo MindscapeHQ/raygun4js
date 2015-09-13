@@ -269,10 +269,10 @@ This will be transmitted with each message. A count of unique users will appear 
 You can set a version for your app by calling:
 
 ```
-Raygun.setVersion('1.0.0.0');
+Raygun.setVersion('1.0.0');
 ```
 
-This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format x.x.x.x, where x is a positive integer.
+This will allow you to filter the errors in the dashboard by that version. You can also select only the latest version, to ignore errors that were triggered by ancient versions of your code. The parameter needs to be a string in the format `x.x.x` if you want to get the version sorting in Raygun to work nicely, where x is a non-negative integer.
 
 ### Filtering sensitive data
 
