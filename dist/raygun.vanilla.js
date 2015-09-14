@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.4 - 2015-06-30
+/*! Raygun4js - v1.18.4 - 2015-09-14
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1166,6 +1166,7 @@ var raygunFactory = function (window, $, undefined) {
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = null,
       _excludedUserAgents = null,
+      _errorCountLimit = null,
       _filterScope = 'customData',
       $document;
 
@@ -1201,6 +1202,7 @@ var raygunFactory = function (window, $, undefined) {
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
         _excludedUserAgents = options.excludedUserAgents || false;
+        _errorCountLimit = options.errorCountLimit || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1347,6 +1349,11 @@ var raygunFactory = function (window, $, undefined) {
       Raygun._seal = _seal;
       Raygun._unseal = _unseal;
     };
+
+  // Returns true if the number (n) is a normal number
+  _private.isNumeric = function(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+  };
 
   _private.getUuid = function () {
       function _p8(s) {
@@ -1797,14 +1804,30 @@ var raygunFactory = function (window, $, undefined) {
     }
   }
 
+  function isErrorsLimitExceeded() {
+    return _private.isNumeric(_errorCountLimit) && _errorCountLimit <= 0;
+  }
+
+  function decrementErrorsLimit() {
+    if (_private.isNumeric(_errorCountLimit)) {
+      _errorCountLimit--;
+    }
+  }
+
   function sendToRaygun(data) {
     if (!isApiKeyConfigured()) {
+      return;
+    }
+
+    if (isErrorsLimitExceeded()) {
+      _private.log('Send rate limit reached');
       return;
     }
 
     _private.log('Sending exception data to Raygun:', data);
     var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(_raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
+    decrementErrorsLimit();
   }
 
   // Create the XHR object.
