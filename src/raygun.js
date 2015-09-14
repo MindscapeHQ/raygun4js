@@ -685,6 +685,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     if (isErrorsLimitExceeded()) {
+      _private.log('Send rate limit reached');
       return;
     }
 
