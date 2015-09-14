@@ -106,6 +106,8 @@ Pass in an object as the second parameter to init() containing one or more of th
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
 and will still be sent.
 
+`errorCountLimit` - stop sending errors from client after the specified limit is reached. Default is infinity.
+
 `excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings or RegExp
 objects (for partial matches). Each should match the hostname or TLD that you want to exclude. Note that protocols are not tested.
 
@@ -121,7 +123,8 @@ Raygun.init('apikey', {
   debugMode: true,
   ignore3rdPartyErrors: false,
   excludedHostnames: ['localhost', '\.development']
-  excludedUserAgents: ['CasperJS', 'Chrome/42', 'Android']
+  excludedUserAgents: ['CasperJS', 'Chrome/42', 'Android'],
+  errorCountLimit: 100
 }).attach();
 ```
 
