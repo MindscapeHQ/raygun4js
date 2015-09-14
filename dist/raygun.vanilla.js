@@ -1166,7 +1166,7 @@ var raygunFactory = function (window, $, undefined) {
       _raygunApiUrl = 'https://api.raygun.io',
       _excludedHostnames = null,
       _excludedUserAgents = null,
-      _errorsLimit = null,
+      _errorCountLimit = null,
       _filterScope = 'customData',
       $document;
 
@@ -1202,7 +1202,7 @@ var raygunFactory = function (window, $, undefined) {
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
         _excludedUserAgents = options.excludedUserAgents || false;
-        _errorsLimit = options.errorsLimit || false;
+        _errorCountLimit = options.errorCountLimit || false;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1805,12 +1805,12 @@ var raygunFactory = function (window, $, undefined) {
   }
 
   function isErrorsLimitExceeded() {
-    return _private.isNumeric(_errorsLimit) && _errorsLimit <= 0;
+    return _private.isNumeric(_errorCountLimit) && _errorCountLimit <= 0;
   }
 
   function decrementErrorsLimit() {
-    if (_private.isNumeric(_errorsLimit)) {
-      _errorsLimit--;
+    if (_private.isNumeric(_errorCountLimit)) {
+      _errorCountLimit--;
     }
   }
 
