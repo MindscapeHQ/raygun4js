@@ -111,6 +111,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `excludedUserAgents` - Prevents errors from being sent from certain user agents by providing an array of strings. This is very helpful to exclude errors reported by certain browsers or test automation with `CasperJS`, `PhantomJS` or any other testing utility that sends a custom user agent. If a part of the client's `navigator.userAgent` matches one of the given strings in the array, then the client will be excluded from error reporting.
 
+`includeActiveTarget` - Specifies if Raygun should send target data on JQuery AJAX request errors.
+
 An example:
 
 ```javascript

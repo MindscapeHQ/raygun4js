@@ -32,6 +32,7 @@ var raygunFactory = function (window, $, undefined) {
       _excludedHostnames = null,
       _excludedUserAgents = null,
       _filterScope = 'customData',
+      _includeActiveTarget = true,
       $document;
 
   if ($) {
@@ -66,6 +67,7 @@ var raygunFactory = function (window, $, undefined) {
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
         _excludedUserAgents = options.excludedUserAgents || false;
+        _includeActiveTarget = options.includeActiveTarget || true;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -310,7 +312,7 @@ var raygunFactory = function (window, $, undefined) {
         contentType: ajaxSettings.contentType,
         requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
         responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
-        activeTarget: event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined
+        activeTarget: _includeActiveTarget ? (event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined) : undefined
       });
   }
 
