@@ -1,3 +1,6 @@
+* v1.18.5
+  - Limit active data on JQuery AJAX errors
+  
 * v1.18.4
   - Error payloads are no longer persisted in localStorage if sending failed due to RG plan hitting its monthly cap
   - Guard against invalid JSON being persisted in localStorage on send failure
