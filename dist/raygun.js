@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.4 - 2015-06-30
+/*! Raygun4js - v1.18.5 - 2015-10-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1235,6 +1235,7 @@ var raygunFactory = function (window, $, undefined) {
       _excludedHostnames = null,
       _excludedUserAgents = null,
       _filterScope = 'customData',
+      _includeActiveTarget = true,
       $document;
 
   if ($) {
@@ -1269,6 +1270,7 @@ var raygunFactory = function (window, $, undefined) {
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
         _excludedHostnames = options.excludedHostnames || false;
         _excludedUserAgents = options.excludedUserAgents || false;
+        _includeActiveTarget = options.includeActiveTarget || true;
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
@@ -1513,7 +1515,7 @@ var raygunFactory = function (window, $, undefined) {
         contentType: ajaxSettings.contentType,
         requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
         responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
-        activeTarget: event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined
+        activeTarget: _includeActiveTarget && event.target && event.target.activeElement ? event.target.activeElement.outerHTML : undefined
       });
   }
 
@@ -1830,7 +1832,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.4'
+          'Version': '1.18.5'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
