@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.5 - 2015-10-01
+/*! Raygun4js - v1.18.6 - 2015-10-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1513,7 +1513,7 @@ var raygunFactory = function (window, $, undefined) {
         contentType: ajaxSettings.contentType,
         requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
         responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
-        activeTarget: event.target && event.target.activeElement ? event.target.activeElement.outerHTML.slice(0, 10240) : undefined
+        activeTarget: event.target && event.target.activeElement && event.target.activeElement.outerHTML && event.target.activeElement.outerHTML.slice ? event.target.activeElement.outerHTML.slice(0, 10240) : undefined
       });
   }
 
@@ -1830,7 +1830,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.5'
+          'Version': '1.18.6'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,

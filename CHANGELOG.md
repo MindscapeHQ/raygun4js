@@ -1,3 +1,6 @@
+* v1.18.6
+  - Slice function check for older browsers
+  
 * v1.18.5
   - Limit active data on JQuery AJAX errors
   
