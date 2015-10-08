@@ -1,4 +1,4 @@
-/*! Raygun4js - v1.18.6 - 2015-10-01
+/*! Raygun4js - v1.18.6 - 2015-10-08
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1572,7 +1572,7 @@ var raygunFactory = function (window, $, undefined) {
     var dateTime = new Date().toJSON();
 
     try {
-      var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
       if (typeof localStorage[key] === 'undefined') {
         localStorage[key] = data;
@@ -1593,7 +1593,7 @@ var raygunFactory = function (window, $, undefined) {
   function sendSavedErrors() {
     if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
-        if (key.substring(0, 9) === 'raygunjs=') {
+        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
           try {
             sendToRaygun(JSON.parse(localStorage[key]));
           } catch(e) {
@@ -1905,6 +1905,8 @@ var raygunFactory = function (window, $, undefined) {
   // Make the actual CORS request.
   function makePostCorsRequest(url, data) {
     var xhr = createCORSRequest('POST', url, data);
+
+    _private.log("Is offline enabled? " + _enableOfflineSave); 
 
     if ('withCredentials' in xhr) {
 
