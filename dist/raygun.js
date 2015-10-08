@@ -1,4 +1,8 @@
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
 /*! Raygun4js - v2.4.3 - 2016-12-20
+=======
+/*! Raygun4js - v1.18.6 - 2015-10-08
+>>>>>>> Change key on offline storage stuff.
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1447,10 +1451,15 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
         onAfterSend: function (callback) {
             _afterSendCallback = callback;
             return Raygun;
         },
+=======
+    try {
+      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
+>>>>>>> Change key on offline storage stuff.
 
         // Public Pulse functions
 
@@ -1460,12 +1469,30 @@ var raygunFactory = function (window, $, undefined) {
             }
         },
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
         trackEvent: function (type, options) {
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
                 }
             }
+=======
+  function sendSavedErrors() {
+    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
+        for (var key in localStorage) {
+        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+          try {
+            sendToRaygun(JSON.parse(localStorage[key]));
+          } catch(e) {
+            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+          }
+          
+          try {
+            localStorage.removeItem(key);
+          } catch(e) {
+            _private.log('Raygun4JS: Unable to remove error');
+          }
+>>>>>>> Change key on offline storage stuff.
         }
 
     };
@@ -1691,10 +1718,16 @@ var raygunFactory = function (window, $, undefined) {
             if (!rgUserId) {
                 anonymousUuid = _private.getUuid();
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
                 _private.createCookie(userKey, anonymousUuid, 24 * 31);
             } else {
                 anonymousUuid = rgUserId;
             }
+=======
+    _private.log("Is offline enabled? " + _enableOfflineSave); 
+
+    if ('withCredentials' in xhr) {
+>>>>>>> Change key on offline storage stuff.
 
             Raygun.setUser(anonymousUuid, true, null, null, null, anonymousUuid);
         }

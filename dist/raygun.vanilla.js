@@ -1,4 +1,8 @@
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
 /*! Raygun4js - v2.4.3 - 2016-12-20
+=======
+/*! Raygun4js - v1.18.6 - 2015-10-08
+>>>>>>> Change key on offline storage stuff.
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1452,9 +1456,14 @@ var raygunFactory = function (window, $, undefined) {
         return null;
     };
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
     _private.clearCookie = function (key) {
         _private.createCookie(key, '', -1);
     };
+=======
+    try {
+      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
+>>>>>>> Change key on offline storage stuff.
 
     _private.log = function (message, data) {
         if (window.console && window.console.log && _debugMode) {
@@ -1466,6 +1475,7 @@ var raygunFactory = function (window, $, undefined) {
         }
     };
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
     /* internals */
 
     function truncateURL(url) {
@@ -1485,6 +1495,23 @@ var raygunFactory = function (window, $, undefined) {
             if (truncated !== sanitizedPath) {
                 truncated += '..';
             }
+=======
+  function sendSavedErrors() {
+    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
+        for (var key in localStorage) {
+        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+          try {
+            sendToRaygun(JSON.parse(localStorage[key]));
+          } catch(e) {
+            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+          }
+          
+          try {
+            localStorage.removeItem(key);
+          } catch(e) {
+            _private.log('Raygun4JS: Unable to remove error');
+          }
+>>>>>>> Change key on offline storage stuff.
         }
 
         return truncated;
@@ -1718,11 +1745,17 @@ var raygunFactory = function (window, $, undefined) {
             if (stackTrace.stack[0].url !== null && stackTrace.stack[0].url.indexOf(domain) === -1) {
                 var allowedDomainFound = false;
 
+<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
                 for (var i in _whitelistedScriptDomains) {
                     if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
                         allowedDomainFound = true;
                     }
                 }
+=======
+    _private.log("Is offline enabled? " + _enableOfflineSave); 
+
+    if ('withCredentials' in xhr) {
+>>>>>>> Change key on offline storage stuff.
 
                 if (!allowedDomainFound) {
                     _private.log('Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain');

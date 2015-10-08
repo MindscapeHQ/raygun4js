@@ -460,8 +460,8 @@ var raygunFactory = function (window, $, undefined) {
     function offlineSave(url, data) {
         var dateTime = new Date().toJSON();
 
-        try {
-            var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+    try {
+      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -479,19 +479,21 @@ var raygunFactory = function (window, $, undefined) {
         }
     }
 
-    function sendSavedErrors() {
-        if (localStorageAvailable() && localStorage && localStorage.length > 0) {
-            for (var key in localStorage) {
-                if (key.substring(0, 9) === 'raygunjs=') {
-                    try {
-                        var payload = JSON.parse(localStorage[key]);
-                        makePostCorsRequest(payload.url, payload.data);
-                        localStorage.removeItem(key);
-                    } catch (e) {
-                        _private.log('Raygun4JS: Unable to send saved error');
-                    }
-                }
-            }
+  function sendSavedErrors() {
+    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
+        for (var key in localStorage) {
+        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+          try {
+            sendToRaygun(JSON.parse(localStorage[key]));
+          } catch(e) {
+            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+          }
+          
+          try {
+            localStorage.removeItem(key);
+          } catch(e) {
+            _private.log('Raygun4JS: Unable to remove error');
+          }
         }
     }
 
@@ -848,10 +850,9 @@ var raygunFactory = function (window, $, undefined) {
 
         if ('withCredentials' in xhr) {
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) {
-                    return;
-                }
+    _private.log("Is offline enabled? " + _enableOfflineSave); 
+
+    if ('withCredentials' in xhr) {
 
                 if (xhr.status === 202) {
                     sendSavedErrors();
