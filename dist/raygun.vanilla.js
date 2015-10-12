@@ -1,8 +1,12 @@
+<<<<<<< 5a4ef942da0ce52c5e57c591936f3154e0ae4999
 <<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
 /*! Raygun4js - v2.4.3 - 2016-12-20
 =======
 /*! Raygun4js - v1.18.6 - 2015-10-08
 >>>>>>> Change key on offline storage stuff.
+=======
+/*! Raygun4js - v1.18.6 - 2015-10-13
+>>>>>>> Add ability to send old cached data
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1499,7 +1503,9 @@ var raygunFactory = function (window, $, undefined) {
   function sendSavedErrors() {
     if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
-        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+
+        // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+        if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
           try {
             sendToRaygun(JSON.parse(localStorage[key]));
           } catch(e) {

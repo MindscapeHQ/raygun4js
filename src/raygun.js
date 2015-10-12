@@ -482,7 +482,9 @@ var raygunFactory = function (window, $, undefined) {
   function sendSavedErrors() {
     if (localStorageAvailable() && localStorage && localStorage.length > 0) {
         for (var key in localStorage) {
-        if (key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+
+        // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+        if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
           try {
             sendToRaygun(JSON.parse(localStorage[key]));
           } catch(e) {
