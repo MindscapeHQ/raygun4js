@@ -443,34 +443,36 @@ var raygunFactory = function (window, $, undefined) {
   }
 
   function filterObject(reference, parentKey) {
-      if (reference == null) {
-          return reference;
-      }
+    if (reference == null) {
+        return reference;
+    }
 
-      if (Object.prototype.toString.call(reference) !== '[object Object]') {
-          return reference;
-      }
+    if (Object.prototype.toString.call(reference) !== '[object Object]') {
+        return reference;
+    }
 
-      for (var propertyName in reference) {
-          var propertyValue = reference[propertyName];
+    var newObject = {};
 
-          if (propertyValue == null) {
-              continue;
-          }
+    for (var propertyName in reference) {
+        var propertyValue = reference[propertyName];
 
-          if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
+        if (propertyValue == null) {
+            continue;
+        }
+
+        if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
             if ((parentKey !== 'Details' || propertyName !== 'Client')) {
-              reference[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+                newObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
             }
-          } else {
+        } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
             if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
-              reference[propertyName] = filterValue(propertyName, propertyValue);
+                newObject[propertyName] = filterValue(propertyName, propertyValue);
             }
-          }
-      }
+        }
+    }
 
-      return reference;
-  }
+    return newObject;
+}
 
   function processUnhandledException(stackTrace, options) {
     var stack = [],
