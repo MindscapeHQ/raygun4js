@@ -451,7 +451,7 @@ var raygunFactory = function (window, $, undefined) {
         return reference;
     }
 
-    var newObject = {};
+    var filteredObject = {};
 
     for (var propertyName in reference) {
         var propertyValue = reference[propertyName];
@@ -462,16 +462,16 @@ var raygunFactory = function (window, $, undefined) {
 
         if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
             if ((parentKey !== 'Details' || propertyName !== 'Client')) {
-                newObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+                filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
             }
         } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
             if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
-                newObject[propertyName] = filterValue(propertyName, propertyValue);
+                filteredObject[propertyName] = filterValue(propertyName, propertyValue);
             }
         }
     }
 
-    return newObject;
+    return filteredObject;
 }
 
   function processUnhandledException(stackTrace, options) {
