@@ -100,6 +100,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-string-replace');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jasmine','clean', 'concat', 'string-replace', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'jasmine', 'clean', 'concat', 'string-replace', 'uglify']);
 
 };
