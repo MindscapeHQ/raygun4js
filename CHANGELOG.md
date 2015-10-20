@@ -1,3 +1,6 @@
+* v1.18.7
+  - Create copy of customData object when filtering
+  
 * v1.18.6
   - Slice function check for older browsers
   
