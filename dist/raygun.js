@@ -1832,7 +1832,7 @@ var raygunFactory = function (window, $, undefined) {
         },
         'Client': {
           'Name': 'raygun-js',
-          'Version': '1.18.6'
+          'Version': '1.18.7'
         },
         'UserCustomData': finalCustomData,
         'Tags': options.tags,
