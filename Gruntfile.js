@@ -73,8 +73,21 @@ module.exports = function(grunt) {
       src: {
         files: '<%= jshint.src.src %>',
         tasks: ['jshint:src', 'jasmine']
-      },
+      }
     },
+    'string-replace': {
+      dist: {
+        files: {
+          'dist/': 'dist/*.js'
+        },
+        options: {
+          replacements: [{
+            pattern: /({{VERSION}})/gmi,
+            replacement: '<%= pkg.version %>'
+          }]
+        }
+      }
+    }
   });
 
   // These plugins provide necessary tasks.
@@ -84,8 +97,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-string-replace');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jasmine', 'clean', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'jasmine','clean', 'concat', 'string-replace', 'uglify']);
 
 };
