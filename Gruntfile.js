@@ -22,10 +22,10 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.js-url.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.js-url.js']
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js'],
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js']
         }
-      },
+      }
     },
     uglify: {
       options: {
@@ -37,7 +37,7 @@ module.exports = function(grunt) {
           'dist/raygun.min.js': ['dist/raygun.js'],
           'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js']
         }
-      },
+      }
     },
     jshint: {
       gruntfile: {
@@ -48,13 +48,14 @@ module.exports = function(grunt) {
       },
       src: {
         options: {
-          jshintrc: 'src/.jshintrc'
+          jshintrc: 'src/.jshintrc',
+          ignores: ['src/snippet/**/*.js']
         },
         src: ['src/**/*.js']
-      },
+      }
     },
     jasmine : {
-      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygunjs-url.js'],
+      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygunjs-url.js', 'src/raygun.loader.js'],
       options : {
         specs : 'spec/**/*.js',
         vendor : ['tracekit/tracekit.js'],
@@ -100,6 +101,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-string-replace');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jasmine', 'clean', 'concat', 'string-replace', 'uglify']);
-
+  grunt.registerTask('default', ['jshint', 'jasmine','clean', 'concat', 'string-replace', 'uglify']);
 };
