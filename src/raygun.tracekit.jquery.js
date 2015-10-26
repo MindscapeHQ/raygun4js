@@ -5,7 +5,7 @@
 (function traceKitAsyncForjQuery($, TraceKit) {
   'use strict';
   // quit if jQuery isn't on the page
-  if (!$) {
+  if (!$ || !$.event || !$.event.add) {
     return;
   }
 
@@ -14,7 +14,7 @@
     if (typeof handler !== 'function' && typeof handler.handler !== 'function') {
       _oldEventAdd.call(this, elem, types, handler, data, selector);
     }
-    
+
     var _handler;
 
     if (handler.handler) {

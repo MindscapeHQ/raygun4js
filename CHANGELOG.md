@@ -1,3 +1,6 @@
+* v2.0.0
+  - Adds support for Real User Monitoring
+  
 * v1.18.7
   - Create copy of customData object when filtering
   

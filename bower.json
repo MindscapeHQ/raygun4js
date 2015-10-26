@@ -1,6 +1,6 @@
 {
   "name": "raygun4js",
-  "version": "1.18.7",
+  "version": "2.0.0",
   "homepage": "http://raygun.io",
   "authors": [
     "Mindscape <hello@raygun.io>"
@@ -29,11 +29,11 @@
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.11.2",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-uglify": "!0.9.1",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-contrib-clean": "~0.6.0",
-    "grunt": "~0.4.5",
-    "grunt-contrib-jasmine": "~0.8.2"
+    "grunt-contrib-concat": "~0.1.2",
+    "grunt-contrib-uglify": "~0.1.1",
+    "grunt-contrib-watch": "~0.2.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jasmine": "~0.4.2"
   }
 }
