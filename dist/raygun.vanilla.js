@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.0 - 2015-10-27
+/*! Raygun4js - v2.0.1 - 2015-10-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1816,7 +1816,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.0.0'
+                    'Version': '2.0.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2230,8 +2230,17 @@ var raygunRumFactory = function (window, $, Raygun) {
           return Math.min(milliseconds, 300000);
         }
 
-        function getEncodedTimingData(timing, offset) {
+        function sanitizeNaNs(data) {
+            for (var i in data) {
+              if (isNaN(data[i]) && typeof data[i] !== 'string') {
+                data[i] = 0;
+              }
+            }
 
+            return data;
+        }
+
+        function getEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration,
                 t: 'p'
@@ -2291,6 +2300,8 @@ var raygunRumFactory = function (window, $, Raygun) {
                 data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
             }
 
+            data = sanitizeNaNs(data);
+
             return data;
         }
 
@@ -2328,6 +2339,8 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
                 data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
             }
+
+            data = sanitizeNaNs(data);
 
             return data;
         }
