@@ -183,7 +183,7 @@ var raygunFactory = function (window, $, undefined) {
             _user = {
                 'Identifier': user
             };
-            if (isAnonymous) {
+            if (typeof isAnonymous === 'boolean') {
                 _user['IsAnonymous'] = isAnonymous;
             }
             if (email) {
