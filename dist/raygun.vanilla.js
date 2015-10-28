@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.1 - 2015-10-28
+/*! Raygun4js - v2.0.2 - 2015-10-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1318,7 +1318,7 @@ var raygunFactory = function (window, $, undefined) {
             _user = {
                 'Identifier': user
             };
-            if (isAnonymous) {
+            if (typeof isAnonymous === 'boolean') {
                 _user['IsAnonymous'] = isAnonymous;
             }
             if (email) {
@@ -1816,7 +1816,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.0.1'
+                    'Version': '2.0.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
