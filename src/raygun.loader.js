@@ -132,7 +132,9 @@
     }
   };
 
-  if (window.addEventListener) {
+  if (document.readyState === 'complete') {
+    onLoadHandler();
+  } else if (window.addEventListener) {
     window.addEventListener('load', onLoadHandler);
   } else {
     window.attachEvent('onload', onLoadHandler);

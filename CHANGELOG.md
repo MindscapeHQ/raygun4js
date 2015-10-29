@@ -1,15 +1,24 @@
+* v2.0.3
+  - Fixes a snippet loader race condition
+
+- v2.0.2
+  - Fixes an issue with isAnonymous from setUser
+
+- v2.0.1
+  - Guard against NaNs in Pulse timing data
+
 * v2.0.0
   - Adds support for Real User Monitoring
-  
+
 * v1.18.7
   - Create copy of customData object when filtering
-  
+
 * v1.18.6
   - Slice function check for older browsers
-  
+
 * v1.18.5
   - Limit active data on JQuery AJAX errors
-  
+
 * v1.18.4
   - Error payloads are no longer persisted in localStorage if sending failed due to RG plan hitting its monthly cap
   - Guard against invalid JSON being persisted in localStorage on send failure
