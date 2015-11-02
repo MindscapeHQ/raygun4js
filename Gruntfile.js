@@ -87,6 +87,28 @@ module.exports = function(grunt) {
             replacement: '<%= pkg.version %>'
           }]
         }
+      },
+      bower: {
+        files: {
+          './': 'bower.json'
+        },
+        options: {
+          replacements: [{
+            pattern: /"version": (.*),/gmi,
+            replacement: '"version": "<%= pkg.version %>",'
+          }]
+        }
+      },
+      nuspec: {
+        files: {
+          './': 'raygun4js.nuspec'
+        },
+        options: {
+          replacements: [{
+            pattern: /<version>(.*)<\/version>/gmi,
+            replacement: "<version><%= pkg.version %></version>"
+          }]
+        }
       }
     }
   });
