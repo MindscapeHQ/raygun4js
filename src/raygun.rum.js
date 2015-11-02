@@ -7,7 +7,7 @@
  */
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, includeHashInPulseUrl) {
         var self = this;
         var _private = {};
 
@@ -20,6 +20,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.version = version;
         this.heartBeatInterval = null;
         this.offset = 0;
+        this.includeHashInPulseUrl = includeHashInPulseUrl;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
@@ -369,12 +370,24 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPrimaryTimingData() {
-            return {
+            var timingData = {
                 url: window.location.protocol + '//' + window.location.host + window.location.pathname,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
             };
+
+            if(self.includeHashInPulseUrl) {
+                var hash = window.location.hash;
+
+                if(hash.substring(0,1) !== '#') {
+                    hash = '#' + hash;
+                }
+
+                timingData.url += hash;
+            }
+
+            return timingData;
         }
 
         function getSecondaryTimingData(timing) {
