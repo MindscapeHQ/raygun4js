@@ -15,8 +15,12 @@
         o(msg, url, line, col, err);
       }
 
+      if (!err) {
+        err = new Error(msg);
+      }
+
       wind[obj].q = wind[obj].q || [];
       wind[obj].q.push({e: err});
     };
 
-})(window, document, 'script', '//cdn.raygun.io/raygun4js/alpha-2.0.0/raygun.min.js', 'rg4js');
+})(window, document, 'script', '//cdn.raygun.io/raygun4js/raygun.min.js', 'rg4js');

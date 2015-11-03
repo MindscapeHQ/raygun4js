@@ -1,4 +1,3 @@
-!function(n,e,a,t,r,s,c){n.RaygunObject=r,n[r]=n[r]||function(){(n[r].o=n[r].o
-||[]).push(arguments)},s=e.createElement(a),c=e.getElementsByTagName(a)[0],
-s.async=1,s.src=t,c.parentNode.insertBefore(s,c)}(window,document,"script",
-"//cdn.raygun.io/raygun4js/alpha-2.0.0/raygun.min.js","rg4js")
+!function(a,b,c,d,e,f,g){a.RaygunObject=e,a[e]=a[e]||function(){
+(a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
+f.async=1,f.src=d,g.parentNode.insertBefore(f,g)}(window,document,"script","//cdn.raygun.io/raygun4js/raygun.min.js","rg4js");
