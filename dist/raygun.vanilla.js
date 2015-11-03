@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.3 - 2015-10-30
+/*! Raygun4js - v2.0.3 - 2015-11-03
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2185,6 +2185,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function readSessionCookieElement(cookieString, element) {
+          if (cookieString === null) { return null; }
+
           var set = cookieString.split(/[|&]/);
 
           if (element === 'id') {
@@ -2195,17 +2197,22 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function readCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for (var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) === ' ') {
-                    c = c.substring(1, c.length);
+            try {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) === ' ') {
+                        c = c.substring(1, c.length);
+                    }
+                    if (c.indexOf(nameEQ) === 0) {
+                        return c.substring(nameEQ.length, c.length);
+                    }
                 }
-                if (c.indexOf(nameEQ) === 0) {
-                    return c.substring(nameEQ.length, c.length);
-                }
+            } 
+            catch (e) {                
             }
+
             return null;
         }
 
