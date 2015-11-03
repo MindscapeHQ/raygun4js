@@ -208,6 +208,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function readSessionCookieElement(cookieString, element) {
+          if (cookieString === null) { return null; }
+
           var set = cookieString.split(/[|&]/);
 
           if (element === 'id') {
