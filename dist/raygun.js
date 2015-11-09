@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.3 - 2015-10-30
+/*! Raygun4js - v2.0.3 - 2015-11-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1239,7 +1239,6 @@ var raygunFactory = function (window, $, undefined) {
         $document;
 
 
-
     var Raygun =
     {
         noConflict: function () {
@@ -1259,7 +1258,7 @@ var raygunFactory = function (window, $, undefined) {
             _traceKit.remoteFetching = false;
 
             if (typeof customdata !== 'undefined') {
-              _customData = customdata;
+                _customData = customdata;
             }
 
             if ($) {
@@ -1293,7 +1292,7 @@ var raygunFactory = function (window, $, undefined) {
                 }
 
                 if (options.apiEndpoint) {
-                  _raygunApiUrl = options.apiEndpoint;
+                    _raygunApiUrl = options.apiEndpoint;
                 }
             }
 
@@ -1301,7 +1300,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode);
                     _rum.attach();
                 };
 
@@ -1309,9 +1308,9 @@ var raygunFactory = function (window, $, undefined) {
                     startRum();
                 } else {
                     if (window.addEventListener) {
-                      window.addEventListener('load', startRum);
+                        window.addEventListener('load', startRum);
                     } else {
-                      window.attachEvent('onload', startRum);
+                        window.attachEvent('onload', startRum);
                     }
                 }
             }
@@ -1337,7 +1336,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
-              window.onerror = null;
+                window.onerror = null;
             }
 
             _traceKit.report.subscribe(processUnhandledException);
@@ -1362,8 +1361,8 @@ var raygunFactory = function (window, $, undefined) {
 
         send: function (ex, customData, tags) {
             if (_disableErrorTracking) {
-              _private.log('Error not sent due to disabled error tracking');
-              return Raygun;
+                _private.log('Error not sent due to disabled error tracking');
+                return Raygun;
             }
 
             try {
@@ -1432,10 +1431,10 @@ var raygunFactory = function (window, $, undefined) {
         },
 
         setFilterScope: function (scope) {
-          if (scope === 'customData' || scope === 'all') {
-            _filterScope = scope;
-          }
-          return Raygun;
+            if (scope === 'customData' || scope === 'all') {
+                _filterScope = scope;
+            }
+            return Raygun;
         },
 
         whitelistCrossOriginDomains: function (whitelist) {
@@ -1458,15 +1457,15 @@ var raygunFactory = function (window, $, undefined) {
 
     var _private = Raygun._private = Raygun._private || {},
         _seal = Raygun._seal = Raygun._seal || function () {
-            delete Raygun._private;
-            delete Raygun._seal;
-            delete Raygun._unseal;
-        },
+                delete Raygun._private;
+                delete Raygun._seal;
+                delete Raygun._unseal;
+            },
         _unseal = Raygun._unseal = Raygun._unseal || function () {
-            Raygun._private = _private;
-            Raygun._seal = _seal;
-            Raygun._unseal = _unseal;
-        };
+                Raygun._private = _private;
+                Raygun._seal = _seal;
+                Raygun._unseal = _unseal;
+            };
 
     _private.getUuid = function () {
         function _p8(s) {
@@ -1631,7 +1630,7 @@ var raygunFactory = function (window, $, undefined) {
             var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
-                localStorage[key] = JSON.stringify({ url : url,  data : data });
+                localStorage[key] = JSON.stringify({url: url, data: data});
             }
         } catch (e) {
             _private.log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -1682,16 +1681,16 @@ var raygunFactory = function (window, $, undefined) {
 
     function filterValue(key, value) {
         if (_filteredKeys) {
-          for (var i = 0; i < _filteredKeys.length; i++) {
-            if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
-              if (_filteredKeys[i].exec(key) !== null) {
-                return '[removed by filter]';
-              }
+            for (var i = 0; i < _filteredKeys.length; i++) {
+                if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
+                    if (_filteredKeys[i].exec(key) !== null) {
+                        return '[removed by filter]';
+                    }
+                }
+                else if (_filteredKeys[i] === key) {
+                    return '[removed by filter]';
+                }
             }
-            else if (_filteredKeys[i] === key) {
-                return '[removed by filter]';
-            }
-          }
         }
 
         return value;
@@ -1770,24 +1769,24 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         if (_excludedHostnames instanceof Array) {
-              for (var hostIndex in _excludedHostnames) {
+            for (var hostIndex in _excludedHostnames) {
                 if (_excludedHostnames.hasOwnProperty(hostIndex)) {
                     if (window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])) {
-                      _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+                        _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
-                      return;
+                        return;
                     }
                 }
             }
         }
 
         if (_excludedUserAgents instanceof Array) {
-            for(var userAgentIndex in _excludedUserAgents) {
+            for (var userAgentIndex in _excludedUserAgents) {
                 if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                    if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
-                      _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                    if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+                        _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
 
-                      return;
+                        return;
                     }
                 }
             }
@@ -1844,17 +1843,17 @@ var raygunFactory = function (window, $, undefined) {
 
         var finalCustomData;
         if (_filterScope === 'customData') {
-          finalCustomData = filterObject(options.customData, 'UserCustomData');
+            finalCustomData = filterObject(options.customData, 'UserCustomData');
         } else {
-          finalCustomData = options.customData;
+            finalCustomData = options.customData;
         }
 
         try {
-          JSON.stringify(finalCustomData);
+            JSON.stringify(finalCustomData);
         } catch (e) {
-          var msg = 'Cannot add custom data; may contain circular reference';
-          finalCustomData = { error: msg };
-          _private.log('Raygun4JS: ' + msg);
+            var msg = 'Cannot add custom data; may contain circular reference';
+            finalCustomData = {error: msg};
+            _private.log('Raygun4JS: ' + msg);
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
@@ -1904,7 +1903,7 @@ var raygunFactory = function (window, $, undefined) {
         payload.Details.User = _user;
 
         if (_filterScope === 'all') {
-          payload = filterObject(payload);
+            payload = filterObject(payload);
         }
 
         if (typeof _beforeSendCallback === 'function') {
@@ -2009,40 +2008,42 @@ var raygunFactory = function (window, $, undefined) {
 
     // Mozilla's toISOString() shim for IE8
     if (!Date.prototype.toISOString) {
-      (function() {
-          function pad(number) {
-              var r = String(number);
-              if ( r.length === 1 ) {
-                  r = '0' + r;
-              }
-              return r;
-          }
-          Date.prototype.toISOString = function() {
-              return this.getUTCFullYear() + '-' + pad( this.getUTCMonth() + 1 ) + '-' + pad( this.getUTCDate() ) + 'T' + pad( this.getUTCHours() ) + ':' + pad( this.getUTCMinutes() ) + ':' + pad( this.getUTCSeconds() ) + '.' + String( (this.getUTCMilliseconds()/1000).toFixed(3) ).slice( 2, 5 ) + 'Z';
-          };
-      }());
+        (function () {
+            function pad(number) {
+                var r = String(number);
+                if (r.length === 1) {
+                    r = '0' + r;
+                }
+                return r;
+            }
+
+            Date.prototype.toISOString = function () {
+                return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
+            };
+        }());
     }
 
     // Mozilla's bind() shim for IE8
     if (!Function.prototype.bind) {
-      Function.prototype.bind = function(oThis) {
-        if (typeof this !== 'function') {
-          throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-        }
+        Function.prototype.bind = function (oThis) {
+            if (typeof this !== 'function') {
+                throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+            }
 
-        var aArgs   = Array.prototype.slice.call(arguments, 1),
-            fToBind = this,
-            FNOP    = function() {},
-            fBound  = function() {
-              return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
-                     aArgs.concat(Array.prototype.slice.call(arguments)));
-            };
+            var aArgs = Array.prototype.slice.call(arguments, 1),
+                fToBind = this,
+                FNOP = function () {
+                },
+                fBound = function () {
+                    return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
+                        aArgs.concat(Array.prototype.slice.call(arguments)));
+                };
 
-        FNOP.prototype = this.prototype;
-        fBound.prototype = new FNOP();
+            FNOP.prototype = this.prototype;
+            fBound.prototype = new FNOP();
 
-        return fBound;
-      };
+            return fBound;
+        };
     }
 
     return Raygun;
@@ -2052,14 +2053,46 @@ raygunFactory(window, window.jQuery);
 
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
         var self = this;
         var _private = {};
 
         this.cookieName = 'raygun4js-sid';
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
-        this.makePostCorsRequest = makePostCorsRequest;
+        this.debugMode = debugMode;
+        this.excludedHostNames = excludedHostNames;
+        this.excludedUserAgents = excludedUserAgents;
+
+        this.makePostCorsRequest = function (url, data) {
+            if (self.excludedUserAgents instanceof Array) {
+                for (var userAgentIndex in self.excludedUserAgents) {
+                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+                            if (self.debugMode) {
+                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                            }
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (self.excludedHostNames instanceof Array) {
+                for (var hostIndex in self.excludedHostNames) {
+                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
+                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            makePostCorsRequest(url, data);
+        };
         this.sessionId = null;
         this.user = user;
         this.version = version;
@@ -2071,7 +2104,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.pageLoaded(isNewSession);
             });
 
-            window.onbeforeunload = function() {
+            window.onbeforeunload = function () {
                 var data = [];
 
                 extractChildData(data);
@@ -2094,21 +2127,21 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
 
             var clickHandler = function () {
-              this.updateCookieTimestamp();
+                this.updateCookieTimestamp();
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
-              if (document.visibilityState === 'visible') {
-                this.updateCookieTimestamp();
-              }
+                if (document.visibilityState === 'visible') {
+                    this.updateCookieTimestamp();
+                }
 
             }.bind(_private);
 
             if (window.addEventListener) {
-              window.addEventListener('click', clickHandler);
-              document.addEventListener('visibilitychange', visibilityChangeHandler);
+                window.addEventListener('click', clickHandler);
+                document.addEventListener('visibilitychange', visibilityChangeHandler);
             } else if (window.attachEvent) {
-              document.attachEvent('onclick', clickHandler);
+                document.attachEvent('onclick', clickHandler);
             }
         };
 
@@ -2182,7 +2215,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var performanceData = getPerformanceData();
 
             if (performanceData === null) {
-              return;
+                return;
             }
 
             var payload = {
@@ -2205,14 +2238,14 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var nullCookie = existingCookie === null;
             var legacyCookie = typeof exisitingCookie === 'string' &&
-              existingCookie.length > 0 &&
-              existingCookie.indexOf('timestamp') === -1;
+                existingCookie.length > 0 &&
+                existingCookie.indexOf('timestamp') === -1;
             var expiredCookie = null;
 
             if (!nullCookie && !legacyCookie) {
-              var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-              var halfHrAgo = new Date(new Date() - 30 * 60000);
-              expiredCookie = existingTimestamp < halfHrAgo;
+                var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+                var halfHrAgo = new Date(new Date() - 30 * 60000);
+                expiredCookie = existingTimestamp < halfHrAgo;
             }
 
             if (nullCookie || legacyCookie || expiredCookie) {
@@ -2224,12 +2257,12 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var id = readSessionCookieElement(sessionCookie, 'id');
 
                 if (id === 'undefined') {
-                  self.sessionId = randomKey(32);
-                  createCookie(self.cookieName, self.sessionId);
-                  callback(true);
+                    self.sessionId = randomKey(32);
+                    createCookie(self.cookieName, self.sessionId);
+                    callback(true);
                 } else {
-                  self.sessionId = id;
-                  callback(false);
+                    self.sessionId = id;
+                    callback(false);
                 }
             }
         }
@@ -2253,13 +2286,13 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function readSessionCookieElement(cookieString, element) {
-          var set = cookieString.split(/[|&]/);
+            var set = cookieString.split(/[|&]/);
 
-          if (element === 'id') {
-            return set[1];
-          } else if (element === 'timestamp') {
-            return set[3];
-          }
+            if (element === 'id') {
+                return set[1];
+            } else if (element === 'timestamp') {
+                return set[3];
+            }
         }
 
         function readCookie(name) {
@@ -2278,31 +2311,31 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function updateCookieTimestamp() {
-          var existingCookie = readCookie(self.cookieName);
-          var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-          var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-          var expiredCookie = timestamp < halfHrAgo;
+            var existingCookie = readCookie(self.cookieName);
+            var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+            var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
+            var expiredCookie = timestamp < halfHrAgo;
 
-          if (expiredCookie) {
-            self.sessionId = randomKey(32);
-          }
+            if (expiredCookie) {
+                self.sessionId = randomKey(32);
+            }
 
-          createCookie(self.cookieName, self.sessionId);
+            createCookie(self.cookieName, self.sessionId);
 
-          if (expiredCookie) {
-            self.pageLoaded(true);
-          }
+            if (expiredCookie) {
+                self.pageLoaded(true);
+            }
         }
 
         function maxFiveMinutes(milliseconds) {
-          return Math.min(milliseconds, 300000);
+            return Math.min(milliseconds, 300000);
         }
 
         function sanitizeNaNs(data) {
             for (var i in data) {
-              if (isNaN(data[i]) && typeof data[i] !== 'string') {
-                data[i] = 0;
-              }
+                if (isNaN(data[i]) && typeof data[i] !== 'string') {
+                    data[i] = 0;
+                }
             }
 
             return data;
@@ -2439,20 +2472,34 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var resources = window.performance.getEntries();
 
                 for (var i = self.offset; i < resources.length; i++) {
-                  var segment = resources[i].name.split('?')[0];
+                    var segment = resources[i].name.split('?')[0];
 
-                  // swallow any calls to Raygun itself
-                  if (segment.indexOf(self.apiUrl) === 0) { continue; }
+                    // swallow any calls to Raygun itself
+                    if (segment.indexOf(self.apiUrl) === 0) {
+                        continue;
+                    }
 
-                  // Other ignored calls
-                  if (segment.indexOf('favicon.ico') > 0) { continue; }
-                  if (segment.indexOf('about:blank') === 0) { continue; }
-                  if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) { continue; }
-                  if (segment.indexOf('chrome-extension://') === 0) { continue; }
-                  if (segment.indexOf('res://') === 0) { continue; }
-                  if (segment.indexOf('file://') === 0) { continue; }
+                    // Other ignored calls
+                    if (segment.indexOf('favicon.ico') > 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('about:blank') === 0) {
+                        continue;
+                    }
+                    if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) {
+                        continue;
+                    }
+                    if (segment.indexOf('chrome-extension://') === 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('res://') === 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('file://') === 0) {
+                        continue;
+                    }
 
-                  collection.push(getSecondaryTimingData(resources[i]));
+                    collection.push(getSecondaryTimingData(resources[i]));
                 }
 
                 self.offset = resources.length;
@@ -2477,6 +2524,16 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function randomKey(length) {
             return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+        }
+
+        function log(message, data) {
+            if (window.console && window.console.log && self.debugMode) {
+                window.console.log(message);
+
+                if (data) {
+                    window.console.log(data);
+                }
+            }
         }
 
         _private.updateCookieTimestamp = updateCookieTimestamp;
