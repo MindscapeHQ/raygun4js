@@ -1233,7 +1233,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode);
                     _rum.attach();
                 };
 
@@ -1996,14 +1996,46 @@ raygunFactory(window, window.jQuery);
 
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
         var self = this;
         var _private = {};
 
         this.cookieName = 'raygun4js-sid';
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
-        this.makePostCorsRequest = makePostCorsRequest;
+        this.debugMode = debugMode;
+        this.excludedHostNames = excludedHostNames;
+        this.excludedUserAgents = excludedUserAgents;
+
+        this.makePostCorsRequest = function (url, data) {
+            if (self.excludedUserAgents instanceof Array) {
+                for (var userAgentIndex in self.excludedUserAgents) {
+                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+                            if (self.debugMode) {
+                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                            }
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (self.excludedHostNames instanceof Array) {
+                for (var hostIndex in self.excludedHostNames) {
+                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
+                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            makePostCorsRequest(url, data);
+        };
         this.sessionId = null;
         this.user = user;
         this.version = version;
@@ -2015,7 +2047,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.pageLoaded(isNewSession);
             });
 
-            window.onbeforeunload = function() {
+            window.onbeforeunload = function () {
                 var data = [];
 
                 extractChildData(data);
@@ -2038,21 +2070,21 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
 
             var clickHandler = function () {
-              this.updateCookieTimestamp();
+                this.updateCookieTimestamp();
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
-              if (document.visibilityState === 'visible') {
-                this.updateCookieTimestamp();
-              }
+                if (document.visibilityState === 'visible') {
+                    this.updateCookieTimestamp();
+                }
 
             }.bind(_private);
 
             if (window.addEventListener) {
-              window.addEventListener('click', clickHandler);
-              document.addEventListener('visibilitychange', visibilityChangeHandler);
+                window.addEventListener('click', clickHandler);
+                document.addEventListener('visibilitychange', visibilityChangeHandler);
             } else if (window.attachEvent) {
-              document.attachEvent('onclick', clickHandler);
+                document.attachEvent('onclick', clickHandler);
             }
         };
 
@@ -2130,7 +2162,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var performanceData = getPerformanceData();
 
             if (performanceData === null) {
-              return;
+                return;
             }
 
             var payload = {
@@ -2158,14 +2190,14 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var nullCookie = existingCookie === null;
             var legacyCookie = typeof exisitingCookie === 'string' &&
-              existingCookie.length > 0 &&
-              existingCookie.indexOf('timestamp') === -1;
+                existingCookie.length > 0 &&
+                existingCookie.indexOf('timestamp') === -1;
             var expiredCookie = null;
 
             if (!nullCookie && !legacyCookie) {
-              var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-              var halfHrAgo = new Date(new Date() - 30 * 60000);
-              expiredCookie = existingTimestamp < halfHrAgo;
+                var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+                var halfHrAgo = new Date(new Date() - 30 * 60000);
+                expiredCookie = existingTimestamp < halfHrAgo;
             }
 
             if (nullCookie || legacyCookie || expiredCookie) {
@@ -2177,12 +2209,12 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var id = readSessionCookieElement(sessionCookie, 'id');
 
                 if (id === 'undefined') {
-                  self.sessionId = randomKey(32);
-                  createCookie(self.cookieName, self.sessionId);
-                  callback(true);
+                    self.sessionId = randomKey(32);
+                    createCookie(self.cookieName, self.sessionId);
+                    callback(true);
                 } else {
-                  self.sessionId = id;
-                  callback(false);
+                    self.sessionId = id;
+                    callback(false);
                 }
             }
         }
@@ -2206,13 +2238,13 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function readSessionCookieElement(cookieString, element) {
-          var set = cookieString.split(/[|&]/);
+            var set = cookieString.split(/[|&]/);
 
-          if (element === 'id') {
-            return set[1];
-          } else if (element === 'timestamp') {
-            return set[3];
-          }
+            if (element === 'id') {
+                return set[1];
+            } else if (element === 'timestamp') {
+                return set[3];
+            }
         }
 
         function readCookie(name) {
@@ -2231,7 +2263,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function updateCookieTimestamp() {
-          var existingCookie = readCookie(self.cookieName);
+            var existingCookie = readCookie(self.cookieName);
 
           var expiredCookie;
           if (existingCookie) {
@@ -2243,26 +2275,26 @@ var raygunRumFactory = function (window, $, Raygun) {
             expiredCookie = true;
           }
 
-          if (expiredCookie) {
-            self.sessionId = randomKey(32);
-          }
+            if (expiredCookie) {
+                self.sessionId = randomKey(32);
+            }
 
-          createCookie(self.cookieName, self.sessionId);
+            createCookie(self.cookieName, self.sessionId);
 
-          if (expiredCookie) {
-            self.pageLoaded(true);
-          }
+            if (expiredCookie) {
+                self.pageLoaded(true);
+            }
         }
 
         function maxFiveMinutes(milliseconds) {
-          return Math.min(milliseconds, 300000);
+            return Math.min(milliseconds, 300000);
         }
 
         function sanitizeNaNs(data) {
             for (var i in data) {
-              if (isNaN(data[i]) && typeof data[i] !== 'string') {
-                data[i] = 0;
-              }
+                if (isNaN(data[i]) && typeof data[i] !== 'string') {
+                    data[i] = 0;
+                }
             }
 
             return data;
@@ -2399,20 +2431,34 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var resources = window.performance.getEntries();
 
                 for (var i = self.offset; i < resources.length; i++) {
-                  var segment = resources[i].name.split('?')[0];
+                    var segment = resources[i].name.split('?')[0];
 
-                  // swallow any calls to Raygun itself
-                  if (segment.indexOf(self.apiUrl) === 0) { continue; }
+                    // swallow any calls to Raygun itself
+                    if (segment.indexOf(self.apiUrl) === 0) {
+                        continue;
+                    }
 
-                  // Other ignored calls
-                  if (segment.indexOf('favicon.ico') > 0) { continue; }
-                  if (segment.indexOf('about:blank') === 0) { continue; }
-                  if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) { continue; }
-                  if (segment.indexOf('chrome-extension://') === 0) { continue; }
-                  if (segment.indexOf('res://') === 0) { continue; }
-                  if (segment.indexOf('file://') === 0) { continue; }
+                    // Other ignored calls
+                    if (segment.indexOf('favicon.ico') > 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('about:blank') === 0) {
+                        continue;
+                    }
+                    if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) {
+                        continue;
+                    }
+                    if (segment.indexOf('chrome-extension://') === 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('res://') === 0) {
+                        continue;
+                    }
+                    if (segment.indexOf('file://') === 0) {
+                        continue;
+                    }
 
-                  collection.push(getSecondaryTimingData(resources[i]));
+                    collection.push(getSecondaryTimingData(resources[i]));
                 }
 
                 self.offset = resources.length;
@@ -2437,6 +2483,16 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function randomKey(length) {
             return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+        }
+
+        function log(message, data) {
+            if (window.console && window.console.log && self.debugMode) {
+                window.console.log(message);
+
+                if (data) {
+                    window.console.log(data);
+                }
+            }
         }
 
         _private.updateCookieTimestamp = updateCookieTimestamp;
