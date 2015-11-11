@@ -8,4 +8,4 @@
     s.async = 1;
     s.src = url;
     n.parentNode.insertBefore(s, n);
-})(window, document, 'script', '//cdn.raygun.io/raygun4js/alpha-2.0.0/raygun.min.js', 'rg4js');
+})(window, document, 'script', '//cdn.raygun.io/raygun4js/raygun.min.js', 'rg4js');

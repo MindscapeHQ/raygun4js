@@ -37,6 +37,17 @@ module.exports = function(grunt) {
           'dist/raygun.min.js': ['dist/raygun.js'],
           'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js']
         }
+      },
+      snippet:{
+        options:{
+          banner: '',
+          sourceMap: false,
+          maxLineLen: 60
+        },
+        files:{
+          'src/snippet/minified.js':['src/snippet/unminified.js'],
+          'src/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js']
+        }
       }
     },
     jshint: {
@@ -85,6 +96,28 @@ module.exports = function(grunt) {
           replacements: [{
             pattern: /({{VERSION}})/gmi,
             replacement: '<%= pkg.version %>'
+          }]
+        }
+      },
+      bower: {
+        files: {
+          './': 'bower.json'
+        },
+        options: {
+          replacements: [{
+            pattern: /"version": (.*),/gmi,
+            replacement: '"version": "<%= pkg.version %>",'
+          }]
+        }
+      },
+      nuspec: {
+        files: {
+          './': 'raygun4js.nuspec'
+        },
+        options: {
+          replacements: [{
+            pattern: /<version>(.*)<\/version>/gmi,
+            replacement: "<version><%= pkg.version %></version>"
           }]
         }
       }
