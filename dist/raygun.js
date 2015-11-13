@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.3 - 2015-10-30
+/*! Raygun4js - v2.0.3 - 2015-11-13
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1258,7 +1258,7 @@ var raygunFactory = function (window, $, undefined) {
             _raygunApiKey = key;
             _traceKit.remoteFetching = false;
 
-            if (typeof customdata !== 'undefined') {
+            if (customdata) {
               _customData = customdata;
             }
 
