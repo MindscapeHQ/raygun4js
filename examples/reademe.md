@@ -28,7 +28,20 @@ Ignore errors generated on localhost and *.local
 
 Ignore errors generated on localhost and *.local
 
---- [ManualSendCrashReporting.html](ManualSendCrashReporting.html)
+---
+
+#### [ManualSendCrashReporting.html](ManualSendCrashReporting.html)
 
 Learn how to manually send errors to Raygun
 
+---
+
+#### [SettingAUserCrashReporting.html](SettingAUserCrashReporting.html)
+
+Send user details through with a crash report
+
+---
+
+#### [TagsCrashReporting.html](TagsCrashReporting.html)
+
+Send custom tags through with the crash report
