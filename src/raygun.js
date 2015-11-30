@@ -55,7 +55,7 @@ var raygunFactory = function (window, $, undefined) {
             _raygunApiKey = key;
             _traceKit.remoteFetching = false;
 
-            if (typeof customdata !== 'undefined') {
+            if (typeof customdata !== 'undefined' && customdata !== null) {
               _customData = customdata;
             }
 
