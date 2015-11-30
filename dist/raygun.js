@@ -2291,9 +2291,16 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function updateCookieTimestamp() {
           var existingCookie = readCookie(self.cookieName);
-          var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-          var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-          var expiredCookie = timestamp < halfHrAgo;
+
+          var expiredCookie;
+          if (existingCookie) {
+            var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+            var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
+            expiredCookie = timestamp < halfHrAgo;
+          }
+          else {
+            expiredCookie = true;
+          }
 
           if (expiredCookie) {
             self.sessionId = randomKey(32);
