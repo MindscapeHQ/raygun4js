@@ -1,5 +1,6 @@
 * v2.1.0
   - Add custom grouping key function
+  - Add ability to ignore hostnames and user agents for Pulse
   - Calls to rg4js() for config setters made after the script has been downloaded by the snippet are now proxied through to the Raygun object, making the V2 API experience like V1
   - Guard against data set with V2 API being null for certain out-of-order declaration scenarios
   - Fix API rejection issue for large heartbeat payloads
