@@ -50,6 +50,12 @@ Send custom tags through with the crash report
 
 ---
 
+##### [CustomErrorGroupingKey.html](CustomErrorGroupingKey.html)
+
+Custom error grouping key
+
+---
+
 ### Pulse
 
 ---

@@ -14,6 +14,7 @@
     setFilterScope,
     user,
     onBeforeSend,
+    groupingKey,
     saveIfOffline,
     whitelistCrossOriginDomains,
     attach,
@@ -67,6 +68,8 @@
           case 'enablePulse':
             enablePulse = value;
             break;
+          case 'groupingKey':
+            groupingKey = value;
         }
       }
     }
@@ -98,6 +101,10 @@
 
   if (onBeforeSend) {
     Raygun.onBeforeSend(onBeforeSend);
+  }
+
+  if(groupingKey) {
+    Raygun.groupingKey(groupingKey);
   }
 
   if (typeof saveIfOffline === 'boolean') {
