@@ -1,3 +1,6 @@
+* v2.0.4
+  - Add ability to set a custom error group key
+
 * v2.0.3
   - Fixes a snippet loader race condition
 

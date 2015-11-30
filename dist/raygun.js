@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.3 - 2015-11-13
+/*! Raygun4js - v2.0.4 - 2015-11-30
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1231,13 +1231,13 @@ var raygunFactory = function (window, $, undefined) {
         _filteredKeys,
         _whitelistedScriptDomains = [],
         _beforeSendCallback,
+        _groupingKeyCallback,
         _raygunApiUrl = 'https://api.raygun.io',
         _excludedHostnames = null,
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
         $document;
-
 
 
     var Raygun =
@@ -1259,7 +1259,7 @@ var raygunFactory = function (window, $, undefined) {
             _traceKit.remoteFetching = false;
 
             if (customdata) {
-              _customData = customdata;
+                _customData = customdata;
             }
 
             if ($) {
@@ -1293,7 +1293,7 @@ var raygunFactory = function (window, $, undefined) {
                 }
 
                 if (options.apiEndpoint) {
-                  _raygunApiUrl = options.apiEndpoint;
+                    _raygunApiUrl = options.apiEndpoint;
                 }
             }
 
@@ -1309,9 +1309,9 @@ var raygunFactory = function (window, $, undefined) {
                     startRum();
                 } else {
                     if (window.addEventListener) {
-                      window.addEventListener('load', startRum);
+                        window.addEventListener('load', startRum);
                     } else {
-                      window.attachEvent('onload', startRum);
+                        window.attachEvent('onload', startRum);
                     }
                 }
             }
@@ -1337,7 +1337,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
-              window.onerror = null;
+                window.onerror = null;
             }
 
             _traceKit.report.subscribe(processUnhandledException);
@@ -1362,8 +1362,8 @@ var raygunFactory = function (window, $, undefined) {
 
         send: function (ex, customData, tags) {
             if (_disableErrorTracking) {
-              _private.log('Error not sent due to disabled error tracking');
-              return Raygun;
+                _private.log('Error not sent due to disabled error tracking');
+                return Raygun;
             }
 
             try {
@@ -1432,10 +1432,10 @@ var raygunFactory = function (window, $, undefined) {
         },
 
         setFilterScope: function (scope) {
-          if (scope === 'customData' || scope === 'all') {
-            _filterScope = scope;
-          }
-          return Raygun;
+            if (scope === 'customData' || scope === 'all') {
+                _filterScope = scope;
+            }
+            return Raygun;
         },
 
         whitelistCrossOriginDomains: function (whitelist) {
@@ -1449,6 +1449,11 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        groupingKey: function (callback) {
+            _groupingKeyCallback = callback;
+            return Raygun;
+        },
+
         endSession: function () {
             if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
                 _rum.endSession();
@@ -1458,15 +1463,15 @@ var raygunFactory = function (window, $, undefined) {
 
     var _private = Raygun._private = Raygun._private || {},
         _seal = Raygun._seal = Raygun._seal || function () {
-            delete Raygun._private;
-            delete Raygun._seal;
-            delete Raygun._unseal;
-        },
+                delete Raygun._private;
+                delete Raygun._seal;
+                delete Raygun._unseal;
+            },
         _unseal = Raygun._unseal = Raygun._unseal || function () {
-            Raygun._private = _private;
-            Raygun._seal = _seal;
-            Raygun._unseal = _unseal;
-        };
+                Raygun._private = _private;
+                Raygun._seal = _seal;
+                Raygun._unseal = _unseal;
+            };
 
     _private.getUuid = function () {
         function _p8(s) {
@@ -1631,7 +1636,7 @@ var raygunFactory = function (window, $, undefined) {
             var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
-                localStorage[key] = JSON.stringify({ url : url,  data : data });
+                localStorage[key] = JSON.stringify({url: url, data: data});
             }
         } catch (e) {
             _private.log('Raygun4JS: LocalStorage full, cannot save exception');
@@ -1682,16 +1687,16 @@ var raygunFactory = function (window, $, undefined) {
 
     function filterValue(key, value) {
         if (_filteredKeys) {
-          for (var i = 0; i < _filteredKeys.length; i++) {
-            if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
-              if (_filteredKeys[i].exec(key) !== null) {
-                return '[removed by filter]';
-              }
+            for (var i = 0; i < _filteredKeys.length; i++) {
+                if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
+                    if (_filteredKeys[i].exec(key) !== null) {
+                        return '[removed by filter]';
+                    }
+                }
+                else if (_filteredKeys[i] === key) {
+                    return '[removed by filter]';
+                }
             }
-            else if (_filteredKeys[i] === key) {
-                return '[removed by filter]';
-            }
-          }
         }
 
         return value;
@@ -1770,24 +1775,24 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         if (_excludedHostnames instanceof Array) {
-              for (var hostIndex in _excludedHostnames) {
+            for (var hostIndex in _excludedHostnames) {
                 if (_excludedHostnames.hasOwnProperty(hostIndex)) {
                     if (window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])) {
-                      _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+                        _private.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
-                      return;
+                        return;
                     }
                 }
             }
         }
 
         if (_excludedUserAgents instanceof Array) {
-            for(var userAgentIndex in _excludedUserAgents) {
+            for (var userAgentIndex in _excludedUserAgents) {
                 if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                    if(navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
-                      _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                    if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+                        _private.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
 
-                      return;
+                        return;
                     }
                 }
             }
@@ -1844,17 +1849,17 @@ var raygunFactory = function (window, $, undefined) {
 
         var finalCustomData;
         if (_filterScope === 'customData') {
-          finalCustomData = filterObject(options.customData, 'UserCustomData');
+            finalCustomData = filterObject(options.customData, 'UserCustomData');
         } else {
-          finalCustomData = options.customData;
+            finalCustomData = options.customData;
         }
 
         try {
-          JSON.stringify(finalCustomData);
+            JSON.stringify(finalCustomData);
         } catch (e) {
-          var msg = 'Cannot add custom data; may contain circular reference';
-          finalCustomData = { error: msg };
-          _private.log('Raygun4JS: ' + msg);
+            var msg = 'Cannot add custom data; may contain circular reference';
+            finalCustomData = {error: msg};
+            _private.log('Raygun4JS: ' + msg);
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
@@ -1884,7 +1889,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.0.3'
+                    'Version': '2.0.4'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -1904,7 +1909,12 @@ var raygunFactory = function (window, $, undefined) {
         payload.Details.User = _user;
 
         if (_filterScope === 'all') {
-          payload = filterObject(payload);
+            payload = filterObject(payload);
+        }
+
+        if (typeof _groupingKeyCallback === 'function') {
+            _private.log('Raygun4JS: calling custom grouping key');
+            payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
         }
 
         if (typeof _beforeSendCallback === 'function') {
@@ -2009,40 +2019,42 @@ var raygunFactory = function (window, $, undefined) {
 
     // Mozilla's toISOString() shim for IE8
     if (!Date.prototype.toISOString) {
-      (function() {
-          function pad(number) {
-              var r = String(number);
-              if ( r.length === 1 ) {
-                  r = '0' + r;
-              }
-              return r;
-          }
-          Date.prototype.toISOString = function() {
-              return this.getUTCFullYear() + '-' + pad( this.getUTCMonth() + 1 ) + '-' + pad( this.getUTCDate() ) + 'T' + pad( this.getUTCHours() ) + ':' + pad( this.getUTCMinutes() ) + ':' + pad( this.getUTCSeconds() ) + '.' + String( (this.getUTCMilliseconds()/1000).toFixed(3) ).slice( 2, 5 ) + 'Z';
-          };
-      }());
+        (function () {
+            function pad(number) {
+                var r = String(number);
+                if (r.length === 1) {
+                    r = '0' + r;
+                }
+                return r;
+            }
+
+            Date.prototype.toISOString = function () {
+                return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
+            };
+        }());
     }
 
     // Mozilla's bind() shim for IE8
     if (!Function.prototype.bind) {
-      Function.prototype.bind = function(oThis) {
-        if (typeof this !== 'function') {
-          throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-        }
+        Function.prototype.bind = function (oThis) {
+            if (typeof this !== 'function') {
+                throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+            }
 
-        var aArgs   = Array.prototype.slice.call(arguments, 1),
-            fToBind = this,
-            FNOP    = function() {},
-            fBound  = function() {
-              return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
-                     aArgs.concat(Array.prototype.slice.call(arguments)));
-            };
+            var aArgs = Array.prototype.slice.call(arguments, 1),
+                fToBind = this,
+                FNOP = function () {
+                },
+                fBound = function () {
+                    return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
+                        aArgs.concat(Array.prototype.slice.call(arguments)));
+                };
 
-        FNOP.prototype = this.prototype;
-        fBound.prototype = new FNOP();
+            FNOP.prototype = this.prototype;
+            fBound.prototype = new FNOP();
 
-        return fBound;
-      };
+            return fBound;
+        };
     }
 
     return Raygun;
@@ -2584,6 +2596,7 @@ window.Raygun._seal();
     setFilterScope,
     user,
     onBeforeSend,
+    groupingKey,
     saveIfOffline,
     whitelistCrossOriginDomains,
     attach,
@@ -2637,6 +2650,8 @@ window.Raygun._seal();
           case 'enablePulse':
             enablePulse = value;
             break;
+          case 'groupingKey':
+            groupingKey = value;
         }
       }
     }
@@ -2668,6 +2683,10 @@ window.Raygun._seal();
 
   if (onBeforeSend) {
     Raygun.onBeforeSend(onBeforeSend);
+  }
+
+  if(groupingKey) {
+    Raygun.groupingKey(groupingKey);
   }
 
   if (typeof saveIfOffline === 'boolean') {
