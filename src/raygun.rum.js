@@ -114,23 +114,27 @@ var raygunRumFactory = function (window, $, Raygun) {
                 extractChildData(data);
 
                 if (data.length > 0) {
-                    payload = {
-                        eventData: [{
-                            sessionId: self.sessionId,
-                            timestamp: new Date().toISOString(),
-                            type: 'web_request_timing',
-                            user: self.user,
-                            version: self.version || 'Not supplied',
-                            device: navigator.userAgent,
-                            data: JSON.stringify(data)
-                        }]
-                    };
+                    var dataJson = JSON.stringify(data);
+
+                    if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
+                      payload = {
+                          eventData: [{
+                              sessionId: self.sessionId,
+                              timestamp: new Date().toISOString(),
+                              type: 'web_request_timing',
+                              user: self.user,
+                              version: self.version || 'Not supplied',
+                              device: navigator.userAgent,
+                              data: dataJson
+                          }]
+                      };
+                    }
                 }
 
                 if (payload !== undefined) {
                     self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
                 }
-            }, 30 * 1000);
+            }, 30 * 1000); // 30 seconds between heartbeats
         };
 
         this.sendPerformance = function () {
@@ -154,6 +158,11 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
         };
+
+        function stringToByteLength(str) {
+          var m = encodeURIComponent(str).match(/%[89ABab]/g);
+          return str.length + (m ? m.length : 0);
+        }
 
         function getSessionId(callback) {
             var existingCookie = readCookie(self.cookieName);
