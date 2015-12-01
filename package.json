@@ -3,7 +3,7 @@
   "main": "dist/raygun.js",
   "title": "Raygun4js",
   "description": "Raygun.io plugin for JavaScript",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "homepage": "https://github.com/MindscapeHQ/raygun4js",
   "author": {
     "name": "MindscapeHQ",

@@ -98,7 +98,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, options.includeHashInPulseUrl);
                     _rum.attach();
                 };
 
@@ -249,6 +249,12 @@ var raygunFactory = function (window, $, undefined) {
         endSession: function () {
             if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
                 _rum.endSession();
+            }
+        },
+
+        firePageLoaded: function() {
+            if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
+                _rum.pageLoaded();
             }
         }
     };

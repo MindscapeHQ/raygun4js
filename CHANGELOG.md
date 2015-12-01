@@ -1,3 +1,6 @@
+* 2.0.4
+  - Add ability to pass hash through to Pulse for single-page-apps
+  
 * v2.0.3
   - Fixes a snippet loader race condition
 

@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.0.3 - 2015-10-30
+/*! Raygun4js - v2.0.4 - 2015-11-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1233,7 +1233,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, options.includeHashInPulseUrl);
                     _rum.attach();
                 };
 
@@ -1384,6 +1384,12 @@ var raygunFactory = function (window, $, undefined) {
         endSession: function () {
             if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
                 _rum.endSession();
+            }
+        },
+
+        firePageLoaded: function() {
+            if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
+                _rum.pageLoaded();
             }
         }
     };
@@ -1816,7 +1822,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.0.3'
+                    'Version': '2.0.4'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -1984,7 +1990,7 @@ raygunFactory(window, window.jQuery);
 
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, includeHashInPulseUrl) {
         var self = this;
         var _private = {};
 
@@ -1997,6 +2003,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.version = version;
         this.heartBeatInterval = null;
         this.offset = 0;
+        this.includeHashInPulseUrl = includeHashInPulseUrl;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
@@ -2346,12 +2353,24 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPrimaryTimingData() {
-            return {
+            var timingData = {
                 url: window.location.protocol + '//' + window.location.host + window.location.pathname,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
             };
+
+            if(self.includeHashInPulseUrl) {
+                var hash = window.location.hash;
+
+                if(hash.substring(0,1) !== '#') {
+                    hash = '#' + hash;
+                }
+
+                timingData.url += hash;
+            }
+
+            return timingData;
         }
 
         function getSecondaryTimingData(timing) {
