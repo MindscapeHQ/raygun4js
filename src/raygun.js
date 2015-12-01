@@ -251,11 +251,22 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        // Public Pulse functions
+
         endSession: function () {
-            if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
+            if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 _rum.endSession();
             }
+        },
+
+        trackEvent: function (type, options) {
+          if (Raygun.RealUserMonitoring  !== undefined && _rum) {
+              if (type === 'pageView' && options.path) {
+                _rum.virtualPageLoaded(options.path);
+              }
+          }
         }
+
     };
 
     var _private = Raygun._private = Raygun._private || {},

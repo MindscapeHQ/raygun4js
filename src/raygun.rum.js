@@ -48,6 +48,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, data);
         };
         this.sessionId = null;
+        this.virtualPage = null;
         this.user = user;
         this.version = version;
         this.heartBeatInterval = null;
@@ -139,11 +140,10 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.heartBeat = function () {
             self.heartBeatInterval = setInterval(function () {
-
                 var data = [];
                 var payload;
 
-                extractChildData(data);
+                extractChildData(data, self.virtualPage);
 
                 if (data.length > 0) {
                     var dataJson = JSON.stringify(data);
@@ -166,11 +166,16 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (payload !== undefined) {
                     self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
                 }
-            }, 30 * 1000); // 30 seconds between heartbeats
+          }, 30 * 1000); // 30 seconds between heartbeats
+        };
+
+        this.virtualPageLoaded = function (path) {
+            this.virtualPage = path; // TODO slash check
+            this.sendPerformance();
         };
 
         this.sendPerformance = function () {
-            var performanceData = getPerformanceData();
+            var performanceData = getPerformanceData(this.virtualPage);
 
             if (performanceData === null) {
                 return;
@@ -192,8 +197,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         function stringToByteLength(str) {
-          var m = encodeURIComponent(str).match(/%[89ABab]/g);
-          return str.length + (m ? m.length : 0);
+            var m = encodeURIComponent(str).match(/%[89ABab]/g);
+            return str.length + (m ? m.length : 0);
         }
 
         function getSessionId(callback) {
@@ -416,9 +421,9 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
-        function getPrimaryTimingData() {
+        function getPrimaryTimingData(virtualPage) {
             return {
-                url: window.location.protocol + '//' + window.location.host + window.location.pathname,
+                url: virtualPage ? window.location.protocol + '//' + window.location.host + virtualPage : window.location.protocol + '//' + window.location.host + window.location.pathname,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
@@ -478,14 +483,14 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData() {
+        function getPerformanceData(virtualPage) {
             if (window.performance === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
 
-            data.push(getPrimaryTimingData());
+            data.push(getPrimaryTimingData(virtualPage));
 
             extractChildData(data);
 
