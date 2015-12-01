@@ -4,108 +4,73 @@
   }
 
   var snippetOptions = window[window['RaygunObject']].o;
-
-  var apiKey,
+  var errorQueue,
+    apiKey,
     options,
-    withCustomData,
-    withTags,
-    version,
-    filterSensitiveData,
-    setFilterScope,
-    user,
-    onBeforeSend,
-    saveIfOffline,
-    whitelistCrossOriginDomains,
     attach,
     enablePulse;
+
+  errorQueue = window[window['RaygunObject']].q;
+
+  var executor = function (pair) {
+    var key = pair[0];
+    var value = pair[1];
+
+    if (key && value) {
+      switch (key) {
+        case 'apiKey':
+          apiKey = value;
+          break;
+        case 'options':
+          options = value;
+          break;
+        case 'attach':
+        case 'enableCrashReporting':
+          attach = value;
+          break;
+        case 'enablePulse':
+          enablePulse = value;
+          break;
+        case 'setUser':
+          Raygun.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
+          break;
+        case 'onBeforeSend':
+          Raygun.onBeforeSend(value);
+          break;
+        case 'withCustomData':
+          Raygun.withCustomData(value);
+          break;
+        case 'withTags':
+          Raygun.withTags(value);
+          break;
+        case 'setVersion':
+          Raygun.setVersion(value);
+          break;
+        case 'filterSensitiveData':
+          Raygun.filterSensitiveData(value);
+          break;
+        case 'setFilterScope':
+          Raygun.setFilterScope(value);
+          break;
+        case 'whitelistCrossOriginDomains':
+          Raygun.whitelistCrossOriginDomains(value);
+          break;
+        case 'saveIfOffline':
+          if (typeof value === 'boolean') {
+            Raygun.saveIfOffline(value);
+          }
+          break;
+        case 'groupingKey':
+          Raygun.groupingKey(value);
+      }
+    }
+  };
 
   for (var i in snippetOptions) {
     var pair = snippetOptions[i];
     if (pair) {
-      var key = pair[0];
-      var value = pair[1];
-
-      if (key && value) {
-        switch (key) {
-          case 'apiKey':
-            apiKey = value;
-            break;
-          case 'options':
-            options = value;
-            break;
-          case 'setUser':
-            user = value;
-            break;
-          case 'onBeforeSend':
-            onBeforeSend = value;
-            break;
-          case 'withCustomData':
-            withCustomData = value;
-            break;
-          case 'withTags':
-            withTags = value;
-            break;
-          case 'setVersion':
-            version = value;
-            break;
-          case 'filterSensitiveData':
-            filterSensitiveData = value;
-            break;
-          case 'setFilterScope':
-            setFilterScope = value;
-            break;
-          case 'whitelistCrossOriginDomains':
-            whitelistCrossOriginDomains = value;
-            break;
-          case 'saveIfOffline':
-            saveIfOffline = value;
-            break;
-          case 'attach':
-          case 'enableCrashReporting':
-            attach = value;
-            break;
-          case 'enablePulse':
-            enablePulse = value;
-            break;
-        }
-      }
+      executor(pair);
     }
-  }
-
-  if (withCustomData) {
-    Raygun.withCustomData(withCustomData);
-  }
-
-  if (withTags) {
-    Raygun.withTags(withTags);
-  }
-
-  if (version) {
-    Raygun.setVersion(version);
-  }
-
-  if (filterSensitiveData) {
-    Raygun.filterSensitiveData(filterSensitiveData);
-  }
-
-  if (setFilterScope) {
-    Raygun.setFilterScope(setFilterScope);
-  }
-
-  if (user) {
-    Raygun.setUser(user.identifier, user.isAnonymous, user.email, user.fullName, user.firstName, user.uuid);
-  }
-
-  if (onBeforeSend) {
-    Raygun.onBeforeSend(onBeforeSend);
-  }
-
-  if (typeof saveIfOffline === 'boolean') {
-    Raygun.saveIfOffline(saveIfOffline);
-  }
-
-  if (whitelistCrossOriginDomains) {
-    Raygun.whitelistCrossOriginDomains(whitelistCrossOriginDomains);
   }
 
   var onLoadHandler = function () {
@@ -125,10 +90,12 @@
     if (attach) {
       Raygun.attach();
 
-      var errorQueue = window[window['RaygunObject']].q;
+      errorQueue = window[window['RaygunObject']].q;
       for (var j in errorQueue) {
         Raygun.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
+    } else {
+      window.onerror = null;
     }
   };
 
@@ -139,5 +106,10 @@
   } else {
     window.attachEvent('onload', onLoadHandler);
   }
+
+  window[window['RaygunObject']] = function () {
+    executor(arguments);
+  };
+  window[window['RaygunObject']].q = errorQueue;
 
 })(window, window.Raygun);
