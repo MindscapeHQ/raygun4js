@@ -170,8 +170,17 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.virtualPageLoaded = function (path) {
-            this.virtualPage = path; // TODO slash check
-            this.sendPerformance();
+          this.sendPerformance();
+          
+            if (typeof path === 'string') {
+                if (path.length > 0 && path[0] !== '/') {
+                  path = path + '/';
+                }
+
+                this.virtualPage = path;
+                this.latestVirtualPageLoadTimestamp = window.performance.now();
+                
+            }
         };
 
         this.sendPerformance = function () {
@@ -316,6 +325,13 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
+        function getZeroedTimingData() {
+          return {
+            t: 'p', a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0,
+            i: 0, j: 800, k: 0, l: 0, m: 0, n: 0
+          };
+        }
+
         function getEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration,
@@ -430,6 +446,15 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
+        function getVirtualPrimaryTimingData(virtualPage) {
+            return {
+                url: window.location.protocol + '//' + window.location.host + virtualPage,
+                userAgent: navigator.userAgent,
+                timing: getZeroedTimingData(),
+                size: 0
+            };
+        }
+
         function getSecondaryTimingData(timing) {
             return {
                 url: timing.name.split('?')[0],
@@ -490,9 +515,19 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var data = [];
 
-            data.push(getPrimaryTimingData(virtualPage));
-
-            extractChildData(data);
+            if (virtualPage) {
+              if (self.pendingVirtualPage) {
+                data.push(self.pendingVirtualPage);
+                extractChildData(data);
+                
+                self.pendingVirtualPage = null;
+              } else {
+                self.pendingVirtualPage = getVirtualPrimaryTimingData(virtualPage);
+              }
+            } else {
+              data.push(getPrimaryTimingData(virtualPage));
+              extractChildData(data);
+            }
 
             return data;
         }
