@@ -117,7 +117,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
             }
 
-            self.sendPerformance();
+            self.sendPerformance(true, true);
             self.heartBeat();
         };
 
@@ -170,8 +170,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.virtualPageLoaded = function (path) {
-          this.sendPerformance();
-          
+            var firstVirtualLoad = this.virtualPage == null;
+            
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
                   path = path + '/';
@@ -181,10 +181,16 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.latestVirtualPageLoadTimestamp = window.performance.now();
                 
             }
+            
+            if (firstVirtualLoad) {
+              this.sendPerformance(true, false);
+            } else {
+              this.sendPerformance(false, false);
+            }
         };
 
-        this.sendPerformance = function () {
-            var performanceData = getPerformanceData(this.virtualPage);
+        this.sendPerformance = function (flush, firstLoad) {
+            var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
 
             if (performanceData === null) {
                 return;
@@ -328,7 +334,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         function getZeroedTimingData() {
           return {
             t: 'p', a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0,
-            i: 0, j: 800, k: 0, l: 0, m: 0, n: 0
+            i: 0, j: 0, k: 0, l: 0, m: 0, n: 0
           };
         }
 
@@ -508,25 +514,39 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData(virtualPage) {
+        function getPerformanceData(virtualPage, flush, firstLoad) {
             if (window.performance === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
+            
+            if (flush) {
+              // Called by the static onLoad event being fired, persist itself
+              if (firstLoad) { 
+                data.push(getPrimaryTimingData(virtualPage));
+              }
+              
+              // Called during both the static load event and the flush on the first virtual load call
+              extractChildData(data);  
+            }
 
             if (virtualPage) {
-              if (self.pendingVirtualPage) {
+              // A previous virtual load was stored, persist it and its children up until now
+              if (self.pendingVirtualPage) { 
                 data.push(self.pendingVirtualPage);
                 extractChildData(data);
-                
-                self.pendingVirtualPage = null;
-              } else {
-                self.pendingVirtualPage = getVirtualPrimaryTimingData(virtualPage);
               }
-            } else {
-              data.push(getPrimaryTimingData(virtualPage));
-              extractChildData(data);
+              
+              var firstVirtualLoad = self.pendingVirtualPage == null;
+              
+              // Store the current virtual load so it can be sent upon the next one
+              self.pendingVirtualPage = getVirtualPrimaryTimingData(virtualPage);
+              
+              // Prevent sending an empty payload for the first virtual load as we don't know when it will end
+              if (!firstVirtualLoad) {
+                return data;
+              }
             }
 
             return data;
