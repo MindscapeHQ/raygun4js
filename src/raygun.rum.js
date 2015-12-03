@@ -573,4 +573,4 @@ var raygunRumFactory = function (window, $, Raygun) {
     };
 };
 
-raygunRumFactory(window, window.jQuery, window.Raygun);
+raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);

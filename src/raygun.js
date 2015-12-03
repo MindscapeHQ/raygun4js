@@ -875,4 +875,4 @@ var raygunFactory = function (window, $, undefined) {
     return Raygun;
 };
 
-raygunFactory(window, window.jQuery);
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
