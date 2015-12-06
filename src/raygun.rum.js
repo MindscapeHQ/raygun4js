@@ -333,10 +333,13 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
-        function getZeroedTimingData() {
+        function generateVirtualEncodedTimingData() {
+          var maxNumber = 9007199254740992;
+          
           return {
-            t: 'p', a: 0, b: 0, c: 0, d: 0, e: 0,
-            f: 0, g: 0, h: 0, i: 0, j: 0, k: 0, l: 0, m: 0, n: 0
+            t: 'p', a: 0, b: 0, c: 0, d: 1, e: maxNumber,
+            f: maxNumber, g: maxNumber, h: maxNumber, i: maxNumber,
+            j: maxNumber, k: 0, l: 0, m: maxNumber, n: null
           };
         }
 
@@ -458,7 +461,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             return {
                 url: window.location.protocol + '//' + window.location.host + virtualPage,
                 userAgent: navigator.userAgent,
-                timing: getZeroedTimingData(),
+                timing: generateVirtualEncodedTimingData(),
                 size: 0
             };
         }
@@ -535,8 +538,11 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (virtualPage) {
               // A previous virtual load was stored, persist it and its children up until now
-              if (self.pendingVirtualPage) {
-                self.pendingVirtualPage.timing.du = window.performance.now() - self.previousVirtualPageLoadTimestamp;
+              if (self.pendingVirtualPage) {               
+                self.pendingVirtualPage.timing.d = 1;
+                self.pendingVirtualPage.timing.l = self.previousVirtualPageLoadTimestamp;
+                self.pendingVirtualPage.timing.k = window.performance.now();
+                
                 data.push(self.pendingVirtualPage);
                 extractChildData(data);
               }
