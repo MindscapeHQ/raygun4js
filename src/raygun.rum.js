@@ -59,7 +59,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.pageLoaded(isNewSession);
             });
 
-            window.onbeforeunload = function () {
+            var clickHandler = function () {
+                this.updateCookieTimestamp();
+            }.bind(_private);
+            
+            var unloadHandler = function () {
                 var data = [];
 
                 extractChildData(data);
@@ -81,10 +85,6 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             };
 
-            var clickHandler = function () {
-                this.updateCookieTimestamp();
-            }.bind(_private);
-
             var visibilityChangeHandler = function () {
                 if (document.visibilityState === 'visible') {
                     this.updateCookieTimestamp();
@@ -95,6 +95,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (window.addEventListener) {
                 window.addEventListener('click', clickHandler);
                 document.addEventListener('visibilitychange', visibilityChangeHandler);
+                window.addEventListener('beforeunload', unloadHandler);
             } else if (window.attachEvent) {
                 document.attachEvent('onclick', clickHandler);
             }
