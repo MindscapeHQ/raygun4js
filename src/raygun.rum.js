@@ -334,12 +334,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function generateVirtualEncodedTimingData() {
-          var maxNumber = 9007199254740992;
-          
           return {
-            t: 'p', a: 0, b: 0, c: 0, d: 1, e: maxNumber,
-            f: maxNumber, g: maxNumber, h: maxNumber, i: maxNumber,
-            j: maxNumber, k: 0, l: 0, m: maxNumber, n: null
+            t: 'p', a: 0, b: 0, c: 0, d: 1, e: 0,
+            f: 0, g: 0, h: 0, i: 0,
+            j: 0, k: 0, l: null, m: null, n: null
           };
         }
 
@@ -538,10 +536,20 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (virtualPage) {
               // A previous virtual load was stored, persist it and its children up until now
-              if (self.pendingVirtualPage) {               
-                self.pendingVirtualPage.timing.d = 1;
-                self.pendingVirtualPage.timing.l = self.previousVirtualPageLoadTimestamp;
-                self.pendingVirtualPage.timing.k = window.performance.now();
+              if (self.pendingVirtualPage) {
+                if (window.performance && window.performance.timing) {
+                  var timing = window.performance.timing;
+                  
+                  if (timing.fetchStart) {
+                    self.pendingVirtualPage.timing.a = timing.fetchStart;
+                  }
+                  
+                  self.pendingVirtualPage.timing.j = self.previousVirtualPageLoadTimestamp;
+                  
+                  if (window.performance.now) {
+                    self.pendingVirtualPage.timing.k = window.performance.now();
+                  }
+                }
                 
                 data.push(self.pendingVirtualPage);
                 extractChildData(data);
@@ -553,7 +561,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               self.pendingVirtualPage = getVirtualPrimaryTimingData(virtualPage);
               
               // Prevent sending an empty payload for the first virtual load as we don't know when it will end
-              if (!firstVirtualLoad) {
+              if (!firstVirtualLoad && data.length > 0) {
                 return data;
               }
             }
