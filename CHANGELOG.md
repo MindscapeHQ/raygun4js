@@ -1,6 +1,7 @@
 * v2.2.0-beta
   - Adds experimental support for SPA sites to Pulse
   - noConflict mode improved for V2
+  - Fixed a bug when attaching onBeforeUnload handler when Pulse enabled 
 
 - v2.1.1
   - Fix issue where when filterScope set to 'all' resulted in payload 400 errors
