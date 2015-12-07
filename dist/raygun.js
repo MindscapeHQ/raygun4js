@@ -2410,7 +2410,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function generateVirtualEncodedTimingData() {
           return {
-            t: 'p', a: 0, b: 0, c: 0, d: 1, e: 0,
+            t: 'p', a: 0, b: 0, c: 0, d: null, e: null,
             f: 0, g: 0, h: 0, i: 0,
             j: 0, k: 0, l: null, m: null, n: null
           };
@@ -2539,15 +2539,15 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
-        function getSecondaryTimingData(timing) {
+        function getSecondaryTimingData(timing, fromZero) {
             return {
                 url: timing.name.split('?')[0],
-                timing: getSecondaryEncodedTimingData(timing, window.performance.timing.navigationStart),
+                timing: getSecondaryEncodedTimingData(timing, fromZero ? 0 : window.performance.timing.navigationStart),
                 size: timing.decodedBodySize || 0
             };
         }
 
-        function extractChildData(collection) {
+        function extractChildData(collection, fromVirtualPage) {
             if (window.performance === undefined || !window.performance.getEntries) {
                 return;
             }
@@ -2583,7 +2583,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                         continue;
                     }
 
-                    collection.push(getSecondaryTimingData(resources[i]));
+                    collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                 }
 
                 self.offset = resources.length;
@@ -2612,13 +2612,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (virtualPage) {
               // A previous virtual load was stored, persist it and its children up until now
               if (self.pendingVirtualPage) {
-                if (window.performance && window.performance.timing) {
-                  var timing = window.performance.timing;
-                  
-                  if (timing.fetchStart) {
-                    self.pendingVirtualPage.timing.a = timing.fetchStart;
-                  }
-                  
+                if (window.performance) {                  
                   self.pendingVirtualPage.timing.j = self.previousVirtualPageLoadTimestamp;
                   
                   if (window.performance.now) {
@@ -2627,7 +2621,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
                 
                 data.push(self.pendingVirtualPage);
-                extractChildData(data);
+                extractChildData(data, true);
               }
               
               var firstVirtualLoad = self.pendingVirtualPage == null;
