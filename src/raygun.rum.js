@@ -539,10 +539,10 @@ var raygunRumFactory = function (window, $, Raygun) {
               // A previous virtual load was stored, persist it and its children up until now
               if (self.pendingVirtualPage) {
                 if (window.performance) {                  
-                  self.pendingVirtualPage.timing.j = self.previousVirtualPageLoadTimestamp;
+                  self.pendingVirtualPage.timing.j = 0;
                   
                   if (window.performance.now) {
-                    self.pendingVirtualPage.timing.k = window.performance.now();
+                    self.pendingVirtualPage.timing.k = 0;
                   }
                 }
                 

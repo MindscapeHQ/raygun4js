@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.2.0-beta - 2015-12-07
+/*! Raygun4js - v2.2.0-beta - 2015-12-08
 /*! Raygun4js - v2.1.0 - 2015-12-01
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
@@ -2613,10 +2613,10 @@ var raygunRumFactory = function (window, $, Raygun) {
               // A previous virtual load was stored, persist it and its children up until now
               if (self.pendingVirtualPage) {
                 if (window.performance) {                  
-                  self.pendingVirtualPage.timing.j = self.previousVirtualPageLoadTimestamp;
+                  self.pendingVirtualPage.timing.j = 0;
                   
                   if (window.performance.now) {
-                    self.pendingVirtualPage.timing.k = window.performance.now();
+                    self.pendingVirtualPage.timing.k = 0;
                   }
                 }
                 
