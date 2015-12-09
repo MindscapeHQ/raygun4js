@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.1.0 - 2015-12-01
+/*! Raygun4js - v2.1.1 - 2015-12-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1653,12 +1653,16 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
-                if ((parentKey !== 'Details' || propertyName !== 'Client')) {
+                if (parentKey !== 'Details' || propertyName !== 'Client') {
                     filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+                } else {
+                    filteredObject[propertyName] = propertyValue;
                 }
             } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
-                if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
-                    filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+                if (typeof parentKey !== 'undefined') {
+                  filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+                } else if (propertyName === 'OccurredOn') {
+                  filteredObject[propertyName] = propertyValue;
                 }
             }
         }
@@ -1821,7 +1825,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.1.0'
+                    'Version': '2.1.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,

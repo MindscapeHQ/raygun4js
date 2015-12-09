@@ -1,3 +1,6 @@
+- v2.1.0
+  - Fix issue where when filterScope set to 'all' resulted in payload 400 errors
+
 * v2.1.0
   - Add custom grouping key function
   - Add ability to ignore hostnames and user agents for Pulse
