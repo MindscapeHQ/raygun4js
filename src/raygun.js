@@ -518,12 +518,16 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
-                if ((parentKey !== 'Details' || propertyName !== 'Client')) {
+                if (parentKey !== 'Details' || propertyName !== 'Client') {
                     filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
+                } else {
+                    filteredObject[propertyName] = propertyValue;
                 }
             } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
-                if (typeof parentKey !== 'undefined' || propertyName !== 'OccurredOn') {
-                    filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+                if (typeof parentKey !== 'undefined') {
+                  filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+                } else if (propertyName === 'OccurredOn') {
+                  filteredObject[propertyName] = propertyValue;
                 }
             }
         }
