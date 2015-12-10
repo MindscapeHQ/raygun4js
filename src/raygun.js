@@ -664,7 +664,10 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
-        finalMessage = finalMessage.substring(0, 512);
+
+        if (finalMessage) {
+          finalMessage = finalMessage.substring(0, 512);
+        }
 
         var payload = {
             'OccurredOn': new Date(),
@@ -862,4 +865,3 @@ var raygunFactory = function (window, $, undefined) {
 };
 
 raygunFactory(window, window.jQuery);
-
