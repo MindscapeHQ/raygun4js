@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.1.0 - 2015-12-01
+/*! Raygun4js - v2.1.0 - 2015-12-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2015 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1795,7 +1795,10 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
-        finalMessage = finalMessage.substring(0, 512);
+
+        if (finalMessage) {
+          finalMessage = finalMessage.substring(0, 512);
+        }
 
         var payload = {
             'OccurredOn': new Date(),
@@ -1993,7 +1996,6 @@ var raygunFactory = function (window, $, undefined) {
 };
 
 raygunFactory(window, window.jQuery);
-
 
 var raygunRumFactory = function (window, $, Raygun) {
     Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
