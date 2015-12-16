@@ -336,7 +336,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function generateVirtualEncodedTimingData() {
           return {
-            t: 'v', a: 0, b: 0, c: 0, d: null, e: null,
+            t: 'v', du: 5000, a: 0, b: 0, c: 0, d: null, e: null,
             f: 0, g: 0, h: 0, i: 0,
             j: 0, k: 0, l: null, m: null, n: null, o: 9999
           };
