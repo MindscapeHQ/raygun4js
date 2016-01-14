@@ -7,7 +7,7 @@
  */
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration) {
         var self = this;
         var _private = {};
 
@@ -17,6 +17,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.debugMode = debugMode;
         this.excludedHostNames = excludedHostNames;
         this.excludedUserAgents = excludedUserAgents;
+        this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -338,8 +339,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
           return {
             t: 'v',
-            du: window.performance.now() - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp),
-            o: window.performance.now() - initalStaticPageLoadTimestamp
+            du: Math.min(self.maxVirtualPageDuration, window.performance.now() - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+            o: Math.min(self.maxVirtualPageDuration, window.performance.now() - initalStaticPageLoadTimestamp)
           };
         }
 
