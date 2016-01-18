@@ -1,6 +1,6 @@
-/*! Raygun4js - v2.2.0-beta - 2015-12-08
+/*! Raygun4js - v2.2.1 - 2016-01-18
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2015 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -1169,6 +1169,7 @@ var raygunFactory = function (window, $, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _pulseMaxVirtualPageDuration = null,
         $document;
 
 
@@ -1207,6 +1208,7 @@ var raygunFactory = function (window, $, undefined) {
                 _disablePulse = options.disablePulse === undefined ? true : options.disablePulse;
                 _excludedHostnames = options.excludedHostnames || false;
                 _excludedUserAgents = options.excludedUserAgents || false;
+                _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -1233,7 +1235,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration);
                     _rum.attach();
                 };
 
@@ -1839,7 +1841,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.2.0-beta'
+                    'Version': '2.2.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2012,7 +2014,7 @@ var raygunFactory = function (window, $, undefined) {
 
 window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration) {
         var self = this;
         var _private = {};
 
@@ -2022,6 +2024,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.debugMode = debugMode;
         this.excludedHostNames = excludedHostNames;
         this.excludedUserAgents = excludedUserAgents;
+        this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -2125,6 +2128,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.sendPerformance(true, true);
             self.heartBeat();
+            self.initalStaticPageLoadTimestamp = window.performance.now();
         };
 
         this.setUser = function (user) {
@@ -2339,11 +2343,11 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
-        function generateVirtualEncodedTimingData() {
+        function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
           return {
-            t: 'p', a: 0, b: 0, c: 0, d: null, e: null,
-            f: 0, g: 0, h: 0, i: 0,
-            j: 0, k: 0, l: null, m: null, n: null
+            t: 'v',
+            du: Math.min(self.maxVirtualPageDuration, window.performance.now() - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+            o: Math.min(self.maxVirtualPageDuration, window.performance.now() - initalStaticPageLoadTimestamp)
           };
         }
 
@@ -2452,20 +2456,20 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
-        function getPrimaryTimingData(virtualPage) {
+        function getPrimaryTimingData() {
             return {
-                url: virtualPage ? window.location.protocol + '//' + window.location.host + virtualPage : window.location.protocol + '//' + window.location.host + window.location.pathname,
+                url: window.location.protocol + '//' + window.location.host + window.location.pathname,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
             };
         }
 
-        function getVirtualPrimaryTimingData(virtualPage) {
+        function getVirtualPrimaryTimingData(virtualPage, previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
             return {
                 url: window.location.protocol + '//' + window.location.host + virtualPage,
                 userAgent: navigator.userAgent,
-                timing: generateVirtualEncodedTimingData(),
+                timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
                 size: 0
             };
         }
@@ -2533,7 +2537,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (flush) {
               // Called by the static onLoad event being fired, persist itself
               if (firstLoad) { 
-                data.push(getPrimaryTimingData(virtualPage));
+                data.push(getPrimaryTimingData());
               }
               
               // Called during both the static load event and the flush on the first virtual load call
@@ -2543,14 +2547,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (virtualPage) {
               // A previous virtual load was stored, persist it and its children up until now
               if (self.pendingVirtualPage) {
-                if (window.performance) {                  
-                  self.pendingVirtualPage.timing.j = 0;
-                  
-                  if (window.performance.now) {
-                    self.pendingVirtualPage.timing.k = 0;
-                  }
-                }
-                
                 data.push(self.pendingVirtualPage);
                 extractChildData(data, true);
               }
@@ -2558,7 +2554,11 @@ var raygunRumFactory = function (window, $, Raygun) {
               var firstVirtualLoad = self.pendingVirtualPage == null;
               
               // Store the current virtual load so it can be sent upon the next one
-              self.pendingVirtualPage = getVirtualPrimaryTimingData(virtualPage);
+              self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                virtualPage,
+                self.previousVirtualPageLoadTimestamp,
+                self.initalStaticPageLoadTimestamp
+              );
               
               // Prevent sending an empty payload for the first virtual load as we don't know when it will end
               if (!firstVirtualLoad && data.length > 0) {
