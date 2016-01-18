@@ -199,6 +199,40 @@ rg4js('options', {
 });
 ```
 
+### Pulse API
+
+#### Tracking Single Page Application (SPA) events
+
+Raygun Pulse supports client-side SPAs through the `trackEvent` function:
+
+```javascript
+Raygun.trackEvent('pageView', { path: '/' + foo });
+```
+
+When a route or view change is triggered in your SPA, this function should be called with `pageView` as the first parameter and an object with a `path` key set to a path representing the new view or route. Pulse will collect up all timing information that is available and send it to the dashboard.
+
+The following are a couple of configuration examples that you can use or adapt for your client-side view library/framework:
+
+**jQuery**
+
+```javascript
+$(window).hashchange(function() {
+  Raygun.trackEvent('pageView', {
+    path: '/' + location.hash
+  });
+});
+```
+
+**AngularJS**
+
+```javascript
+$scope.$on('$routeChangeSuccess', function () {
+  Raygun.trackEvent('pageView', {
+    path: '/' + $scope.area
+  });
+});
+```
+
 ### Multiple Raygun objects on a single page
 
 You can now have multiple Raygun objects in global scope. This lets you set them up with different API keys for instance, and allow you to send different errors to more than one application in the Raygun web app.

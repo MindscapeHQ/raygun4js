@@ -1,3 +1,6 @@
+* v2.2.1
+  - Release version of v2.2.0-beta with bug fixes and improvements; Raygun.trackEvent() officially added to API
+
 * v2.2.0-beta
   - Adds experimental support for SPA sites to Pulse
   - noConflict mode improved for V2
