@@ -139,6 +139,14 @@ V2 supports a new API for interacting with the script as it is loaded using the 
 
 For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `rg4js(functionName, value)` and vice versa (with the exception of `send()`).
 
+For mutating the provider after initial setup, you can interact with the global Raygun object after page load. By example with plain jQuery:
+
+```javascript
+$(window).load(function () {
+  Raygun.withTags(["Loaded"]);
+});
+```
+
 ### Initialization Options
 
 To configure the provider, call this and pass in an options object:
@@ -182,6 +190,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
+`pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes). 
+
 An example:
 
 ```javascript
@@ -195,7 +205,8 @@ rg4js('options', {
   excludedHostnames: ['\.local'],
   excludedUserAgents: ['Mosaic'],
   disableCrashReporting: false,
-  disablePulse: false
+  disablePulse: false,
+  pulseMaxVirtualPageDuration: 1800000
 });
 ```
 
@@ -209,9 +220,9 @@ Raygun Pulse supports client-side SPAs through the `trackEvent` function:
 Raygun.trackEvent('pageView', { path: '/' + foo });
 ```
 
-When a route or view change is triggered in your SPA, this function should be called with `pageView` as the first parameter and an object with a `path` key set to a path representing the new view or route. Pulse will collect up all timing information that is available and send it to the dashboard.
+When a route or view change is triggered in your SPA, this function should be called with `pageView` as the first parameter and an object with a `path` key set to a path representing the new view or route. Pulse will collect up all timing information that is available and send it to the dashboard. These are then viewable as 'virtual pages'.
 
-The following are a couple of configuration examples that you can use or adapt for your client-side view library/framework:
+The following are a couple of configuration examples that you can use or adapt for your client-side view library/framework. Naturally, if you are using a more full-featured routing system, you should trigger a pageView inside there when the route changes.
 
 **jQuery**
 
@@ -247,6 +258,24 @@ secondRaygun.send(...);
 
 Only one Raygun object can be attached as the window.onerror handler at one time, as *onerror* can only be bound to one function at once. Whichever Raygun object had `attach()` called on it last will handle the unhandle errors for the page. Note that you should use the V1 API to send using the second Raygun object, and it should be created and called once the page is loaded (for instance in an `onload` callback).
 
+### NoConflict mode
+
+If you already have an variable called Raygun attached to `window`, you can prevent the provider from overwriting this by enabling NoConflict mode:
+
+```javascript
+// V2
+rg4js('noConflict', true);
+
+// V1
+Raygun.noConflict();
+```
+
+To then get an instance of the Raygun object when using V2, call this once the page is loaded:
+
+```javascript
+var raygun = rg4js('getRaygunInstance');
+```
+
 ### Callback Events
 
 #### onBeforeSend
@@ -280,6 +309,24 @@ var myBeforeSend = function (payload) {
 }
 
 Raygun.onBeforeSend(myBeforeSend);
+```
+
+### Custom error grouping
+
+You can control custom grouping for error instances by passing in a callback. This will override the automatic grouping and be used to group error instances together. Errors with the same key will be placed within the same error group. The callback's signature should take in the error payload, stackTrace and options and return a string, ideally 64 characters or less.
+
+```javascript
+var groupingKeyCallback = function (payload, stackTrace, options) {
+  // Inspect the above parameters and return a hash derived from the properties you want
+  
+  return payload.Details.Error.Message; // Naive message-based grouping only
+};
+
+// V2
+rg4js('groupingKey', groupingKeyCallback);
+
+// V1
+Raygun.groupingKey(groupingKeyCallback);
 ```
 
 ### Sending custom data
