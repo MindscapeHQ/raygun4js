@@ -1,6 +1,6 @@
-/*! Raygun4js - v2.1.1 - 2015-12-11
+/*! Raygun4js - v2.2.1 - 2016-01-18
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2015 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -1169,6 +1169,7 @@ var raygunFactory = function (window, $, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _pulseMaxVirtualPageDuration = null,
         $document;
 
 
@@ -1207,6 +1208,7 @@ var raygunFactory = function (window, $, undefined) {
                 _disablePulse = options.disablePulse === undefined ? true : options.disablePulse;
                 _excludedHostnames = options.excludedHostnames || false;
                 _excludedUserAgents = options.excludedUserAgents || false;
+                _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -1233,7 +1235,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration);
                     _rum.attach();
                 };
 
@@ -1386,11 +1388,22 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        // Public Pulse functions
+
         endSession: function () {
-            if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
+            if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 _rum.endSession();
             }
+        },
+
+        trackEvent: function (type, options) {
+          if (Raygun.RealUserMonitoring  !== undefined && _rum) {
+              if (type === 'pageView' && options.path) {
+                _rum.virtualPageLoaded(options.path);
+              }
+          }
         }
+
     };
 
     var _private = Raygun._private = Raygun._private || {},
@@ -1828,7 +1841,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.1.1'
+                    'Version': '2.2.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -1999,10 +2012,9 @@ var raygunFactory = function (window, $, undefined) {
     return Raygun;
 };
 
-raygunFactory(window, window.jQuery);
-
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration) {
         var self = this;
         var _private = {};
 
@@ -2012,6 +2024,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.debugMode = debugMode;
         this.excludedHostNames = excludedHostNames;
         this.excludedUserAgents = excludedUserAgents;
+        this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -2043,6 +2056,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, data);
         };
         this.sessionId = null;
+        this.virtualPage = null;
         this.user = user;
         this.version = version;
         this.heartBeatInterval = null;
@@ -2053,7 +2067,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.pageLoaded(isNewSession);
             });
 
-            window.onbeforeunload = function () {
+            var clickHandler = function () {
+                this.updateCookieTimestamp();
+            }.bind(_private);
+            
+            var unloadHandler = function () {
                 var data = [];
 
                 extractChildData(data);
@@ -2075,10 +2093,6 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             };
 
-            var clickHandler = function () {
-                this.updateCookieTimestamp();
-            }.bind(_private);
-
             var visibilityChangeHandler = function () {
                 if (document.visibilityState === 'visible') {
                     this.updateCookieTimestamp();
@@ -2089,6 +2103,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (window.addEventListener) {
                 window.addEventListener('click', clickHandler);
                 document.addEventListener('visibilitychange', visibilityChangeHandler);
+                window.addEventListener('beforeunload', unloadHandler);
             } else if (window.attachEvent) {
                 document.attachEvent('onclick', clickHandler);
             }
@@ -2111,8 +2126,9 @@ var raygunRumFactory = function (window, $, Raygun) {
                 self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
             }
 
-            self.sendPerformance();
+            self.sendPerformance(true, true);
             self.heartBeat();
+            self.initalStaticPageLoadTimestamp = window.performance.now();
         };
 
         this.setUser = function (user) {
@@ -2134,11 +2150,10 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.heartBeat = function () {
             self.heartBeatInterval = setInterval(function () {
-
                 var data = [];
                 var payload;
 
-                extractChildData(data);
+                extractChildData(data, self.virtualPage);
 
                 if (data.length > 0) {
                     var dataJson = JSON.stringify(data);
@@ -2161,11 +2176,33 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (payload !== undefined) {
                     self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
                 }
-            }, 30 * 1000); // 30 seconds between heartbeats
+          }, 30 * 1000); // 30 seconds between heartbeats
         };
 
-        this.sendPerformance = function () {
-            var performanceData = getPerformanceData();
+        this.virtualPageLoaded = function (path) {
+            var firstVirtualLoad = this.virtualPage == null;
+            
+            if (typeof path === 'string') {
+                if (path.length > 0 && path[0] !== '/') {
+                  path = path + '/';
+                }
+
+                this.virtualPage = path;
+            }
+            
+            if (firstVirtualLoad) {
+              this.sendPerformance(true, false);
+            } else {
+              this.sendPerformance(false, false);
+            }
+            
+            if (typeof path === 'string') {
+              this.previousVirtualPageLoadTimestamp = window.performance.now();
+            }
+        };
+
+        this.sendPerformance = function (flush, firstLoad) {
+            var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
 
             if (performanceData === null) {
                 return;
@@ -2187,8 +2224,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         function stringToByteLength(str) {
-          var m = encodeURIComponent(str).match(/%[89ABab]/g);
-          return str.length + (m ? m.length : 0);
+            var m = encodeURIComponent(str).match(/%[89ABab]/g);
+            return str.length + (m ? m.length : 0);
         }
 
         function getSessionId(callback) {
@@ -2306,6 +2343,14 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
+        function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+          return {
+            t: 'v',
+            du: Math.min(self.maxVirtualPageDuration, window.performance.now() - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+            o: Math.min(self.maxVirtualPageDuration, window.performance.now() - initalStaticPageLoadTimestamp)
+          };
+        }
+
         function getEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration,
@@ -2420,15 +2465,24 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
-        function getSecondaryTimingData(timing) {
+        function getVirtualPrimaryTimingData(virtualPage, previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+            return {
+                url: window.location.protocol + '//' + window.location.host + virtualPage,
+                userAgent: navigator.userAgent,
+                timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
+                size: 0
+            };
+        }
+
+        function getSecondaryTimingData(timing, fromZero) {
             return {
                 url: timing.name.split('?')[0],
-                timing: getSecondaryEncodedTimingData(timing, window.performance.timing.navigationStart),
+                timing: getSecondaryEncodedTimingData(timing, fromZero ? 0 : window.performance.timing.navigationStart),
                 size: timing.decodedBodySize || 0
             };
         }
 
-        function extractChildData(collection) {
+        function extractChildData(collection, fromVirtualPage) {
             if (window.performance === undefined || !window.performance.getEntries) {
                 return;
             }
@@ -2464,7 +2518,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                         continue;
                     }
 
-                    collection.push(getSecondaryTimingData(resources[i]));
+                    collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                 }
 
                 self.offset = resources.length;
@@ -2473,16 +2527,44 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData() {
+        function getPerformanceData(virtualPage, flush, firstLoad) {
             if (window.performance === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
+            
+            if (flush) {
+              // Called by the static onLoad event being fired, persist itself
+              if (firstLoad) { 
+                data.push(getPrimaryTimingData());
+              }
+              
+              // Called during both the static load event and the flush on the first virtual load call
+              extractChildData(data);  
+            }
 
-            data.push(getPrimaryTimingData());
-
-            extractChildData(data);
+            if (virtualPage) {
+              // A previous virtual load was stored, persist it and its children up until now
+              if (self.pendingVirtualPage) {
+                data.push(self.pendingVirtualPage);
+                extractChildData(data, true);
+              }
+              
+              var firstVirtualLoad = self.pendingVirtualPage == null;
+              
+              // Store the current virtual load so it can be sent upon the next one
+              self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                virtualPage,
+                self.previousVirtualPageLoadTimestamp,
+                self.initalStaticPageLoadTimestamp
+              );
+              
+              // Prevent sending an empty payload for the first virtual load as we don't know when it will end
+              if (!firstVirtualLoad && data.length > 0) {
+                return data;
+              }
+            }
 
             return data;
         }
@@ -2505,7 +2587,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     };
 };
 
-raygunRumFactory(window, window.jQuery, window.Raygun);
+raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 // js-url - see LICENSE file
 
 var raygunJsUrlFactory = function (window, Raygun) {
@@ -2588,8 +2670,8 @@ var raygunJsUrlFactory = function (window, Raygun) {
 
 };
 
-raygunJsUrlFactory(window, window.Raygun);
-window.Raygun._seal();
+raygunJsUrlFactory(window, window.__instantiatedRaygun);
+window.__instantiatedRaygun._seal();
 (function (window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
@@ -2600,16 +2682,21 @@ window.Raygun._seal();
     apiKey,
     options,
     attach,
-    enablePulse;
+    enablePulse,
+    noConflict;
 
   errorQueue = window[window['RaygunObject']].q;
+  var rg = Raygun;
 
   var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
 
-    if (key && value) {
+    if (key) {
       switch (key) {
+        case 'noConflict':
+          noConflict = value;
+          break;
         case 'apiKey':
           apiKey = value;
           break;
@@ -2623,37 +2710,40 @@ window.Raygun._seal();
         case 'enablePulse':
           enablePulse = value;
           break;
+        case 'getRaygunInstance':
+          return rg;
         case 'setUser':
-          Raygun.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
+          rg.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
           break;
         case 'onBeforeSend':
-          Raygun.onBeforeSend(value);
+          rg.onBeforeSend(value);
           break;
         case 'withCustomData':
-          Raygun.withCustomData(value);
+          rg.withCustomData(value);
           break;
         case 'withTags':
-          Raygun.withTags(value);
+          rg.withTags(value);
           break;
         case 'setVersion':
-          Raygun.setVersion(value);
+          rg.setVersion(value);
           break;
         case 'filterSensitiveData':
-          Raygun.filterSensitiveData(value);
+          rg.filterSensitiveData(value);
           break;
         case 'setFilterScope':
-          Raygun.setFilterScope(value);
+          rg.setFilterScope(value);
           break;
         case 'whitelistCrossOriginDomains':
-          Raygun.whitelistCrossOriginDomains(value);
+          rg.whitelistCrossOriginDomains(value);
           break;
         case 'saveIfOffline':
           if (typeof value === 'boolean') {
-            Raygun.saveIfOffline(value);
+            rg.saveIfOffline(value);
           }
           break;
         case 'groupingKey':
-          Raygun.groupingKey(value);
+          rg.groupingKey(value);
+          break;
       }
     }
   };
@@ -2666,6 +2756,10 @@ window.Raygun._seal();
   }
 
   var onLoadHandler = function () {
+    if (noConflict) {
+      rg = Raygun.noConflict();
+    }
+    
     if (apiKey) {
       if (!options) {
         options = {};
@@ -2676,15 +2770,15 @@ window.Raygun._seal();
       }
 
       options.from = 'onLoad';
-      Raygun.init(apiKey, options, null);
+      rg.init(apiKey, options, null);
     }
 
     if (attach) {
-      Raygun.attach();
+      rg.attach();
 
       errorQueue = window[window['RaygunObject']].q;
       for (var j in errorQueue) {
-        Raygun.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
+        rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
     } else {
       window.onerror = null;
@@ -2700,8 +2794,10 @@ window.Raygun._seal();
   }
 
   window[window['RaygunObject']] = function () {
-    executor(arguments);
+    return executor(arguments);
   };
   window[window['RaygunObject']].q = errorQueue;
 
-})(window, window.Raygun);
+})(window, window.__instantiatedRaygun);
+
+delete window.__instantiatedRaygun;

@@ -34,6 +34,7 @@ var raygunFactory = function (window, $, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _pulseMaxVirtualPageDuration = null,
         $document;
 
 
@@ -72,6 +73,7 @@ var raygunFactory = function (window, $, undefined) {
                 _disablePulse = options.disablePulse === undefined ? true : options.disablePulse;
                 _excludedHostnames = options.excludedHostnames || false;
                 _excludedUserAgents = options.excludedUserAgents || false;
+                _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -98,7 +100,7 @@ var raygunFactory = function (window, $, undefined) {
 
             if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
                 var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode);
+                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration);
                     _rum.attach();
                 };
 
@@ -251,11 +253,22 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        // Public Pulse functions
+
         endSession: function () {
-            if (Raygun.RealUserMonitoring !== undefined && _rum !== undefined) {
+            if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 _rum.endSession();
             }
+        },
+
+        trackEvent: function (type, options) {
+          if (Raygun.RealUserMonitoring  !== undefined && _rum) {
+              if (type === 'pageView' && options.path) {
+                _rum.virtualPageLoaded(options.path);
+              }
+          }
         }
+
     };
 
     var _private = Raygun._private = Raygun._private || {},
@@ -864,4 +877,4 @@ var raygunFactory = function (window, $, undefined) {
     return Raygun;
 };
 
-raygunFactory(window, window.jQuery);
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);

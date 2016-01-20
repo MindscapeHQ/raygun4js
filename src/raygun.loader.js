@@ -8,16 +8,21 @@
     apiKey,
     options,
     attach,
-    enablePulse;
+    enablePulse,
+    noConflict;
 
   errorQueue = window[window['RaygunObject']].q;
+  var rg = Raygun;
 
   var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
 
-    if (key && value) {
+    if (key) {
       switch (key) {
+        case 'noConflict':
+          noConflict = value;
+          break;
         case 'apiKey':
           apiKey = value;
           break;
@@ -31,37 +36,40 @@
         case 'enablePulse':
           enablePulse = value;
           break;
+        case 'getRaygunInstance':
+          return rg;
         case 'setUser':
-          Raygun.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
+          rg.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
           break;
         case 'onBeforeSend':
-          Raygun.onBeforeSend(value);
+          rg.onBeforeSend(value);
           break;
         case 'withCustomData':
-          Raygun.withCustomData(value);
+          rg.withCustomData(value);
           break;
         case 'withTags':
-          Raygun.withTags(value);
+          rg.withTags(value);
           break;
         case 'setVersion':
-          Raygun.setVersion(value);
+          rg.setVersion(value);
           break;
         case 'filterSensitiveData':
-          Raygun.filterSensitiveData(value);
+          rg.filterSensitiveData(value);
           break;
         case 'setFilterScope':
-          Raygun.setFilterScope(value);
+          rg.setFilterScope(value);
           break;
         case 'whitelistCrossOriginDomains':
-          Raygun.whitelistCrossOriginDomains(value);
+          rg.whitelistCrossOriginDomains(value);
           break;
         case 'saveIfOffline':
           if (typeof value === 'boolean') {
-            Raygun.saveIfOffline(value);
+            rg.saveIfOffline(value);
           }
           break;
         case 'groupingKey':
-          Raygun.groupingKey(value);
+          rg.groupingKey(value);
+          break;
       }
     }
   };
@@ -74,6 +82,10 @@
   }
 
   var onLoadHandler = function () {
+    if (noConflict) {
+      rg = Raygun.noConflict();
+    }
+    
     if (apiKey) {
       if (!options) {
         options = {};
@@ -84,15 +96,15 @@
       }
 
       options.from = 'onLoad';
-      Raygun.init(apiKey, options, null);
+      rg.init(apiKey, options, null);
     }
 
     if (attach) {
-      Raygun.attach();
+      rg.attach();
 
       errorQueue = window[window['RaygunObject']].q;
       for (var j in errorQueue) {
-        Raygun.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
+        rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
     } else {
       window.onerror = null;
@@ -108,8 +120,10 @@
   }
 
   window[window['RaygunObject']] = function () {
-    executor(arguments);
+    return executor(arguments);
   };
   window[window['RaygunObject']].q = errorQueue;
 
-})(window, window.Raygun);
+})(window, window.__instantiatedRaygun);
+
+delete window.__instantiatedRaygun;
