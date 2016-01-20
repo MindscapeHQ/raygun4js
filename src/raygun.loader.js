@@ -126,4 +126,11 @@
 
 })(window, window.__instantiatedRaygun);
 
-delete window.__instantiatedRaygun;
+try 
+{ 
+    delete window.__instantiatedRaygun;
+} 
+catch(e) 
+{ 
+    window["__instantiatedRaygun"] = undefined; 
+}
