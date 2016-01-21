@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.2.1 - 2016-01-18
+/*! Raygun4js - v2.2.2 - 2016-01-21
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1909,7 +1909,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.2.1'
+                    'Version': '2.2.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2196,7 +2196,12 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.sendPerformance(true, true);
             self.heartBeat();
-            self.initalStaticPageLoadTimestamp = window.performance.now();
+            
+            if (typeof window.performance.now !== 'undefined') {
+              self.initalStaticPageLoadTimestamp = window.performance.now();
+            } else {
+              self.initalStaticPageLoadTimestamp = 0;
+            }
         };
 
         this.setUser = function (user) {
@@ -2265,7 +2270,11 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
             
             if (typeof path === 'string') {
-              this.previousVirtualPageLoadTimestamp = window.performance.now();
+              if (typeof window.performance.now !== 'undefined') {
+                this.previousVirtualPageLoadTimestamp = window.performance.now();
+              } else {
+                this.previousVirtualPageLoadTimestamp = 0;
+              }
             }
         };
 
@@ -2412,10 +2421,17 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+          var now;
+          if (typeof window.performance.now !== 'undefined') {
+            now = window.performance.now();
+          } else {
+            now = 0;
+          }
+          
           return {
             t: 'v',
-            du: Math.min(self.maxVirtualPageDuration, window.performance.now() - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
-            o: Math.min(self.maxVirtualPageDuration, window.performance.now() - initalStaticPageLoadTimestamp)
+            du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+            o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
           };
         }
 
@@ -2868,4 +2884,11 @@ window.__instantiatedRaygun._seal();
 
 })(window, window.__instantiatedRaygun);
 
-delete window.__instantiatedRaygun;
+try 
+{ 
+    delete window.__instantiatedRaygun;
+} 
+catch(e) 
+{ 
+    window["__instantiatedRaygun"] = undefined; 
+}

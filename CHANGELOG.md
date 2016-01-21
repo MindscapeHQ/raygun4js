@@ -1,3 +1,6 @@
+* v2.2.2
+  - Hotfix for unsupported calls in IE8
+
 * v2.2.1
   - Release version of v2.2.0-beta with bug fixes and improvements; trackEvent officially added to API
 
