@@ -122,7 +122,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             self.sendPerformance(true, true);
             self.heartBeat();
             
-            if (typeof window.performance.now !== 'undefined') {
+            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
               self.initalStaticPageLoadTimestamp = window.performance.now();
             } else {
               self.initalStaticPageLoadTimestamp = 0;
@@ -195,7 +195,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
             
             if (typeof path === 'string') {
-              if (typeof window.performance.now !== 'undefined') {
+              if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
                 this.previousVirtualPageLoadTimestamp = window.performance.now();
               } else {
                 this.previousVirtualPageLoadTimestamp = 0;
@@ -347,7 +347,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
           var now;
-          if (typeof window.performance.now !== 'undefined') {
+          if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
             now = window.performance.now();
           } else {
             now = 0;

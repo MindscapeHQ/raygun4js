@@ -1,3 +1,6 @@
+* v2.2.3
+  - Further guards for unsupported now() in Safari 7/8
+  
 * v2.2.2
   - Hotfix for unsupported calls in IE8
 
