@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.2.2 - 2016-01-21
+/*! Raygun4js - v2.2.3 - 2016-01-26
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1909,7 +1909,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.2.2'
+                    'Version': '2.2.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2197,7 +2197,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             self.sendPerformance(true, true);
             self.heartBeat();
             
-            if (typeof window.performance.now !== 'undefined') {
+            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
               self.initalStaticPageLoadTimestamp = window.performance.now();
             } else {
               self.initalStaticPageLoadTimestamp = 0;
@@ -2270,7 +2270,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
             
             if (typeof path === 'string') {
-              if (typeof window.performance.now !== 'undefined') {
+              if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
                 this.previousVirtualPageLoadTimestamp = window.performance.now();
               } else {
                 this.previousVirtualPageLoadTimestamp = 0;
@@ -2422,7 +2422,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
           var now;
-          if (typeof window.performance.now !== 'undefined') {
+          if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
             now = window.performance.now();
           } else {
             now = 0;
