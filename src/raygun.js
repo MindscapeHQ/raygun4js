@@ -678,7 +678,7 @@ var raygunFactory = function (window, $, undefined) {
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
 
-        if (finalMessage) {
+        if (finalMessage && (typeof finalMessage === 'string')) {
           finalMessage = finalMessage.substring(0, 512);
         }
 

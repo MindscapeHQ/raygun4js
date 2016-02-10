@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.2.3 - 2016-01-26
+/*! Raygun4js - v2.2.3 - 2016-02-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1813,7 +1813,7 @@ var raygunFactory = function (window, $, undefined) {
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
 
-        if (finalMessage) {
+        if (finalMessage && (typeof finalMessage === 'string')) {
           finalMessage = finalMessage.substring(0, 512);
         }
 
