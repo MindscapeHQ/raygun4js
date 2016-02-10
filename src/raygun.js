@@ -262,11 +262,11 @@ var raygunFactory = function (window, $, undefined) {
         },
 
         trackEvent: function (type, options) {
-          if (Raygun.RealUserMonitoring  !== undefined && _rum) {
-              if (type === 'pageView' && options.path) {
-                _rum.virtualPageLoaded(options.path);
-              }
-          }
+            if (Raygun.RealUserMonitoring !== undefined && _rum) {
+                if (type === 'pageView' && options.path) {
+                    _rum.virtualPageLoaded(options.path);
+                }
+            }
         }
 
     };
@@ -443,7 +443,7 @@ var raygunFactory = function (window, $, undefined) {
         var dateTime = new Date().toJSON();
 
         try {
-            var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+            var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -464,13 +464,19 @@ var raygunFactory = function (window, $, undefined) {
     function sendSavedErrors() {
         if (localStorageAvailable() && localStorage && localStorage.length > 0) {
             for (var key in localStorage) {
-                if (key.substring(0, 9) === 'raygunjs=') {
+
+                // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
-                        var payload = JSON.parse(localStorage[key]);
-                        makePostCorsRequest(payload.url, payload.data);
+                        sendToRaygun(JSON.parse(localStorage[key]));
+                    } catch (e) {
+                        _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+                    }
+
+                    try {
                         localStorage.removeItem(key);
                     } catch (e) {
-                        _private.log('Raygun4JS: Unable to send saved error');
+                        _private.log('Raygun4JS: Unable to remove error');
                     }
                 }
             }
@@ -538,9 +544,9 @@ var raygunFactory = function (window, $, undefined) {
                 }
             } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
                 if (typeof parentKey !== 'undefined') {
-                  filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+                    filteredObject[propertyName] = filterValue(propertyName, propertyValue);
                 } else if (propertyName === 'OccurredOn') {
-                  filteredObject[propertyName] = propertyValue;
+                    filteredObject[propertyName] = propertyValue;
                 }
             }
         }
@@ -679,7 +685,7 @@ var raygunFactory = function (window, $, undefined) {
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
 
         if (finalMessage) {
-          finalMessage = finalMessage.substring(0, 512);
+            finalMessage = finalMessage.substring(0, 512);
         }
 
         var payload = {
@@ -785,6 +791,8 @@ var raygunFactory = function (window, $, undefined) {
     // Make the actual CORS request.
     function makePostCorsRequest(url, data) {
         var xhr = createCORSRequest('POST', url, data);
+
+        _private.log("Is offline enabled? " + _enableOfflineSave);
 
         if ('withCredentials' in xhr) {
 
