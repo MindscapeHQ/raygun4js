@@ -22,10 +22,10 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.js-url.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.js-url.js']
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js'],
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js']
         }
-      },
+      }
     },
     uglify: {
       options: {
@@ -38,6 +38,17 @@ module.exports = function(grunt) {
           'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js']
         }
       },
+      snippet:{
+        options:{
+          banner: '',
+          sourceMap: false,
+          maxLineLen: 60
+        },
+        files:{
+          'src/snippet/minified.js':['src/snippet/unminified.js'],
+          'src/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js']
+        }
+      }
     },
     jshint: {
       gruntfile: {
@@ -48,13 +59,14 @@ module.exports = function(grunt) {
       },
       src: {
         options: {
-          jshintrc: 'src/.jshintrc'
+          jshintrc: 'src/.jshintrc',
+          ignores: ['src/snippet/**/*.js']
         },
         src: ['src/**/*.js']
-      },
+      }
     },
     jasmine : {
-      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygunjs-url.js'],
+      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygunjs-url.js', 'src/raygun.loader.js'],
       options : {
         specs : 'spec/**/*.js',
         vendor : ['tracekit/tracekit.js'],
@@ -73,8 +85,43 @@ module.exports = function(grunt) {
       src: {
         files: '<%= jshint.src.src %>',
         tasks: ['jshint:src', 'jasmine']
-      },
+      }
     },
+    'string-replace': {
+      dist: {
+        files: {
+          'dist/': 'dist/*.js'
+        },
+        options: {
+          replacements: [{
+            pattern: /({{VERSION}})/gmi,
+            replacement: '<%= pkg.version %>'
+          }]
+        }
+      },
+      bower: {
+        files: {
+          './': 'bower.json'
+        },
+        options: {
+          replacements: [{
+            pattern: /"version": (.*),/gmi,
+            replacement: '"version": "<%= pkg.version %>",'
+          }]
+        }
+      },
+      nuspec: {
+        files: {
+          './': 'raygun4js.nuspec'
+        },
+        options: {
+          replacements: [{
+            pattern: /<version>(.*)<\/version>/gmi,
+            replacement: "<version><%= pkg.version %></version>"
+          }]
+        }
+      }
+    }
   });
 
   // These plugins provide necessary tasks.
@@ -84,8 +131,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-string-replace');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jasmine', 'clean', 'concat', 'uglify']);
-
+  grunt.registerTask('default', ['jshint', 'jasmine','clean', 'concat', 'string-replace', 'uglify']);
 };

@@ -1,9 +1,50 @@
+* v2.2.3
+  - Further guards for unsupported now() in Safari 7/8
+  
+* v2.2.2
+  - Hotfix for unsupported calls in IE8
+
+* v2.2.1
+  - Release version of v2.2.0-beta with bug fixes and improvements; trackEvent officially added to API
+
+* v2.2.0-beta
+  - Adds experimental support for SPA sites to Pulse
+  - noConflict mode improved for V2
+  - Fixed a bug when attaching onBeforeUnload handler when Pulse enabled
+
+- v2.1.1
+  - Fix issue where when filterScope set to 'all' resulted in payload 400 errors
+  - Guard against null message substring error
+
+* v2.1.0
+  - Add custom grouping key function
+  - Add ability to ignore hostnames and user agents for Pulse
+  - Calls to rg4js() for config setters made after the script has been downloaded by the snippet are now proxied through to the Raygun object, making the V2 API experience like V1
+  - Guard against data set with V2 API being null for certain out-of-order declaration scenarios
+  - Fix API rejection issue for large heartbeat payloads
+  - Fix a bug where the session cookie was not present or invalid
+
+* v2.0.3
+  - Fixes a snippet loader race condition
+
+- v2.0.2
+  - Fixes an issue with isAnonymous from setUser
+
+- v2.0.1
+  - Guard against NaNs in Pulse timing data
+
+* v2.0.0
+  - Adds support for Real User Monitoring
+
+* v1.18.7
+  - Create copy of customData object when filtering
+
 * v1.18.6
   - Slice function check for older browsers
-  
+
 * v1.18.5
   - Limit active data on JQuery AJAX errors
-  
+
 * v1.18.4
   - Error payloads are no longer persisted in localStorage if sending failed due to RG plan hitting its monthly cap
   - Guard against invalid JSON being persisted in localStorage on send failure

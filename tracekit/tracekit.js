@@ -328,7 +328,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         if (typeof url !== 'string') {
           return [];
         }
-        
+
         if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
             return '';
         }
