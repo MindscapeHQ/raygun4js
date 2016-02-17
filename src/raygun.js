@@ -35,6 +35,7 @@ var raygunFactory = function (window, $, undefined) {
         _filterScope = 'customData',
         _rum = null,
         _pulseMaxVirtualPageDuration = null,
+        _interceptXhr = function() {},
         $document;
 
 
@@ -74,6 +75,7 @@ var raygunFactory = function (window, $, undefined) {
                 _excludedHostnames = options.excludedHostnames || false;
                 _excludedUserAgents = options.excludedUserAgents || false;
                 _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
+                _interceptXhr = options.interceptXhr || function () { };
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -760,6 +762,7 @@ var raygunFactory = function (window, $, undefined) {
         var xhr;
 
         xhr = new window.XMLHttpRequest();
+        _interceptXhr(xhr);
         if ("withCredentials" in xhr) {
             // XHR for Chrome/Firefox/Opera/Safari.
             xhr.open(method, url, true);
