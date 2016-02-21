@@ -532,10 +532,6 @@ var raygunFactory = function (window, $, undefined) {
         for (var propertyName in reference) {
             var propertyValue = reference[propertyName];
 
-            if (propertyValue == null) {
-                continue;
-            }
-
             if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
                 if (parentKey !== 'Details' || propertyName !== 'Client') {
                     filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
