@@ -375,7 +375,7 @@ var raygunFactory = function (window, $, undefined) {
 
         // ignore ajax abort if set in the options
         if (_ignoreAjaxAbort) {
-            if (!jqXHR.getAllResponseHeaders()) {
+            if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
                 return;
             }
         }
