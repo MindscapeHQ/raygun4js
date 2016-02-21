@@ -171,7 +171,9 @@ var raygunFactory = function (window, $, undefined) {
                     customData: typeof _customData === 'function' ?
                         merge(_customData(), customData) :
                         merge(_customData, customData),
-                    tags: mergeArray(_tags, tags)
+                    tags: typeof _tags === 'function' ?
+                        mergeArray(_tags(), tags) :
+                        mergeArray(_tags, tags)
                 });
             }
             catch (traceKitException) {
