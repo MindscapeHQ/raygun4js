@@ -313,6 +313,22 @@ var myBeforeSend = function (payload) {
 Raygun.onBeforeSend(myBeforeSend);
 ```
 
+#### onBeforeXHR
+
+```javascript
+// V2
+rg4js('onBeforeXHR', function (xhr) {
+  // Mutate the xhr parameter as per your needs
+});
+
+// V1
+Raygun.onBeforeXHR(function (xhr) { });
+```
+
+Call this function when you want control over the XmlHttpRequest object that is used to send error payloads to the API. Pass in a callback that receives one parameter (which is the XHR object). Your callback will be called after the XHR object is `open`ed, immediately before it is sent.
+
+For instance, you can use this to add custom HTTP headers.
+
 ### Custom error grouping
 
 You can control custom grouping for error instances by passing in a callback. This will override the automatic grouping and be used to group error instances together. Errors with the same key will be placed within the same error group. The callback's signature should take in the error payload, stackTrace and options and return a string, ideally 64 characters or less.
@@ -482,18 +498,7 @@ rg4js('filterSensitiveData', ['password', 'credit_card']);
 Raygun.filterSensitiveData(['password', 'credit_card']);
 ```
 
-#### Change filter scope
-
-By default this is applied to the UserCustomData object only (legacy behavior). To apply this to any key-value pair, you can change the filtering scope:
-
-```javascript
-// V2
-rg4js('setFilterScope', 'all'); // Filter any key in the payload
-rg4js('setFilterScope', 'customData'); // Just filter the custom data (default)
-
-// V1
-Raygun.setFilterScope('all');
-```
+If any key matches one in the input array, its value will be replaced with `[removed by filter]`.
 
 You can also pass RegExp objects in the array to `filterSensitiveData`, for controllable matching of keys:
 
@@ -505,6 +510,19 @@ rg4js('filterSensitiveData', [creditCardDataRegex]);
 
 // V1
 Raygun.filterSensitiveData([creditCardDataRegex]);
+```
+
+#### Change filter scope
+
+By default this is applied to the UserCustomData object only (legacy behavior). To apply this to any key-value pair, you can change the filtering scope:
+
+```javascript
+// V2
+rg4js('setFilterScope', 'all'); // Filter any key in the payload
+rg4js('setFilterScope', 'customData'); // Just filter the custom data (default)
+
+// V1
+Raygun.setFilterScope('all');
 ```
 
 ### Source maps support
