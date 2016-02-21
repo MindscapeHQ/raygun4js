@@ -20,7 +20,7 @@ Add this snippet to your markup, before the closing `</head>` tag:
 </script>
 ```
 
-This will fetch the raygun4js script from our CDN asynchronously, so it doesn't block the page load. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
+This will fetch the raygun4js script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
 **Step 2**
 
