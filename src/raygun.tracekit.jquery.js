@@ -12,7 +12,7 @@
   var _oldEventAdd = $.event.add;
   $.event.add = function traceKitEventAdd(elem, types, handler, data, selector) {
     if (typeof handler !== 'function' && typeof handler.handler !== 'function') {
-      _oldEventAdd.call(this, elem, types, handler, data, selector);
+      return _oldEventAdd.call(this, elem, types, handler, data, selector);
     }
 
     var _handler;

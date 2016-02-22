@@ -29,6 +29,7 @@ var raygunFactory = function (window, $, undefined) {
         _whitelistedScriptDomains = [],
         _beforeSendCallback,
         _groupingKeyCallback,
+        _beforeXHRCallback,
         _raygunApiUrl = 'https://api.raygun.io',
         _excludedHostnames = null,
         _excludedUserAgents = null,
@@ -170,7 +171,9 @@ var raygunFactory = function (window, $, undefined) {
                     customData: typeof _customData === 'function' ?
                         merge(_customData(), customData) :
                         merge(_customData, customData),
-                    tags: mergeArray(_tags, tags)
+                    tags: typeof _tags === 'function' ?
+                        mergeArray(_tags(), tags) :
+                        mergeArray(_tags, tags)
                 });
             }
             catch (traceKitException) {
@@ -250,6 +253,11 @@ var raygunFactory = function (window, $, undefined) {
 
         groupingKey: function (callback) {
             _groupingKeyCallback = callback;
+            return Raygun;
+        },
+        
+        onBeforeXHR: function (callback) {
+            _beforeXHRCallback = callback;
             return Raygun;
         },
 
@@ -367,7 +375,7 @@ var raygunFactory = function (window, $, undefined) {
 
         // ignore ajax abort if set in the options
         if (_ignoreAjaxAbort) {
-            if (!jqXHR.getAllResponseHeaders()) {
+            if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
                 return;
             }
         }
@@ -526,10 +534,6 @@ var raygunFactory = function (window, $, undefined) {
         for (var propertyName in reference) {
             var propertyValue = reference[propertyName];
 
-            if (propertyValue == null) {
-                continue;
-            }
-
             if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
                 if (parentKey !== 'Details' || propertyName !== 'Client') {
                     filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
@@ -678,7 +682,7 @@ var raygunFactory = function (window, $, undefined) {
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
 
-        if (finalMessage) {
+        if (finalMessage && (typeof finalMessage === 'string')) {
           finalMessage = finalMessage.substring(0, 512);
         }
 
@@ -760,6 +764,7 @@ var raygunFactory = function (window, $, undefined) {
         var xhr;
 
         xhr = new window.XMLHttpRequest();
+        
         if ("withCredentials" in xhr) {
             // XHR for Chrome/Firefox/Opera/Safari.
             xhr.open(method, url, true);
@@ -785,6 +790,10 @@ var raygunFactory = function (window, $, undefined) {
     // Make the actual CORS request.
     function makePostCorsRequest(url, data) {
         var xhr = createCORSRequest('POST', url, data);
+        
+        if (typeof _beforeXHRCallback === 'function') {
+          _beforeXHRCallback(xhr);
+        }
 
         if ('withCredentials' in xhr) {
 

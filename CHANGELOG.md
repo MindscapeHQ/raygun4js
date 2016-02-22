@@ -1,3 +1,11 @@
+* v2.3.0
+  - Add new onBeforeXHR function for mutating the XHR object immediately before an error payload is sent to the API
+  - If invalid non-function handler passed in to jQuery Ajax add function, call the old event handler & return early
+  - CustomData keys with a value of `null` are now included and not filtered out automatically when filtering is enabled
+  - Guard against non-string type in message being substringed
+  - Fix bug when passing callback to withTags() and subsequently calling Raygun.send() with tags parameter also
+  - ignoreAjaxAbort now checks for statusCode of `0` in addition to checking if the response headers are null when deciding to ignore a potential aborted Ajax request
+
 * v2.2.3
   - Further guards for unsupported now() in Safari 7/8
   

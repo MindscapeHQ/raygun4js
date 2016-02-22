@@ -44,6 +44,9 @@
         case 'onBeforeSend':
           rg.onBeforeSend(value);
           break;
+        case 'onBeforeXHR':
+          rg.onBeforeXHR(value);
+          break;
         case 'withCustomData':
           rg.withCustomData(value);
           break;
