@@ -331,7 +331,7 @@ For instance, you can use this to add custom HTTP headers.
 
 ### Custom error grouping
 
-You can control custom grouping for error instances by passing in a callback. This will override the automatic grouping and be used to group error instances together. Errors with the same key will be placed within the same error group. The callback's signature should take in the error payload, stackTrace and options and return a string, ideally 64 characters or less.
+You can control custom grouping for error instances by passing in a callback. This will override the automatic grouping and be used to group error instances together. Errors with the same key will be placed within the same error group. The callback's signature should take in the error payload, stackTrace and options and return a string, ideally 64 characters or less. If the callback returns null or or a non-string the error will be grouped using Raygun's server side grouping logic (this can be useful if you only wish to use custom grouping for a subset of your errors).
 
 ```javascript
 var groupingKeyCallback = function (payload, stackTrace, options) {
