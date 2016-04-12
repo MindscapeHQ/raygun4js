@@ -1,3 +1,6 @@
+* v2.3.1
+  - Guard against undefined fetchStart bug in Mobile Safari 8.0 which passed the existing Browser Timing checks
+
 * v2.3.0
   - Add new onBeforeXHR function for mutating the XHR object immediately before an error payload is sent to the API
   - If invalid non-function handler passed in to jQuery Ajax add function, call the old event handler & return early
@@ -8,7 +11,7 @@
 
 * v2.2.3
   - Further guards for unsupported now() in Safari 7/8
-  
+
 * v2.2.2
   - Hotfix for unsupported calls in IE8
 
