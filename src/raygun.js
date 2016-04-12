@@ -663,6 +663,12 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
+        if (!options.tags) {
+            options.tags = [];
+        }
+
+        options.tags.push('UnhandledException');
+
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
         var custom_message = options.customData && options.customData.ajaxErrorMessage;
 
