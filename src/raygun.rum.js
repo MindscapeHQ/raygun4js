@@ -63,7 +63,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var clickHandler = function () {
                 this.updateCookieTimestamp();
             }.bind(_private);
-            
+
             var unloadHandler = function () {
                 var data = [];
 
@@ -121,7 +121,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.sendPerformance(true, true);
             self.heartBeat();
-            
+
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
               self.initalStaticPageLoadTimestamp = window.performance.now();
             } else {
@@ -179,7 +179,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.virtualPageLoaded = function (path) {
             var firstVirtualLoad = this.virtualPage == null;
-            
+
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
                   path = path + '/';
@@ -187,13 +187,13 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 this.virtualPage = path;
             }
-            
+
             if (firstVirtualLoad) {
               this.sendPerformance(true, false);
             } else {
               this.sendPerformance(false, false);
             }
-            
+
             if (typeof path === 'string') {
               if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
                 this.previousVirtualPageLoadTimestamp = window.performance.now();
@@ -352,7 +352,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           } else {
             now = 0;
           }
-          
+
           return {
             t: 'v',
             du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
@@ -537,20 +537,21 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPerformanceData(virtualPage, flush, firstLoad) {
-            if (window.performance === undefined || isNaN(window.performance.timing.fetchStart)) {
+            if (window.performance === undefined || window.performance.timing === undefined ||
+              window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
-            
+
             if (flush) {
               // Called by the static onLoad event being fired, persist itself
-              if (firstLoad) { 
+              if (firstLoad) {
                 data.push(getPrimaryTimingData());
               }
-              
+
               // Called during both the static load event and the flush on the first virtual load call
-              extractChildData(data);  
+              extractChildData(data);
             }
 
             if (virtualPage) {
@@ -559,16 +560,16 @@ var raygunRumFactory = function (window, $, Raygun) {
                 data.push(self.pendingVirtualPage);
                 extractChildData(data, true);
               }
-              
+
               var firstVirtualLoad = self.pendingVirtualPage == null;
-              
+
               // Store the current virtual load so it can be sent upon the next one
               self.pendingVirtualPage = getVirtualPrimaryTimingData(
                 virtualPage,
                 self.previousVirtualPageLoadTimestamp,
                 self.initalStaticPageLoadTimestamp
               );
-              
+
               // Prevent sending an empty payload for the first virtual load as we don't know when it will end
               if (!firstVirtualLoad && data.length > 0) {
                 return data;
