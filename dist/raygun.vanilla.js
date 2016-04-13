@@ -1804,7 +1804,11 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         if (!userTriggered) {
-            options.tags = merge(options.tags, ['UnhandledException']);
+            if (!options.tags) {
+                options.tags = [];
+            }
+
+            options.tags.push('UnhandledException');
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
