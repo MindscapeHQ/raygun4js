@@ -1,4 +1,8 @@
+<<<<<<< 906f34f3eaa71149ced0d2627a4b7045a62f4344
 /*! Raygun4js - v2.3.3 - 2016-06-21
+=======
+/*! Raygun4js - v2.3.1 - 2016-04-13
+>>>>>>> Re-grunt all the things
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1859,7 +1863,11 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
+<<<<<<< 906f34f3eaa71149ced0d2627a4b7045a62f4344
                     'Version': '2.3.3'
+=======
+                    'Version': '2.3.1'
+>>>>>>> Re-grunt all the things
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2378,6 +2386,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+<<<<<<< 906f34f3eaa71149ced0d2627a4b7045a62f4344
             var now;
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
                 now = window.performance.now();
@@ -2390,6 +2399,20 @@ var raygunRumFactory = function (window, $, Raygun) {
                 du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
                 o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
             };
+=======
+          var now;
+          if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
+            now = window.performance.now();
+          } else {
+            now = 0;
+          }
+
+          return {
+            t: 'v',
+            du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+            o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
+          };
+>>>>>>> Re-grunt all the things
         }
 
         function getEncodedTimingData(timing, offset) {
@@ -2586,13 +2609,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function getPerformanceData(virtualPage, flush, firstLoad) {
             if (window.performance === undefined || window.performance.timing === undefined ||
+<<<<<<< 906f34f3eaa71149ced0d2627a4b7045a62f4344
                 window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+=======
+              window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+>>>>>>> Re-grunt all the things
                 return null;
             }
 
             var data = [];
 
             if (flush) {
+<<<<<<< 906f34f3eaa71149ced0d2627a4b7045a62f4344
                 // Called by the static onLoad event being fired, persist itself
                 if (firstLoad) {
                     data.push(getPrimaryTimingData());
@@ -2622,6 +2650,37 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (!firstVirtualLoad && data.length > 0) {
                     return data;
                 }
+=======
+              // Called by the static onLoad event being fired, persist itself
+              if (firstLoad) {
+                data.push(getPrimaryTimingData());
+              }
+
+              // Called during both the static load event and the flush on the first virtual load call
+              extractChildData(data);
+            }
+
+            if (virtualPage) {
+              // A previous virtual load was stored, persist it and its children up until now
+              if (self.pendingVirtualPage) {
+                data.push(self.pendingVirtualPage);
+                extractChildData(data, true);
+              }
+
+              var firstVirtualLoad = self.pendingVirtualPage == null;
+
+              // Store the current virtual load so it can be sent upon the next one
+              self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                virtualPage,
+                self.previousVirtualPageLoadTimestamp,
+                self.initalStaticPageLoadTimestamp
+              );
+
+              // Prevent sending an empty payload for the first virtual load as we don't know when it will end
+              if (!firstVirtualLoad && data.length > 0) {
+                return data;
+              }
+>>>>>>> Re-grunt all the things
             }
 
             return data;
