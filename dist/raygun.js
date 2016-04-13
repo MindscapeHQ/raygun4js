@@ -1372,14 +1372,18 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             try {
-                processUnhandledException(_traceKit.computeStackTrace(ex), {
-                    customData: typeof _customData === 'function' ?
-                        merge(_customData(), customData) :
-                        merge(_customData, customData),
-                    tags: typeof _tags === 'function' ?
-                        mergeArray(_tags(), tags) :
-                        mergeArray(_tags, tags)
-                });
+                processUnhandledException(
+                    _traceKit.computeStackTrace(ex),
+                    {
+                        customData: typeof _customData === 'function' ?
+                            merge(_customData(), customData) :
+                            merge(_customData, customData),
+                        tags: typeof _tags === 'function' ?
+                            mergeArray(_tags(), tags) :
+                            mergeArray(_tags, tags)
+                    },
+                    true
+                );
             }
             catch (traceKitException) {
                 if (ex !== traceKitException) {
@@ -1757,7 +1761,7 @@ var raygunFactory = function (window, $, undefined) {
         return filteredObject;
     }
 
-    function processUnhandledException(stackTrace, options) {
+    function processUnhandledException(stackTrace, options, userTriggered) {
         var stack = [],
             qs = {};
 
@@ -1867,11 +1871,9 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        if (!options.tags) {
-            options.tags = [];
+        if (!userTriggered) {
+            options.tags = merge(options.tags, ['UnhandledException']);
         }
-
-        options.tags.push('UnhandledException');
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
         var custom_message = options.customData && options.customData.ajaxErrorMessage;
