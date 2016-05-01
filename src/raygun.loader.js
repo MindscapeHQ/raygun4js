@@ -107,7 +107,12 @@
 
       errorQueue = window[window['RaygunObject']].q;
       for (var j in errorQueue) {
-        rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
+        var err = errorQueue[j];
+        if (!err.e || !('lineNumber' in err.e) && (!err.e.stack || err.e.stack.split("\n").length < 2)) {
+          window.onerror(err.msg, err.url, err.line, err.col);
+        } else {
+          window.onerror(err.msg, err.url, err.line, err.col, errorQueue[j].e);
+        }
       }
     } else {
       window.onerror = null;
