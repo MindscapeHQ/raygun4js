@@ -194,6 +194,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes).
 
+`pulseIgnoreUrlCasing` - Ignore URL casing when sending data to Pulse.
+
 An example:
 
 ```javascript
@@ -208,7 +210,8 @@ rg4js('options', {
   excludedUserAgents: ['Mosaic'],
   disableCrashReporting: false,
   disablePulse: false,
-  pulseMaxVirtualPageDuration: 1800000
+  pulseMaxVirtualPageDuration: 1800000,
+  pulseIgnoreUrlCasing: false
 });
 ```
 
