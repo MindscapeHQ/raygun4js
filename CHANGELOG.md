@@ -1,3 +1,6 @@
+* v2.3.2
+  - Add ability to ignore Pulse URL casing
+
 * v2.3.1
   - Guard against undefined fetchStart bug in Mobile Safari 8.0 which passed the existing Browser Timing checks
 
