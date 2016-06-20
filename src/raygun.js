@@ -5,7 +5,6 @@
  * Copyright (c) 2013 MindscapeHQ
  * Licensed under the MIT license.
  */
-/*jshint latedef: nofunc */
 var raygunFactory = function (window, $, undefined) {
     // pull local copy of TraceKit to handle stack trace collection
     var _traceKit = TraceKit,
@@ -677,9 +676,9 @@ var raygunFactory = function (window, $, undefined) {
         try {
             JSON.stringify(finalCustomData);
         } catch (e) {
-            var msg = 'Cannot add custom data; may contain circular reference';
-            finalCustomData = {error: msg};
-            _private.log('Raygun4JS: ' + msg);
+            var m = 'Cannot add custom data; may contain circular reference';
+            finalCustomData = {error: m};
+            _private.log('Raygun4JS: ' + m);
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
