@@ -36,7 +36,7 @@ var raygunFactory = function (window, $, undefined) {
         _filterScope = 'customData',
         _rum = null,
         _pulseMaxVirtualPageDuration = null,
-        _pulseIgnoreUrlCasing = false,
+        _pulseIgnoreUrlCasing = true,
         $document;
 
 
