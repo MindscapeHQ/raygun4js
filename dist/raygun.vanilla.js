@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.3.2 - 2016-05-04
+/*! Raygun4js - v2.3.3 - 2016-06-21
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1171,7 +1171,7 @@ var raygunFactory = function (window, $, undefined) {
         _filterScope = 'customData',
         _rum = null,
         _pulseMaxVirtualPageDuration = null,
-        _pulseIgnoreUrlCasing = false,
+        _pulseIgnoreUrlCasing = true,
         $document;
 
 
@@ -1812,9 +1812,9 @@ var raygunFactory = function (window, $, undefined) {
         try {
             JSON.stringify(finalCustomData);
         } catch (e) {
-            var msg = 'Cannot add custom data; may contain circular reference';
-            finalCustomData = {error: msg};
-            _private.log('Raygun4JS: ' + msg);
+            var m = 'Cannot add custom data; may contain circular reference';
+            finalCustomData = {error: m};
+            _private.log('Raygun4JS: ' + m);
         }
 
         var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
@@ -1847,7 +1847,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.3.2'
+                    'Version': '2.3.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2634,6 +2634,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 };
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
+
 // js-url - see LICENSE file
 
 var raygunJsUrlFactory = function (window, Raygun) {
