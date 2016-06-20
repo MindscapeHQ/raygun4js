@@ -10,7 +10,7 @@ module.exports = function(grunt) {
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
       '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-      ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
+      ' Licensed MIT */\n',
     // Task configuration.
     clean: {
       files: ['dist']
@@ -63,18 +63,6 @@ module.exports = function(grunt) {
           ignores: ['src/snippet/**/*.js']
         },
         src: ['src/**/*.js']
-      }
-    },
-    jasmine : {
-      src : ['src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygunjs-url.js', 'src/raygun.loader.js'],
-      options : {
-        specs : 'spec/**/*.js',
-        vendor : ['tracekit/tracekit.js'],
-        template : require('grunt-template-jasmine-istanbul'),
-        templateOptions: {
-          coverage: 'reports/coverage.json',
-          report: 'reports/coverage'
-        }
       }
     },
     watch: {
@@ -130,9 +118,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-string-replace');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jasmine','clean', 'concat', 'string-replace', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
 };
