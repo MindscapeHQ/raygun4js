@@ -5,7 +5,7 @@
  * Copyright (c) 2013 MindscapeHQ
  * Licensed under the MIT license.
  */
-
+/*jshint latedef: nofunc */
 var raygunFactory = function (window, $, undefined) {
     // pull local copy of TraceKit to handle stack trace collection
     var _traceKit = TraceKit,
