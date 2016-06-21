@@ -1,3 +1,6 @@
+* v2.3.3
+  - Pulse URLs lowercase by default
+
 * v2.3.2
   - Add ability to ignore Pulse URL casing
 

@@ -5,7 +5,6 @@
  * Copyright (c) 2015 MindscapeHQ
  * Licensed under the MIT license.
  */
-
 var raygunRumFactory = function (window, $, Raygun) {
     Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing) {
         var self = this;
