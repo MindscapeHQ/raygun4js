@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.3.3 - 2016-06-21
+/*! Raygun4js - v2.3.3 - 2016-07-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2163,7 +2163,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var clickHandler = function () {
                 this.updateCookieTimestamp();
             }.bind(_private);
-            
+
             var unloadHandler = function () {
                 var data = [];
 
@@ -2221,11 +2221,11 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.sendPerformance(true, true);
             self.heartBeat();
-            
+
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-              self.initalStaticPageLoadTimestamp = window.performance.now();
+                self.initalStaticPageLoadTimestamp = window.performance.now();
             } else {
-              self.initalStaticPageLoadTimestamp = 0;
+                self.initalStaticPageLoadTimestamp = 0;
             }
         };
 
@@ -2257,49 +2257,49 @@ var raygunRumFactory = function (window, $, Raygun) {
                     var dataJson = JSON.stringify(data);
 
                     if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
-                      payload = {
-                          eventData: [{
-                              sessionId: self.sessionId,
-                              timestamp: new Date().toISOString(),
-                              type: 'web_request_timing',
-                              user: self.user,
-                              version: self.version || 'Not supplied',
-                              device: navigator.userAgent,
-                              data: dataJson
-                          }]
-                      };
+                        payload = {
+                            eventData: [{
+                                sessionId: self.sessionId,
+                                timestamp: new Date().toISOString(),
+                                type: 'web_request_timing',
+                                user: self.user,
+                                version: self.version || 'Not supplied',
+                                device: navigator.userAgent,
+                                data: dataJson
+                            }]
+                        };
                     }
                 }
 
                 if (payload !== undefined) {
                     self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
                 }
-          }, 30 * 1000); // 30 seconds between heartbeats
+            }, 30 * 1000); // 30 seconds between heartbeats
         };
 
         this.virtualPageLoaded = function (path) {
             var firstVirtualLoad = this.virtualPage == null;
-            
+
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
-                  path = path + '/';
+                    path = path + '/';
                 }
 
                 this.virtualPage = path;
             }
-            
+
             if (firstVirtualLoad) {
-              this.sendPerformance(true, false);
+                this.sendPerformance(true, false);
             } else {
-              this.sendPerformance(false, false);
+                this.sendPerformance(false, false);
             }
-            
+
             if (typeof path === 'string') {
-              if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                this.previousVirtualPageLoadTimestamp = window.performance.now();
-              } else {
-                this.previousVirtualPageLoadTimestamp = 0;
-              }
+                if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
+                    this.previousVirtualPageLoadTimestamp = window.performance.now();
+                } else {
+                    this.previousVirtualPageLoadTimestamp = 0;
+                }
             }
         };
 
@@ -2410,15 +2410,15 @@ var raygunRumFactory = function (window, $, Raygun) {
         function updateCookieTimestamp() {
             var existingCookie = readCookie(self.cookieName);
 
-          var expiredCookie;
-          if (existingCookie) {
-            var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-            var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-            expiredCookie = timestamp < halfHrAgo;
-          }
-          else {
-            expiredCookie = true;
-          }
+            var expiredCookie;
+            if (existingCookie) {
+                var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+                var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
+                expiredCookie = timestamp < halfHrAgo;
+            }
+            else {
+                expiredCookie = true;
+            }
 
             if (expiredCookie) {
                 self.sessionId = randomKey(32);
@@ -2446,18 +2446,18 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
-          var now;
-          if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-            now = window.performance.now();
-          } else {
-            now = 0;
-          }
-          
-          return {
-            t: 'v',
-            du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
-            o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
-          };
+            var now;
+            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
+                now = window.performance.now();
+            } else {
+                now = 0;
+            }
+
+            return {
+                t: 'v',
+                du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
+                o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
+            };
         }
 
         function getEncodedTimingData(timing, offset) {
@@ -2654,42 +2654,42 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function getPerformanceData(virtualPage, flush, firstLoad) {
             if (window.performance === undefined || window.performance.timing === undefined ||
-              window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+                window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
-            
+
             if (flush) {
-              // Called by the static onLoad event being fired, persist itself
-              if (firstLoad) { 
-                data.push(getPrimaryTimingData());
-              }
-              
-              // Called during both the static load event and the flush on the first virtual load call
-              extractChildData(data);  
+                // Called by the static onLoad event being fired, persist itself
+                if (firstLoad) {
+                    data.push(getPrimaryTimingData());
+                }
+
+                // Called during both the static load event and the flush on the first virtual load call
+                extractChildData(data);
             }
 
             if (virtualPage) {
-              // A previous virtual load was stored, persist it and its children up until now
-              if (self.pendingVirtualPage) {
-                data.push(self.pendingVirtualPage);
-                extractChildData(data, true);
-              }
-              
-              var firstVirtualLoad = self.pendingVirtualPage == null;
-              
-              // Store the current virtual load so it can be sent upon the next one
-              self.pendingVirtualPage = getVirtualPrimaryTimingData(
-                virtualPage,
-                self.previousVirtualPageLoadTimestamp,
-                self.initalStaticPageLoadTimestamp
-              );
-              
-              // Prevent sending an empty payload for the first virtual load as we don't know when it will end
-              if (!firstVirtualLoad && data.length > 0) {
-                return data;
-              }
+                // A previous virtual load was stored, persist it and its children up until now
+                if (self.pendingVirtualPage) {
+                    data.push(self.pendingVirtualPage);
+                    extractChildData(data, true);
+                }
+
+                var firstVirtualLoad = self.pendingVirtualPage == null;
+
+                // Store the current virtual load so it can be sent upon the next one
+                self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                    virtualPage,
+                    self.previousVirtualPageLoadTimestamp,
+                    self.initalStaticPageLoadTimestamp
+                );
+
+                // Prevent sending an empty payload for the first virtual load as we don't know when it will end
+                if (!firstVirtualLoad && data.length > 0) {
+                    return data;
+                }
             }
 
             return data;
