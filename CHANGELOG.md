@@ -1,3 +1,6 @@
+* v2.3.4
+  - The most recent pending virtual page is now sent when the tab/window is closed from unload (where available)
+
 * v2.3.3
   - Pulse URLs lowercase by default
 
