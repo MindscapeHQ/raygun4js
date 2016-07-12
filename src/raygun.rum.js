@@ -66,8 +66,12 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var unloadHandler = function () {
                 var data = [];
-
                 extractChildData(data);
+
+                if (self.pendingVirtualPage) {
+                    data.push(self.pendingVirtualPage);
+                    extractChildData(data, true);
+                }
 
                 if (data.length > 0) {
                     var payload = {

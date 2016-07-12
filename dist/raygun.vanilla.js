@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.3.3 - 2016-06-21
+/*! Raygun4js - v2.3.4 - 2016-07-07
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1847,7 +1847,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.3.3'
+                    'Version': '2.3.4'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2086,8 +2086,12 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var unloadHandler = function () {
                 var data = [];
-
                 extractChildData(data);
+
+                if (self.pendingVirtualPage) {
+                    data.push(self.pendingVirtualPage);
+                    extractChildData(data, true);
+                }
 
                 if (data.length > 0) {
                     var payload = {
