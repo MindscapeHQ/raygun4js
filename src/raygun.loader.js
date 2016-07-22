@@ -5,6 +5,7 @@
 
   var snippetOptions = window[window['RaygunObject']].o;
   var errorQueue,
+    delayedCommands = [],
     apiKey,
     options,
     attach,
@@ -14,12 +15,15 @@
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
+  var delayedExecutionFunctions = ['trackEvent', 'send'];
+
   var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
 
     if (key) {
       switch (key) {
+        // Immediate execution config functions
         case 'noConflict':
           noConflict = value;
           break;
@@ -73,6 +77,11 @@
         case 'groupingKey':
           rg.groupingKey(value);
           break;
+
+        // Delayed execution functions
+        case 'send':
+          rg.send(value);
+          break;
         case 'trackEvent':
           rg.trackEvent(value);
           break;
@@ -83,7 +92,11 @@
   for (var i in snippetOptions) {
     var pair = snippetOptions[i];
     if (pair) {
-      executor(pair);
+      if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+        executor(pair);
+      } else { // Pair which requires lib to be fully parsed, delay till onload
+        delayedCommands.push(pair);
+      }
     }
   }
 
@@ -115,6 +128,12 @@
     } else {
       window.onerror = null;
     }
+
+    for (var commandIndex in delayedCommands) {
+      executor(delayedCommands[commandIndex]);
+    }
+
+    delayedCommands = [];
   };
 
   if (document.readyState === 'complete') {
@@ -129,6 +148,7 @@
     return executor(arguments);
   };
   window[window['RaygunObject']].q = errorQueue;
+  //window[window['RaygunObject']].cq = commandQueue;
 
 })(window, window.__instantiatedRaygun);
 
