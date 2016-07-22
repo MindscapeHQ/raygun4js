@@ -80,7 +80,20 @@
 
         // Delayed execution functions
         case 'send':
-          rg.send(value);
+          var error, tags, customData;
+          if (value.error) {
+            error = value.error;
+
+            if (value.tags) {
+              tags = value.tags;
+            }
+            if (value.customData) {
+              customData = value.customData;
+            }
+          } else {
+            error = value;
+          }
+          rg.send(error, customData, tags);
           break;
         case 'trackEvent':
           if (value.type && value.path) {
