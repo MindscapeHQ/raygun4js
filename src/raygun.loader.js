@@ -83,7 +83,9 @@
           rg.send(value);
           break;
         case 'trackEvent':
-          rg.trackEvent(value);
+          if (value.type && value.path) {
+            rg.trackEvent(value.type, { path: value.path });
+          }
           break;
       }
     }
@@ -134,6 +136,11 @@
     }
 
     delayedCommands = [];
+
+    window[window['RaygunObject']] = function () {
+      return executor(arguments);
+    };
+    window[window['RaygunObject']].q = errorQueue;
   };
 
   if (document.readyState === 'complete') {
@@ -143,12 +150,6 @@
   } else {
     window.attachEvent('onload', onLoadHandler);
   }
-
-  window[window['RaygunObject']] = function () {
-    return executor(arguments);
-  };
-  window[window['RaygunObject']].q = errorQueue;
-  //window[window['RaygunObject']].cq = commandQueue;
 
 })(window, window.__instantiatedRaygun);
 
