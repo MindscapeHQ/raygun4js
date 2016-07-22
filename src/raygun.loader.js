@@ -73,6 +73,9 @@
         case 'groupingKey':
           rg.groupingKey(value);
           break;
+        case 'trackEvent':
+          rg.trackEvent(value);
+          break;
       }
     }
   };
