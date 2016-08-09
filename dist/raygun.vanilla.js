@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.0 - 2016-07-22
+/*! Raygun4js - v2.4.0 - 2016-08-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2737,6 +2737,8 @@ window.__instantiatedRaygun._seal();
     enablePulse,
     noConflict;
 
+var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e].q=a[e].q||[]"];
+
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
@@ -2865,8 +2867,11 @@ window.__instantiatedRaygun._seal();
       for (var j in errorQueue) {
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
-    } else {
-      window.onerror = null;
+    } else if (typeof window.onerror === 'function') {
+      var onerrorSignature = window.onerror.toString(); 
+      if (onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 && onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1) {
+        window.onerror = null;
+      }
     }
 
     for (var commandIndex in delayedCommands) {
