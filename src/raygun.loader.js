@@ -4,7 +4,8 @@
   }
 
   var snippetOptions = window[window['RaygunObject']].o;
-  var errorQueue,
+  var hasLoaded = false,
+    errorQueue,
     delayedCommands = [],
     apiKey,
     options,
@@ -19,6 +20,21 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
   var delayedExecutionFunctions = ['trackEvent', 'send'];
 
+  var parseSnippetOptions = function (queueDelayedCommands) {
+    for (var i in snippetOptions) {
+      var pair = snippetOptions[i];
+      if (pair) {
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+          executor(pair);
+        } else { // Pair which requires lib to be fully parsed, delay till onload
+          if (queueDelayedCommands) {
+            delayedCommands.push(pair);
+          }
+        }
+      }
+    }
+  };
+
   var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
@@ -31,6 +47,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'apiKey':
           apiKey = value;
+          hasLoaded = true;
           break;
         case 'options':
           options = value;
@@ -38,9 +55,11 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
+          hasLoaded = true;
           break;
         case 'enablePulse':
           enablePulse = value;
+          hasLoaded = true;
           break;
         case 'getRaygunInstance':
           return rg;
@@ -109,18 +128,13 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  for (var i in snippetOptions) {
-    var pair = snippetOptions[i];
-    if (pair) {
-      if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
-        executor(pair);
-      } else { // Pair which requires lib to be fully parsed, delay till onload
-        delayedCommands.push(pair);
-      }
-    }
-  }
+  parseSnippetOptions(true);
 
   var onLoadHandler = function () {
+    if (!hasLoaded) {
+      parseSnippetOptions(false);
+    }
+
     if (noConflict) {
       rg = Raygun.noConflict();
     }
