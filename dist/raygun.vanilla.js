@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.0 - 2016-08-10
+/*! Raygun4js - v2.4.0 - 2016-09-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1165,6 +1165,7 @@ var raygunFactory = function (window, $, undefined) {
         _beforeSendCallback,
         _groupingKeyCallback,
         _beforeXHRCallback,
+        _afterSendCallback,
         _raygunApiUrl = 'https://api.raygun.io',
         _excludedHostnames = null,
         _excludedUserAgents = null,
@@ -1384,7 +1385,6 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeSend: function (callback) {
             _beforeSendCallback = callback;
-
             return Raygun;
         },
 
@@ -1395,6 +1395,11 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeXHR: function (callback) {
             _beforeXHRCallback = callback;
+            return Raygun;
+        },
+
+        onAfterSend: function (callback) {
+            _afterSendCallback = callback;
             return Raygun;
         },
 
@@ -1619,6 +1624,12 @@ var raygunFactory = function (window, $, undefined) {
                     }
                 }
             }
+        }
+    }
+
+    function callAfterSend(response) {
+        if (typeof _afterSendCallback === 'function') {
+            _afterSendCallback(response);
         }
     }
 
@@ -1948,6 +1959,8 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+
+                callAfterSend(this);
             };
 
         } else if (window.XDomainRequest) {
@@ -1960,12 +1973,16 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+                
                 sendSavedErrors();
+                callAfterSend(this);
             };
         }
 
         xhr.onerror = function () {
             _private.log('failed to post to Raygun');
+
+            callAfterSend(this);
         };
 
         if (!xhr) {
@@ -2729,7 +2746,8 @@ window.__instantiatedRaygun._seal();
   }
 
   var snippetOptions = window[window['RaygunObject']].o;
-  var errorQueue,
+  var hasLoaded = false,
+    errorQueue,
     delayedCommands = [],
     apiKey,
     options,
@@ -2744,6 +2762,21 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
   var delayedExecutionFunctions = ['trackEvent', 'send'];
 
+  var parseSnippetOptions = function (queueDelayedCommands) {
+    for (var i in snippetOptions) {
+      var pair = snippetOptions[i];
+      if (pair) {
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+          executor(pair);
+        } else { // Pair which requires lib to be fully parsed, delay till onload
+          if (queueDelayedCommands) {
+            delayedCommands.push(pair);
+          }
+        }
+      }
+    }
+  };
+
   var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
@@ -2756,6 +2789,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'apiKey':
           apiKey = value;
+          hasLoaded = true;
           break;
         case 'options':
           options = value;
@@ -2763,9 +2797,11 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
+          hasLoaded = true;
           break;
         case 'enablePulse':
           enablePulse = value;
+          hasLoaded = true;
           break;
         case 'getRaygunInstance':
           return rg;
@@ -2777,6 +2813,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'onBeforeXHR':
           rg.onBeforeXHR(value);
+          break;
+        case 'onAfterSend':
+          rg.onAfterSend(value);
           break;
         case 'withCustomData':
           rg.withCustomData(value);
@@ -2831,18 +2870,13 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  for (var i in snippetOptions) {
-    var pair = snippetOptions[i];
-    if (pair) {
-      if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
-        executor(pair);
-      } else { // Pair which requires lib to be fully parsed, delay till onload
-        delayedCommands.push(pair);
-      }
-    }
-  }
+  parseSnippetOptions(true);
 
   var onLoadHandler = function () {
+    if (!hasLoaded) {
+      parseSnippetOptions(false);
+    }
+
     if (noConflict) {
       rg = Raygun.noConflict();
     }
