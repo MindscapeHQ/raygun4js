@@ -316,6 +316,22 @@ var myBeforeSend = function (payload) {
 Raygun.onBeforeSend(myBeforeSend);
 ```
 
+#### onAfterSend
+
+```javascript
+// V2
+rg4js('onAfterSend', function (xhrResponse) {
+  // Inspect the XHR response here
+});
+
+// V1
+Raygun.onAfterSend(function (xhrResponse) {
+  // Inspect the XHR response here
+});
+```
+
+Call this function and pass in a function which takes one parameter (see the example below). This callback function will be immediately called after the XHR request for a Crash Reporting or Pulse event responds successfully, or errors out (its `onerror` was called). You can inspect the one parameter, which is the XHR object containing the HTTP response data.
+
 #### onBeforeXHR
 
 ```javascript

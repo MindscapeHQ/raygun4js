@@ -1,5 +1,6 @@
 * v2.4.0
   - Allow send/trackEvent calls to be proxied through `rg4js()` to avoid async loading race condition when global Raygun object not available before static load is finished
+  - Add onAfterSend callback function
   - Fix non-RG onerror handlers from being removed if Crash Reporting not enabled
 
 * v2.3.4
