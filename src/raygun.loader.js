@@ -53,6 +53,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'onBeforeXHR':
           rg.onBeforeXHR(value);
           break;
+        case 'onAfterSend':
+          rg.onAfterSend(value);
+          break;
         case 'withCustomData':
           rg.withCustomData(value);
           break;

@@ -29,6 +29,7 @@ var raygunFactory = function (window, $, undefined) {
         _beforeSendCallback,
         _groupingKeyCallback,
         _beforeXHRCallback,
+        _afterSendCallback,
         _raygunApiUrl = 'https://api.raygun.io',
         _excludedHostnames = null,
         _excludedUserAgents = null,
@@ -248,7 +249,6 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeSend: function (callback) {
             _beforeSendCallback = callback;
-
             return Raygun;
         },
 
@@ -259,6 +259,11 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeXHR: function (callback) {
             _beforeXHRCallback = callback;
+            return Raygun;
+        },
+
+        onAfterSend: function (callback) {
+            _afterSendCallback = callback;
             return Raygun;
         },
 
@@ -483,6 +488,12 @@ var raygunFactory = function (window, $, undefined) {
                     }
                 }
             }
+        }
+    }
+
+    function callAfterSend(response) {
+        if (typeof _afterSendCallback === 'function') {
+            _afterSendCallback(response);
         }
     }
 
@@ -812,6 +823,8 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+
+                callAfterSend(this);
             };
 
         } else if (window.XDomainRequest) {
@@ -824,12 +837,16 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+                
                 sendSavedErrors();
+                callAfterSend(this);
             };
         }
 
         xhr.onerror = function () {
             _private.log('failed to post to Raygun');
+
+            callAfterSend(this);
         };
 
         if (!xhr) {
