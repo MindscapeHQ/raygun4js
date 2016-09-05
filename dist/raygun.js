@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.0 - 2016-09-05
+/*! Raygun4js - v2.4.0 - 2016-09-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2870,6 +2870,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'enablePulse':
           enablePulse = value;
           hasLoaded = true;
+          break;
+        case 'detach':
+          rg.detach();
           break;
         case 'getRaygunInstance':
           return rg;
