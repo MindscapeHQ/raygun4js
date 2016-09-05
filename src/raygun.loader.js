@@ -61,6 +61,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           enablePulse = value;
           hasLoaded = true;
           break;
+        case 'detach':
+          rg.detach();
+          break;
         case 'getRaygunInstance':
           return rg;
         case 'setUser':
