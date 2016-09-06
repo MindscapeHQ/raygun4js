@@ -4,15 +4,36 @@
   }
 
   var snippetOptions = window[window['RaygunObject']].o;
-  var errorQueue,
+  var hasLoaded = false,
+    errorQueue,
+    delayedCommands = [],
     apiKey,
     options,
     attach,
     enablePulse,
     noConflict;
 
+var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e].q=a[e].q||[]"];
+
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
+
+  var delayedExecutionFunctions = ['trackEvent', 'send'];
+
+  var parseSnippetOptions = function (queueDelayedCommands) {
+    for (var i in snippetOptions) {
+      var pair = snippetOptions[i];
+      if (pair) {
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+          executor(pair);
+        } else { // Pair which requires lib to be fully parsed, delay till onload
+          if (queueDelayedCommands) {
+            delayedCommands.push(pair);
+          }
+        }
+      }
+    }
+  };
 
   var executor = function (pair) {
     var key = pair[0];
@@ -20,11 +41,13 @@
 
     if (key) {
       switch (key) {
+        // Immediate execution config functions
         case 'noConflict':
           noConflict = value;
           break;
         case 'apiKey':
           apiKey = value;
+          hasLoaded = true;
           break;
         case 'options':
           options = value;
@@ -32,9 +55,14 @@
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
+          hasLoaded = true;
           break;
         case 'enablePulse':
           enablePulse = value;
+          hasLoaded = true;
+          break;
+        case 'detach':
+          rg.detach();
           break;
         case 'getRaygunInstance':
           return rg;
@@ -46,6 +74,9 @@
           break;
         case 'onBeforeXHR':
           rg.onBeforeXHR(value);
+          break;
+        case 'onAfterSend':
+          rg.onAfterSend(value);
           break;
         case 'withCustomData':
           rg.withCustomData(value);
@@ -73,18 +104,40 @@
         case 'groupingKey':
           rg.groupingKey(value);
           break;
+
+        // Delayed execution functions
+        case 'send':
+          var error, tags, customData;
+          if (value.error) {
+            error = value.error;
+
+            if (value.tags) {
+              tags = value.tags;
+            }
+            if (value.customData) {
+              customData = value.customData;
+            }
+          } else {
+            error = value;
+          }
+          rg.send(error, customData, tags);
+          break;
+        case 'trackEvent':
+          if (value.type && value.path) {
+            rg.trackEvent(value.type, { path: value.path });
+          }
+          break;
       }
     }
   };
 
-  for (var i in snippetOptions) {
-    var pair = snippetOptions[i];
-    if (pair) {
-      executor(pair);
-    }
-  }
+  parseSnippetOptions(true);
 
   var onLoadHandler = function () {
+    if (!hasLoaded) {
+      parseSnippetOptions(false);
+    }
+
     if (noConflict) {
       rg = Raygun.noConflict();
     }
@@ -109,9 +162,23 @@
       for (var j in errorQueue) {
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
-    } else {
-      window.onerror = null;
+    } else if (typeof window.onerror === 'function') {
+      var onerrorSignature = window.onerror.toString(); 
+      if (onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 && onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1) {
+        window.onerror = null;
+      }
     }
+
+    for (var commandIndex in delayedCommands) {
+      executor(delayedCommands[commandIndex]);
+    }
+
+    delayedCommands = [];
+
+    window[window['RaygunObject']] = function () {
+      return executor(arguments);
+    };
+    window[window['RaygunObject']].q = errorQueue;
   };
 
   if (document.readyState === 'complete') {
@@ -121,11 +188,6 @@
   } else {
     window.attachEvent('onload', onLoadHandler);
   }
-
-  window[window['RaygunObject']] = function () {
-    return executor(arguments);
-  };
-  window[window['RaygunObject']].q = errorQueue;
 
 })(window, window.__instantiatedRaygun);
 

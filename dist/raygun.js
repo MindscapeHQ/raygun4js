@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.3.4 - 2016-07-07
+/*! Raygun4js - v2.4.0 - 2016-09-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1233,6 +1233,7 @@ var raygunFactory = function (window, $, undefined) {
         _beforeSendCallback,
         _groupingKeyCallback,
         _beforeXHRCallback,
+        _afterSendCallback,
         _raygunApiUrl = 'https://api.raygun.io',
         _excludedHostnames = null,
         _excludedUserAgents = null,
@@ -1452,7 +1453,6 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeSend: function (callback) {
             _beforeSendCallback = callback;
-
             return Raygun;
         },
 
@@ -1463,6 +1463,11 @@ var raygunFactory = function (window, $, undefined) {
 
         onBeforeXHR: function (callback) {
             _beforeXHRCallback = callback;
+            return Raygun;
+        },
+
+        onAfterSend: function (callback) {
+            _afterSendCallback = callback;
             return Raygun;
         },
 
@@ -1687,6 +1692,12 @@ var raygunFactory = function (window, $, undefined) {
                     }
                 }
             }
+        }
+    }
+
+    function callAfterSend(response) {
+        if (typeof _afterSendCallback === 'function') {
+            _afterSendCallback(response);
         }
     }
 
@@ -1915,7 +1926,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.3.4'
+                    'Version': '2.4.0'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2016,6 +2027,8 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+
+                callAfterSend(this);
             };
 
         } else if (window.XDomainRequest) {
@@ -2028,12 +2041,16 @@ var raygunFactory = function (window, $, undefined) {
 
             xhr.onload = function () {
                 _private.log('posted to Raygun');
+                
                 sendSavedErrors();
+                callAfterSend(this);
             };
         }
 
         xhr.onerror = function () {
             _private.log('failed to post to Raygun');
+
+            callAfterSend(this);
         };
 
         if (!xhr) {
@@ -2797,15 +2814,36 @@ window.__instantiatedRaygun._seal();
   }
 
   var snippetOptions = window[window['RaygunObject']].o;
-  var errorQueue,
+  var hasLoaded = false,
+    errorQueue,
+    delayedCommands = [],
     apiKey,
     options,
     attach,
     enablePulse,
     noConflict;
 
+var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e].q=a[e].q||[]"];
+
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
+
+  var delayedExecutionFunctions = ['trackEvent', 'send'];
+
+  var parseSnippetOptions = function (queueDelayedCommands) {
+    for (var i in snippetOptions) {
+      var pair = snippetOptions[i];
+      if (pair) {
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+          executor(pair);
+        } else { // Pair which requires lib to be fully parsed, delay till onload
+          if (queueDelayedCommands) {
+            delayedCommands.push(pair);
+          }
+        }
+      }
+    }
+  };
 
   var executor = function (pair) {
     var key = pair[0];
@@ -2813,11 +2851,13 @@ window.__instantiatedRaygun._seal();
 
     if (key) {
       switch (key) {
+        // Immediate execution config functions
         case 'noConflict':
           noConflict = value;
           break;
         case 'apiKey':
           apiKey = value;
+          hasLoaded = true;
           break;
         case 'options':
           options = value;
@@ -2825,9 +2865,14 @@ window.__instantiatedRaygun._seal();
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
+          hasLoaded = true;
           break;
         case 'enablePulse':
           enablePulse = value;
+          hasLoaded = true;
+          break;
+        case 'detach':
+          rg.detach();
           break;
         case 'getRaygunInstance':
           return rg;
@@ -2839,6 +2884,9 @@ window.__instantiatedRaygun._seal();
           break;
         case 'onBeforeXHR':
           rg.onBeforeXHR(value);
+          break;
+        case 'onAfterSend':
+          rg.onAfterSend(value);
           break;
         case 'withCustomData':
           rg.withCustomData(value);
@@ -2866,18 +2914,40 @@ window.__instantiatedRaygun._seal();
         case 'groupingKey':
           rg.groupingKey(value);
           break;
+
+        // Delayed execution functions
+        case 'send':
+          var error, tags, customData;
+          if (value.error) {
+            error = value.error;
+
+            if (value.tags) {
+              tags = value.tags;
+            }
+            if (value.customData) {
+              customData = value.customData;
+            }
+          } else {
+            error = value;
+          }
+          rg.send(error, customData, tags);
+          break;
+        case 'trackEvent':
+          if (value.type && value.path) {
+            rg.trackEvent(value.type, { path: value.path });
+          }
+          break;
       }
     }
   };
 
-  for (var i in snippetOptions) {
-    var pair = snippetOptions[i];
-    if (pair) {
-      executor(pair);
-    }
-  }
+  parseSnippetOptions(true);
 
   var onLoadHandler = function () {
+    if (!hasLoaded) {
+      parseSnippetOptions(false);
+    }
+
     if (noConflict) {
       rg = Raygun.noConflict();
     }
@@ -2902,9 +2972,23 @@ window.__instantiatedRaygun._seal();
       for (var j in errorQueue) {
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
-    } else {
-      window.onerror = null;
+    } else if (typeof window.onerror === 'function') {
+      var onerrorSignature = window.onerror.toString(); 
+      if (onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 && onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1) {
+        window.onerror = null;
+      }
     }
+
+    for (var commandIndex in delayedCommands) {
+      executor(delayedCommands[commandIndex]);
+    }
+
+    delayedCommands = [];
+
+    window[window['RaygunObject']] = function () {
+      return executor(arguments);
+    };
+    window[window['RaygunObject']].q = errorQueue;
   };
 
   if (document.readyState === 'complete') {
@@ -2914,11 +2998,6 @@ window.__instantiatedRaygun._seal();
   } else {
     window.attachEvent('onload', onLoadHandler);
   }
-
-  window[window['RaygunObject']] = function () {
-    return executor(arguments);
-  };
-  window[window['RaygunObject']].q = errorQueue;
 
 })(window, window.__instantiatedRaygun);
 
