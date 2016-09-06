@@ -1,3 +1,6 @@
+* v2.4.1
+  - Fix a bug in v2.4.0 when the library loads first and consumer code sets `rg4js` options which then aren't picked up and used
+
 * v2.4.0
   - Allow send/trackEvent calls to be proxied through `rg4js()` to avoid async loading race condition when global Raygun object not available before static load is finished
   - Add onAfterSend callback function
