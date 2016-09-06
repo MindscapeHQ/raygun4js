@@ -21,6 +21,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   var delayedExecutionFunctions = ['trackEvent', 'send'];
 
   var parseSnippetOptions = function (queueDelayedCommands) {
+    snippetOptions = window[window['RaygunObject']].o;
+    
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {
