@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.0 - 2016-09-06
+/*! Raygun4js - v2.4.1 - 2016-09-07
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1926,7 +1926,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.4.0'
+                    'Version': '2.4.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2831,6 +2831,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   var delayedExecutionFunctions = ['trackEvent', 'send'];
 
   var parseSnippetOptions = function (queueDelayedCommands) {
+    snippetOptions = window[window['RaygunObject']].o;
+    
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {
