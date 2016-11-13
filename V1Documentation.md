@@ -385,7 +385,7 @@ Raygun.withCustomData({ foo: 'bar' });
 You can also pass custom data with manual send calls, with the second parameter. This lets you add variables that are in scope or global when handled in catch blocks. For example:
 
 ```javascript
-Raygun.send(err, [{ foo: 'bar' }];
+Raygun.send(err, [{ foo: 'bar' }]);
 ```
 
 #### Providing custom data with a callback
