@@ -329,26 +329,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
           return [];
         }
 
-        if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
-            return '';
-        }
-        try {
-            var getXHR = function() {
-                try {
-                    return new window.XMLHttpRequest();
-                } catch (e) {
-                    // explicitly bubble up the exception if not found
-                    return new window.ActiveXObject('Microsoft.XMLHTTP');
-                }
-            };
-
-            var request = getXHR();
-            request.open('GET', url, false);
-            request.send('');
-            return request.responseText;
-        } catch (e) {
-            return '';
-        }
+        return ''; // Remote fetching disabled due to deprecated synchronous XHR support in browsers
     }
 
     /**
