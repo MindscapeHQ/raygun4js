@@ -46,6 +46,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+            {
+                return;
+            }
+
             makePostCorsRequest(url, data);
         };
         this.sessionId = null;

@@ -628,6 +628,11 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
+        if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+        {
+            return;
+        }
+
         if (stackTrace.stack && stackTrace.stack.length) {
             forEach(stackTrace.stack, function (i, frame) {
                 stack.push({
