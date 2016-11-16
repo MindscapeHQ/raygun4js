@@ -46,7 +46,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
             {
                 return;
             }

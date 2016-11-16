@@ -628,7 +628,7 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+        if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
         {
             return;
         }
