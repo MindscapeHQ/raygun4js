@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.2 - 2016-11-16
+/*! Raygun4js - v2.4.2 - 2016-11-18
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1813,7 +1813,7 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+        if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
         {
             return;
         }
@@ -2137,7 +2137,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler-v1.0"))
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
             {
                 return;
             }
