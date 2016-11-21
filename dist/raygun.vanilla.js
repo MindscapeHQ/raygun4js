@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.1 - 2016-09-07
+/*! Raygun4js - v2.4.2 - 2016-11-18
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -327,26 +327,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
           return [];
         }
 
-        if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
-            return '';
-        }
-        try {
-            var getXHR = function() {
-                try {
-                    return new window.XMLHttpRequest();
-                } catch (e) {
-                    // explicitly bubble up the exception if not found
-                    return new window.ActiveXObject('Microsoft.XMLHTTP');
-                }
-            };
-
-            var request = getXHR();
-            request.open('GET', url, false);
-            request.send('');
-            return request.responseText;
-        } catch (e) {
-            return '';
-        }
+        return ''; // Remote fetching disabled due to deprecated synchronous XHR support in browsers
     }
 
     /**
@@ -1764,6 +1745,11 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
+        if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
+        {
+            return;
+        }
+
         if (stackTrace.stack && stackTrace.stack.length) {
             forEach(stackTrace.stack, function (i, frame) {
                 stack.push({
@@ -1858,7 +1844,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.4.1'
+                    'Version': '2.4.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2081,6 +2067,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                         }
                     }
                 }
+            }
+
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
+            {
+                return;
             }
 
             makePostCorsRequest(url, data);
