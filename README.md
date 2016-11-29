@@ -416,7 +416,7 @@ Only `identifier` or the first parameter is required. This method takes addition
 setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 ```
 
-`user` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
+`user|identifier` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
 
 `isAnonymous` is a bool indicating whether the user is anonymous or actually has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
 
