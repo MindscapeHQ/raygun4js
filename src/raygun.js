@@ -577,7 +577,7 @@ var raygunFactory = function (window, $, undefined) {
             var domain = _private.parseUrl('domain');
 
             var scriptError = 'Script error';
-            var msg = stackTrace.message || options.status || scriptError;
+            var msg = stackTrace.message || options ? options.status : null || scriptError;
             if (msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
@@ -697,7 +697,7 @@ var raygunFactory = function (window, $, undefined) {
             _private.log('Raygun4JS: ' + m);
         }
 
-        var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
+        var finalMessage = custom_message || stackTrace.message || options ? options.status : null || 'Script error';
 
         if (finalMessage && (typeof finalMessage === 'string')) {
             finalMessage = finalMessage.substring(0, 512);
