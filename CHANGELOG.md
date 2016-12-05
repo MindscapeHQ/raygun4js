@@ -1,3 +1,10 @@
+* v2.4.3
+  - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
+  - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings) 
+
+* v2.4.2
+  - Fix synchronous XHR warnings in Chrome
+
 * v2.4.1
   - Fix a bug in v2.4.0 when the library loads first and consumer code sets `rg4js` options which then aren't picked up and used
 

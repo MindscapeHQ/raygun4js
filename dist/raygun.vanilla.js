@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.2 - 2016-11-18
+/*! Raygun4js - v2.4.3 - 2016-12-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1682,6 +1682,8 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     function processUnhandledException(stackTrace, options) {
+        var scriptError = 'Script error';
+
         var stack = [],
             qs = {};
 
@@ -1693,8 +1695,17 @@ var raygunFactory = function (window, $, undefined) {
 
             var domain = _private.parseUrl('domain');
 
-            var scriptError = 'Script error';
-            var msg = stackTrace.message || options.status || scriptError;
+            var msg = scriptError;
+            if (stackTrace.message) {
+                msg = stackTrace.message;
+            } else if (options && options.status) {
+                msg = options.status;
+            }
+
+            if (typeof msg === 'undefined') {
+                msg = scriptError;
+            }
+
             if (msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
@@ -1814,7 +1825,18 @@ var raygunFactory = function (window, $, undefined) {
             _private.log('Raygun4JS: ' + m);
         }
 
-        var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
+        var finalMessage = scriptError;
+        if (custom_message) {
+            finalMessage = custom_message;
+        } else if (stackTrace.message) {
+            finalMessage = stackTrace.message;
+        } else if (options && options.status) {
+            finalMessage = options.status;
+        }
+
+        if (typeof finalMessage === 'undefined') {
+            finalMessage = scriptError;
+        }
 
         if (finalMessage && (typeof finalMessage === 'string')) {
             finalMessage = finalMessage.substring(0, 512);
@@ -1844,7 +1866,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.4.2'
+                    'Version': '2.4.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2217,6 +2239,10 @@ var raygunRumFactory = function (window, $, Raygun) {
                     path = path + '/';
                 }
 
+                if (path.length > 800) {
+                    path = path.substring(0, 800);
+                }
+
                 this.virtualPage = path;
             }
 
@@ -2504,8 +2530,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                 pathName = pathName.toLowerCase();
             }
 
+            var url = window.location.protocol + '//' + window.location.host + pathName;
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
+            }
+
             return {
-                url: window.location.protocol + '//' + window.location.host + pathName,
+                url: url,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
@@ -2517,8 +2549,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                 virtualPage = virtualPage.toLowerCase();
             }
 
+            var url = window.location.protocol + '//' + window.location.host + virtualPage;
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
+            }
+
             return {
-                url: window.location.protocol + '//' + window.location.host + virtualPage,
+                url: url,
                 userAgent: navigator.userAgent,
                 timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
                 size: 0
@@ -2530,6 +2568,10 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (self.ignoreUrlCasing) {
                 url = url.toLowerCase();
+            }
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
             }
 
             return {
