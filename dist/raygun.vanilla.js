@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.4.3 - 2016-12-02
+/*! Raygun4js - v2.4.3 - 2016-12-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2016 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1682,6 +1682,8 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     function processUnhandledException(stackTrace, options) {
+        var scriptError = 'Script error';
+
         var stack = [],
             qs = {};
 
@@ -1693,8 +1695,17 @@ var raygunFactory = function (window, $, undefined) {
 
             var domain = _private.parseUrl('domain');
 
-            var scriptError = 'Script error';
-            var msg = stackTrace.message || options.status || scriptError;
+            var msg = scriptError;
+            if (stackTrace.message) {
+                msg = stackTrace.message;
+            } else if (options && options.status) {
+                msg = options.status;
+            }
+
+            if (typeof msg === 'undefined') {
+                msg = scriptError;
+            }
+
             if (msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
@@ -1814,7 +1825,18 @@ var raygunFactory = function (window, $, undefined) {
             _private.log('Raygun4JS: ' + m);
         }
 
-        var finalMessage = custom_message || stackTrace.message || options.status || 'Script error';
+        var finalMessage = scriptError;
+        if (custom_message) {
+            finalMessage = custom_message;
+        } else if (stackTrace.message) {
+            finalMessage = stackTrace.message;
+        } else if (options && options.status) {
+            finalMessage = options.status;
+        }
+
+        if (typeof finalMessage === 'undefined') {
+            finalMessage = scriptError;
+        }
 
         if (finalMessage && (typeof finalMessage === 'string')) {
             finalMessage = finalMessage.substring(0, 512);
