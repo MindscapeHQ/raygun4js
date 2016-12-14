@@ -65,6 +65,11 @@ module.exports = function(grunt) {
         src: ['src/**/*.js']
       }
     },
+    webdriver: {
+      test: {
+        configFile: './wdio.conf.js'
+      }
+    },
     watch: {
       gruntfile: {
         files: '<%= jshint.gruntfile.src %>',
@@ -119,7 +124,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-string-replace');
+  grunt.loadNpmTasks('grunt-webdriver');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify', 'webdriver']);
 };

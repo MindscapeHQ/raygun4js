@@ -24,11 +24,18 @@
     "grunt": "*",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-jasmine": "^1.0.3",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
-    "grunt-string-replace": "^1.2.0"
+    "grunt-string-replace": "^1.2.0",
+    "grunt-webdriver": "^2.0.3",
+    "phantomjs-prebuilt": "^2.1.14",
+    "wdio-dot-reporter": "0.0.6",
+    "wdio-jasmine-framework": "^0.2.19",
+    "wdio-phantomjs-service": "^0.2.2",
+    "wdio-sauce-service": "^0.3.1",
+    "wdio-selenium-standalone-service": "0.0.7",
+    "webdriverio": "^4.5.0"
   },
   "dependencies": {},
   "keywords": [
