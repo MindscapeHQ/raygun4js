@@ -126,6 +126,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-string-replace');
   grunt.loadNpmTasks('grunt-webdriver');
 
+
+  grunt.registerTask('test', ['webdriver']);
+
   // Default task.
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify', 'webdriver']);
+  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify', 'test']);
 };
