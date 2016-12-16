@@ -5,7 +5,11 @@ describe("Basic Raygun4JS V1 API tests", function() {
   // Setup
 
   beforeEach(function() {
-    browser.url('http://localhost:4567/fixtures/v1/index.html');
+    //webdriverio
+    //.remote({  })
+    //.init()
+
+    browser.url('http://localhost:4567/fixtures/v1/basic.html');
   });
 
   // Tests
