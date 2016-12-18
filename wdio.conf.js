@@ -32,7 +32,7 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    maxInstances: 1,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -75,6 +75,10 @@ exports.config = {
     // Set a base URL in order to shorten url command calls. If your url parameter starts
     // with "/", then the base url gets prepended.
     baseUrl: 'http://localhost',
+
+    host: 'localhost',
+
+    port: 4444,
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -109,6 +113,10 @@ exports.config = {
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
 
+    plugins: {
+      webdriverajax: {}
+    },
+
     services: ['phantomjs', 'static-server'], // sauce
     //
     // Framework you want to run your specs with.
@@ -129,7 +137,7 @@ exports.config = {
     jasmineNodeOpts: {
         //
         // Jasmine default timeout
-        defaultTimeoutInterval: 10000,
+        defaultTimeoutInterval: 1000000,
         //
         // The Jasmine framework allows interception of each assertion in order to log the state of the application
         // or website depending on the result. For example, it is pretty handy to take a screenshot every time
@@ -145,6 +153,8 @@ exports.config = {
     ],
 
     staticServerPort: 4567,
+
+    debug: true
     
     //
     // =====
