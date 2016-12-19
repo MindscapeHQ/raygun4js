@@ -1,4 +1,7 @@
 var webdriverio = require('webdriverio');
+var _ = require('underscore');
+
+var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("XHR functional tests for /entries with V1", function() {
 
@@ -16,7 +19,11 @@ describe("XHR functional tests for /entries with V1", function() {
         var origOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function() {
 
-          window.__inFlightXHRs.push(this);
+          window.__inFlightXHRs.push({
+            xhr: this,
+            method: arguments[0],
+            url: arguments[1]
+          });
 
           this.addEventListener('load', function() {
               window.__completedXHRs.push(this);
@@ -37,10 +44,14 @@ describe("XHR functional tests for /entries with V1", function() {
   it('performs an XHR to /entries when Raygun.send() is called', function () {
     browser.pause(4000);
 
-    var result = browser.execute(function () {
-      return window.__completedXHRs.length;
+    var inFlightXhrs = browser.execute(function () {
+      return window.__inFlightXHRs;
     });
 
-    expect(result.value).toBe(1);
+    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+      return req.url.indexOf(_entriesEndpoint) === 0;
+    });
+
+    expect(didPerformRequest).toBe(true);
   });
 });
