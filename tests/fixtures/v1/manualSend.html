@@ -6,6 +6,15 @@
   <body>
     <script type="text/javascript">
       Raygun.init('abcdef==');
+
+      setTimeout(function () {
+        try {
+          throw new Error('Manual send');
+        } catch (e) {
+          Raygun.send(e);
+        }
+      }, 1000);
+
     </script>
   </body>
 </html>

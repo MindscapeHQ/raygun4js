@@ -42,7 +42,7 @@ exports.config = {
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
         // grid with only 5 firefox instances available you can make sure that not more than
         // 5 instances get started at a time.
-        maxInstances: 5,
+        maxInstances: 1,
         //
         browserName: 'phantomjs',
 
@@ -70,7 +70,7 @@ exports.config = {
     bail: 0,
     //
     // Saves a screenshot to a given path if a command fails.
-    screenshotPath: '',
+    screenshotPath: false,
     //
     // Set a base URL in order to shorten url command calls. If your url parameter starts
     // with "/", then the base url gets prepended.
@@ -154,7 +154,7 @@ exports.config = {
 
     staticServerPort: 4567,
 
-    debug: true
+    debug: true,
     
     //
     // =====
@@ -176,8 +176,8 @@ exports.config = {
     //
     // Gets executed before test execution begins. At this point you can access all global
     // variables, such as `browser`. It is the perfect place to define custom commands.
-    // before: function (capabilities, specs) {
-    // },
+    before: function (capabilities, specs) {
+    },
     //
     // Hook that gets executed before the suite starts
     // beforeSuite: function (suite) {
