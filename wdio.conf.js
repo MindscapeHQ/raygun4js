@@ -114,7 +114,6 @@ exports.config = {
     // commands. Instead, they hook themselves up into the test process.
 
     plugins: {
-      webdriverajax: {}
     },
 
     services: ['phantomjs', 'static-server'], // sauce
