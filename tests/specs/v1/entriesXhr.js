@@ -35,7 +35,7 @@ describe("XHR functional tests for /entries with V1", function() {
   // Tests
 
   it('performs an XHR to /entries when Raygun.send() is called', function () {
-    browser.pause(3000);
+    browser.pause(4000);
 
     var result = browser.execute(function () {
       return window.__completedXHRs.length;
