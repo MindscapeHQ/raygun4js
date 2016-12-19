@@ -8,15 +8,15 @@ describe("Payload functional validation tests for V1", function() {
 
     browser.pause(4000);
 
-    var requestBodies = browser.execute(function () {
-      return window.__requestBodies;
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
     });
 
-    var hasRequest = _.any(requestBodies.value, function (req) {
-      return req.args;
+    var hasPayload = _.any(requestPayloads.value, function (payload) {
+      return payload.Details.Error.Message === 'Manual send';
     });
 
-    expect(hasRequest).toBe(false);
+    expect(hasPayload).toBe(true);
   });
 
 });

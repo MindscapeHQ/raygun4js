@@ -19,7 +19,7 @@ Assuming that you don't see any red, you're ready to go. Just be sure to run `gr
 
 ## Tests
 
-The unit and E2E tests can be run with `grunt test`. If you add or modify a new feature, please add a new test to `tests/specs`, and a new fixture if required (or reuse an existing one if there's one that fufills your needs).
+The unit and E2E tests can be run with `grunt test`. If you add or modify a feature, please add a new test to `tests/specs`, and a new fixture if required (or reuse an existing one if there's one that fufills your needs).
 
 ## Submitting pull requests
 

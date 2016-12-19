@@ -1,5 +1,5 @@
 (function() {
-  window.__requestBodies = [];
+  window.__requestPayloads = [];
   window.__inFlightXHRs = [];
   window.__completedXHRs = [];
 
@@ -23,10 +23,7 @@
   };
 
   XMLHttpRequest.prototype.send = function() {
-    window.__requestBodies.push({
-      self: this,
-      args: arguments
-    });
+    window.__requestPayloads.push(JSON.parse(arguments[0]));
 
     origSend.apply(this, arguments);
   }
