@@ -44,9 +44,7 @@ exports.config = {
         // 5 instances get started at a time.
         maxInstances: 1,
         //
-        browserName: 'phantomjs',
-
-        //logLevel: 'verbose'
+        browserName: 'phantomjs'
     }],
     //
     // ===================
@@ -116,7 +114,8 @@ exports.config = {
     plugins: {
     },
 
-    services: ['phantomjs', 'static-server'], // sauce
+    services: ['phantomjs', 'static-server'],
+
     //
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber

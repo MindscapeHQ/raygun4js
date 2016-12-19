@@ -16,8 +16,10 @@ describe("XHR functional tests for /entries with V1", function() {
         var origOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function() {
 
+          window.__inFlightXHRs.push(this);
+
           this.addEventListener('load', function() {
-              window.__completedXHRs.push(this.readyState);
+              window.__completedXHRs.push(this);
 
               console.log(this.readyState); //will always be 4 (ajax is completed successfully)
               console.log(this.responseText); //whatever the response was
