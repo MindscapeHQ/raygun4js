@@ -30,6 +30,7 @@
     "grunt-string-replace": "^1.2.0",
     "grunt-webdriver": "^2.0.3",
     "phantomjs-prebuilt": "^2.1.14",
+    "underscore": "^1.8.3",
     "wdio-dot-reporter": "0.0.6",
     "wdio-jasmine-framework": "^0.2.19",
     "wdio-phantomjs-service": "^0.2.2",
