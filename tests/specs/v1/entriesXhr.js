@@ -7,7 +7,7 @@ describe("XHR functional tests for /entries with V1", function() {
 
   // Tests
 
-  it('performs an XHR to /entries when Raygun.send() is called', function () {
+  it("performs an XHR to /entries when Raygun.send() is called", function () {
     browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
 
     browser.pause(4000);
@@ -22,4 +22,22 @@ describe("XHR functional tests for /entries with V1", function() {
 
     expect(didPerformRequest).toBe(true);
   });
+
+  it("doesn't performs an XHR to /entries when the API key isn't set", function () {
+    browser.url('http://localhost:4567/fixtures/v1/noApiKey.html');
+
+    browser.pause(4000);
+
+    var inFlightXhrs = browser.execute(function () {
+      return window.__inFlightXHRs;
+    });
+
+    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+      return req.url.indexOf(_entriesEndpoint) === 0;
+    });
+
+    expect(didPerformRequest).toBe(false);
+  });
+  
+
 });
