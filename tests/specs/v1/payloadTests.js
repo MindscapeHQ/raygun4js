@@ -12,8 +12,6 @@ describe("Payload functional validation tests for V1", function() {
       return window.__requestBodies;
     });
 
-    debugger;
-
     var hasRequest = _.any(requestBodies.value, function (req) {
       return req.args;
     });
