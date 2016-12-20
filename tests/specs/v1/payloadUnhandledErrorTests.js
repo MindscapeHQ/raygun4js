@@ -55,7 +55,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   
   
   it("has the error message in the payload set", function () {
-    browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
+    browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
     browser.pause(4000);
 
@@ -64,30 +64,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.Message === 'Manual send';
-    });
-
-    expect(passes).toBe(true);
-  });
-
-  it("has the classname in the payload set", function () {
-    browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
-
-    browser.pause(4000);
-
-    var requestPayloads = browser.execute(function () {
-      return window.__requestPayloads;
-    });
-
-    var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.ClassName === 'Error';
+      return payload.Details.Error.Message === 'Unhandled error';
     });
 
     expect(passes).toBe(true);
   });
 
   it("has the filename in the stacktrace payload set", function () {
-    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSend.html';
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
 
     browser.url(pageUrl);
 
@@ -105,7 +89,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   });
 
   it("has tags in the payload when tags are passed in", function () {
-    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSendTag.html';
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
 
     browser.url(pageUrl);
 
@@ -123,7 +107,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   });
 
   it("has custom data in the payload when custom data is passed in", function () {
-    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSendCustomData.html';
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorCustomData.html';
 
     browser.url(pageUrl);
 
@@ -141,7 +125,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   });
 
   it("has correct user payload when Raygun.setUser() is called", function () {
-    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSendUser.html';
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorUser.html';
 
     browser.url(pageUrl);
 
@@ -163,7 +147,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   });
 
   it("has correct version in payload when Raygun.setVersion() is called", function () {
-    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSendVersion.html';
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorVersion.html';
 
     browser.url(pageUrl);
 
