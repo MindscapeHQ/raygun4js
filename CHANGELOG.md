@@ -1,6 +1,3 @@
-* v2.5.0
- - This release adds a CI setup and automated end-to-end functional/integration test implementation, and tests for the critical code paths for both the V1 and V2 APIs. No new features or bugfixes are in this release.
-
 * v2.4.3
   - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
   - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings) 
