@@ -13,9 +13,13 @@ Test that Grunt's CLI is installed by running `grunt --version`.  If the command
 
 1. Fork and clone the repo.
 1. Run `npm install` to install all dependencies (including Grunt).
-1. Run `grunt` to grunt this project.
+1. Run `grunt` to build, compile and test this project.
 
 Assuming that you don't see any red, you're ready to go. Just be sure to run `grunt` after making any changes, to ensure that nothing is broken.
+
+## Tests
+
+The unit and E2E tests can be run with `grunt test`. If you add or modify a feature, please add a new test to `tests/specs`, and a new fixture if required (or reuse an existing one if there's one that fufills your needs).
 
 ## Submitting pull requests
 

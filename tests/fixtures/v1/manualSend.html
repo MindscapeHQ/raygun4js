@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>Raygun4JS with V1 API</title>
+    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="/dist/raygun.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      Raygun.init('abcdef==');
+
+      setTimeout(function () {
+        try {
+          throw new Error('Manual send');
+        } catch (e) {
+          Raygun.send(e);
+        }
+      }, 1000);
+
+    </script>
+  </body>
+</html>

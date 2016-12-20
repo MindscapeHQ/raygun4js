@@ -4,6 +4,8 @@
 
 [raygunio]: https://raygun.io
 
+[![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=testing)](https://travis-ci.org/MindscapeHQ/raygun4js)
+
 ## Getting Started
 
 **Step 1**

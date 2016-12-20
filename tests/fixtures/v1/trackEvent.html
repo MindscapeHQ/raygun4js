@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Raygun4JS with V1 API</title>
+    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="/dist/raygun.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      Raygun.init('abcdef==', { disablePulse: false });
+
+      setTimeout(function () {
+        Raygun.trackEvent('pageView', {
+          path: '/foobar'
+        });
+      }, 1000);
+
+    </script>
+  </body>
+</html>

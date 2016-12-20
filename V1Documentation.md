@@ -464,7 +464,7 @@ rg4js('setUser', {
 });
 
 // V1
-Raygun.setUser('user_email_address@localhost.local', false, 'user_email_address@localhost.local', 'Foo', 'Foo Bar', 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55');
+Raygun.setUser('user_email_address@localhost.local', false, 'user_email_address@localhost.local', 'Foo Bar', 'Foo', 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55');
 ```
 
 Only `identifier` or the first parameter is required. This method takes additional parameters that are used when reporting over the affected users. the full method signature is:
