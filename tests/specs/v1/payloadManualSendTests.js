@@ -89,5 +89,27 @@ describe("Payload functional validation tests for V1 manual send", function() {
     expect(passes).toBe(true);
   });
 
+  it("has correct user payload when Raygun.setUser() is called", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v1/manualSendUser.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return payload.Details.User.Identifier === 'user_email_address@localhost.local' &&
+        payload.Details.User.IsAnonymous === false &&
+        payload.Details.User.FirstName === 'Foo' &&
+        payload.Details.User.FullName === 'Foo Bar' &&
+        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
+    });
+
+    expect(passes).toBe(true);
+  });
+
 });
 
