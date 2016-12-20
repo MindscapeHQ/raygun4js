@@ -3,10 +3,10 @@ var _ = require('underscore');
 
 var _entriesEndpoint = 'https://api.raygun.io/entries';
 
-describe("Payload functional validation tests for V1 manual send", function() {
+describe("Payload functional validation tests for V1 automatic unhandled error sending", function() {
 
   it("performs an XHR to /entries when Raygun.send() is called", function () {
-    browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
+    browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
     browser.pause(4000);
 
@@ -22,7 +22,23 @@ describe("Payload functional validation tests for V1 manual send", function() {
   });
 
   it("doesn't performs an XHR to /entries when the API key isn't set", function () {
-    browser.url('http://localhost:4567/fixtures/v1/manualSendNoApiKey.html');
+    browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoApiKey.html');
+
+    browser.pause(4000);
+
+    var inFlightXhrs = browser.execute(function () {
+      return window.__inFlightXHRs;
+    });
+
+    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+      return req.url.indexOf(_entriesEndpoint) === 0;
+    });
+
+    expect(didPerformRequest).toBe(false);
+  });
+
+  it("doesn't performs an XHR to /entries when attach() isn't called", function () {
+    browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoAttach.html');
 
     browser.pause(4000);
 
