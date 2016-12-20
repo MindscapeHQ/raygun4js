@@ -64,7 +64,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.Message === 'Unhandled error';
+      return payload.Details.Error.Message === 'Error: Unhandled error';
     });
 
     expect(passes).toBe(true);
