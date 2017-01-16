@@ -23,4 +23,6 @@
       wind[obj].q.push({e: err, msg: msg, url: url, line: line, col: col});
     };
 
+    "v2";
+
 })(window, document, 'script', '//cdn.raygun.io/raygun4js/raygun.min.js', 'rg4js');
