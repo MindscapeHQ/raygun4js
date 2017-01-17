@@ -338,7 +338,7 @@ You can also pass custom data with manual send calls, with an options object. Th
 ```javascript
 rg4js('send', {
   error: e,
-  customData: [{ foo: 'bar' }];
+  customData: [{ foo: 'bar' }]
 });
 ```
 
