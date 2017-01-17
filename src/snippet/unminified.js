@@ -20,9 +20,7 @@
       }
 
       wind[obj].q = wind[obj].q || [];
-      wind[obj].q.push({e: err, msg: msg, url: url, line: line, col: col});
+      wind[obj].q.push({e: err});
     };
-
-    "v2";
 
 })(window, document, 'script', '//cdn.raygun.io/raygun4js/raygun.min.js', 'rg4js');
