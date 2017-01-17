@@ -3,11 +3,11 @@ var _ = require('underscore');
 
 var _entriesEndpoint = 'https://api.raygun.io/entries';
 
-describe("Payload functional validation tests for V2 syntax error with Snippet v2.0", function() {
+describe("Payload functional validation tests for V2 syntax error caught with the Snippet", function() {
 
   it("performs an XHR to /entries when a syntax error is present", function () {
-    browser.url('http://localhost:4567/fixtures/v2/syntaxErrorSnippetV2.html');
-
+    browser.url('http://localhost:4567/fixtures/v2/syntaxErrorSnippet.html');
+    
     browser.pause(6000);
 
     var requestPayloads = browser.execute(function () {

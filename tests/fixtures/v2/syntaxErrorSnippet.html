@@ -9,12 +9,6 @@
       h&&h(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],a[e].q.push({
       e:g})}}(window,document,"script","/dist/raygun.js","rg4js");
     </script>
-  </head>
-  <body>
-    <script type="text/javascript">
-      rg4js('apiKey', 'abcdef==');
-      rg4js('enableCrashReporting', true);
-    </script>
     <script type="text/javascript">
       var syntaxErrorFunction = function () {
         try {
@@ -25,6 +19,14 @@
       }
 
       syntaxErrorFunction();
+    </script>
+  </head>
+  <body>
+
+
+    <script type="text/javascript">
+      rg4js('apiKey', 'abcdef==');
+      rg4js('enableCrashReporting', true);
     </script>
   </body>
 </html>
