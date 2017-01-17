@@ -10,7 +10,7 @@ describe("XHR functional tests for /events with V1", function() {
   it("performs an XHR to /events when Raygun.trackEvent() is called", function () {
     browser.url('http://localhost:4567/fixtures/v1/trackEvent.html');
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var inFlightXhrs = browser.execute(function () {
       return window.__inFlightXHRs;

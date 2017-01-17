@@ -8,18 +8,20 @@ describe("Payload functional validation tests for V2 syntax error with Snippet v
   it("performs an XHR to /entries when a syntax error is present", function () {
     browser.url('http://localhost:4567/fixtures/v2/syntaxErrorSnippetV2.html');
 
-    browser.pause(4000);
+    browser.pause(6000);
 
-    var inFlightXhrs = browser.execute(function () {
-      return window.__inFlightXHRs;
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
     });
 
-    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
-      return req.url.indexOf(_entriesEndpoint) === 0;
+    var doesHaveLineNumbersAndColumnNumbers = _.any(requestPayloads.value, function (req) {
+      return typeof req.Details.Error.StackTrace[0].LineNumber === 'number' &&
+        typeof req.Details.Error.StackTrace[0].ColumnNumber === 'number' &&
+        typeof req.Details.Error.StackTrace[1].LineNumber === 'number' &&
+        typeof req.Details.Error.StackTrace[1].ColumnNumber === 'number'
     });
 
-    expect(didPerformRequest).toBe(true);
+    expect(doesHaveLineNumbersAndColumnNumbers).toBe(true);
   });
 
 });
-

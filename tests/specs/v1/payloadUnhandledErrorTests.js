@@ -8,7 +8,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   it("performs an XHR to /entries when Raygun.send() is called", function () {
     browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var inFlightXhrs = browser.execute(function () {
       return window.__inFlightXHRs;
@@ -151,7 +151,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
 
     browser.url(pageUrl);
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var requestPayloads = browser.execute(function () {
       return window.__requestPayloads;

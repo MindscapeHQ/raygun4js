@@ -8,7 +8,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
   it("performs an XHR to /entries when Raygun.send() is called", function () {
     browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var inFlightXhrs = browser.execute(function () {
       return window.__inFlightXHRs;
@@ -19,7 +19,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     expect(didPerformRequest).toBe(true);
-  });
+});
 
   it("doesn't performs an XHR to /entries when the API key isn't set", function () {
     browser.url('http://localhost:4567/fixtures/v1/manualSendNoApiKey.html');
