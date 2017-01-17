@@ -460,8 +460,8 @@ var raygunFactory = function (window, $, undefined) {
     function offlineSave(url, data) {
         var dateTime = new Date().toJSON();
 
-    try {
-      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
+        try {
+            var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -479,23 +479,25 @@ var raygunFactory = function (window, $, undefined) {
         }
     }
 
-  function sendSavedErrors() {
-    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
-        for (var key in localStorage) {
+    function sendSavedErrors() {
+        if (localStorageAvailable() && localStorage && localStorage.length > 0) {
+            for (var key in localStorage) {
 
-        // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
-        if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
-          try {
-            sendToRaygun(JSON.parse(localStorage[key]));
-          } catch(e) {
-            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
-          }
-          
-          try {
-            localStorage.removeItem(key);
-          } catch(e) {
-            _private.log('Raygun4JS: Unable to remove error');
-          }
+                // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
+                    try {
+                        sendToRaygun(JSON.parse(localStorage[key]));
+                    } catch (e) {
+                        _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+                    }
+
+                    try {
+                        localStorage.removeItem(key);
+                    } catch (e) {
+                        _private.log('Raygun4JS: Unable to remove error');
+                    }
+                }
+            }
         }
     }
 
