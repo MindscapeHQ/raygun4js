@@ -169,14 +169,18 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             try {
-                processUnhandledException(_traceKit.computeStackTrace(ex), {
-                    customData: typeof _customData === 'function' ?
-                        merge(_customData(), customData) :
-                        merge(_customData, customData),
-                    tags: typeof _tags === 'function' ?
-                        mergeArray(_tags(), tags) :
-                        mergeArray(_tags, tags)
-                });
+                processUnhandledException(
+                    _traceKit.computeStackTrace(ex),
+                    {
+                        customData: typeof _customData === 'function' ?
+                            merge(_customData(), customData) :
+                            merge(_customData, customData),
+                        tags: typeof _tags === 'function' ?
+                            mergeArray(_tags(), tags) :
+                            mergeArray(_tags, tags)
+                    },
+                    true
+                );
             }
             catch (traceKitException) {
                 if (ex !== traceKitException) {
@@ -564,7 +568,7 @@ var raygunFactory = function (window, $, undefined) {
         return filteredObject;
     }
 
-    function processUnhandledException(stackTrace, options) {
+    function processUnhandledException(stackTrace, options, userTriggered) {
         var scriptError = 'Script error';
 
         var stack = [],
@@ -688,6 +692,14 @@ var raygunFactory = function (window, $, undefined) {
             } else {
                 options.tags = _tags;
             }
+        }
+
+        if (!userTriggered) {
+            if (!options.tags) {
+                options.tags = [];
+            }
+
+            options.tags.push('UnhandledException');
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
