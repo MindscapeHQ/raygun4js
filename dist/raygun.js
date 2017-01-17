@@ -1,14 +1,6 @@
-<<<<<<< 5a4ef942da0ce52c5e57c591936f3154e0ae4999
-<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
-/*! Raygun4js - v2.4.3 - 2016-12-20
-=======
-/*! Raygun4js - v1.18.6 - 2015-10-08
->>>>>>> Change key on offline storage stuff.
-=======
-/*! Raygun4js - v1.18.6 - 2015-10-13
->>>>>>> Add ability to send old cached data
+/*! Raygun4js - v2.4.3 - 2017-01-17
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2016 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -1362,14 +1354,18 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             try {
-                processUnhandledException(_traceKit.computeStackTrace(ex), {
-                    customData: typeof _customData === 'function' ?
-                        merge(_customData(), customData) :
-                        merge(_customData, customData),
-                    tags: typeof _tags === 'function' ?
-                        mergeArray(_tags(), tags) :
-                        mergeArray(_tags, tags)
-                });
+                processUnhandledException(
+                    _traceKit.computeStackTrace(ex),
+                    {
+                        customData: typeof _customData === 'function' ?
+                            merge(_customData(), customData) :
+                            merge(_customData, customData),
+                        tags: typeof _tags === 'function' ?
+                            mergeArray(_tags(), tags) :
+                            mergeArray(_tags, tags)
+                    },
+                    true
+                );
             }
             catch (traceKitException) {
                 if (ex !== traceKitException) {
@@ -1455,15 +1451,10 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
-<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
         onAfterSend: function (callback) {
             _afterSendCallback = callback;
             return Raygun;
         },
-=======
-    try {
-      var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
->>>>>>> Change key on offline storage stuff.
 
         // Public Pulse functions
 
@@ -1473,32 +1464,12 @@ var raygunFactory = function (window, $, undefined) {
             }
         },
 
-<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
         trackEvent: function (type, options) {
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
                 }
             }
-=======
-  function sendSavedErrors() {
-    if (localStorageAvailable() && localStorage && localStorage.length > 0) {
-        for (var key in localStorage) {
-
-        // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
-        if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
-          try {
-            sendToRaygun(JSON.parse(localStorage[key]));
-          } catch(e) {
-            _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
-          }
-          
-          try {
-            localStorage.removeItem(key);
-          } catch(e) {
-            _private.log('Raygun4JS: Unable to remove error');
-          }
->>>>>>> Change key on offline storage stuff.
         }
 
     };
@@ -1675,7 +1646,7 @@ var raygunFactory = function (window, $, undefined) {
         var dateTime = new Date().toJSON();
 
         try {
-            var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+            var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -1696,13 +1667,19 @@ var raygunFactory = function (window, $, undefined) {
     function sendSavedErrors() {
         if (localStorageAvailable() && localStorage && localStorage.length > 0) {
             for (var key in localStorage) {
-                if (key.substring(0, 9) === 'raygunjs=') {
+
+                // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
-                        var payload = JSON.parse(localStorage[key]);
-                        makePostCorsRequest(payload.url, payload.data);
+                        sendToRaygun(JSON.parse(localStorage[key]));
+                    } catch (e) {
+                        _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+                    }
+
+                    try {
                         localStorage.removeItem(key);
                     } catch (e) {
-                        _private.log('Raygun4JS: Unable to send saved error');
+                        _private.log('Raygun4JS: Unable to remove error');
                     }
                 }
             }
@@ -1724,16 +1701,10 @@ var raygunFactory = function (window, $, undefined) {
             if (!rgUserId) {
                 anonymousUuid = _private.getUuid();
 
-<<<<<<< 1c78059f578410e789dc2a273794baa79f7aa15e
                 _private.createCookie(userKey, anonymousUuid, 24 * 31);
             } else {
                 anonymousUuid = rgUserId;
             }
-=======
-    _private.log("Is offline enabled? " + _enableOfflineSave); 
-
-    if ('withCredentials' in xhr) {
->>>>>>> Change key on offline storage stuff.
 
             Raygun.setUser(anonymousUuid, true, null, null, null, anonymousUuid);
         }
@@ -1788,7 +1759,7 @@ var raygunFactory = function (window, $, undefined) {
         return filteredObject;
     }
 
-    function processUnhandledException(stackTrace, options) {
+    function processUnhandledException(stackTrace, options, userTriggered) {
         var scriptError = 'Script error';
 
         var stack = [],
@@ -1912,6 +1883,14 @@ var raygunFactory = function (window, $, undefined) {
             } else {
                 options.tags = _tags;
             }
+        }
+
+        if (!userTriggered) {
+            if (!options.tags) {
+                options.tags = [];
+            }
+
+            options.tags.push('UnhandledException');
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
@@ -2057,6 +2036,8 @@ var raygunFactory = function (window, $, undefined) {
         if (typeof _beforeXHRCallback === 'function') {
             _beforeXHRCallback(xhr);
         }
+
+        _private.log("Is offline enabled? " + _enableOfflineSave);
 
         if ('withCredentials' in xhr) {
 
