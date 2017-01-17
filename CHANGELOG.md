@@ -1,3 +1,6 @@
+* v2.5.0
+  - Unhandled errors now have a tag added, UnhandledException, for filtering by handled error vs. crash in the Raygun web app
+
 * v2.4.3
   - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
   - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings) 
