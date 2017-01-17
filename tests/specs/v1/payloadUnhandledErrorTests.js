@@ -164,5 +164,45 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
+  it("has a UnhandleException tag for crash vs. error support", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return _.any(payload.Details.Tags, function (tag) {
+        return tag === 'UnhandledException';
+      });
+    });
+
+    expect(passes).toBe(true);
+  });
+
+  it("has existing tags and an UnhandleException tag for crash vs. error support", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return _.any(payload.Details.Tags, function (tag) {
+        return tag === 'UnhandledException';
+      });
+    });
+
+    expect(passes).toBe(true);
+  });
+
 });
 
