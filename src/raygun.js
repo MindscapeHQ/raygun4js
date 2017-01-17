@@ -852,11 +852,14 @@ var raygunFactory = function (window, $, undefined) {
             _beforeXHRCallback(xhr);
         }
 
+        _private.log("Is offline enabled? " + _enableOfflineSave);
+
         if ('withCredentials' in xhr) {
 
-    _private.log("Is offline enabled? " + _enableOfflineSave); 
-
-    if ('withCredentials' in xhr) {
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) {
+                    return;
+                }
 
                 if (xhr.status === 202) {
                     sendSavedErrors();
