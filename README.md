@@ -53,7 +53,9 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 ### Synchronous methods
 
-Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded.
+Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
+
+This will also disrupt Pulse timings, making them erroneous. For Pulse, it is especially importing that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -70,6 +72,25 @@ This lets you require the library with tools such as Webpack or Browserify.
 #### From NuGet
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
+
+#### React Native
+
+React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS with its UMD module:
+
+```
+// Install the library
+
+npm install raygun4js --save
+
+// In a central module, reference and install the library
+
+var rg4js = require('raygun4js');
+
+rg4js('enableCrashReporting', true);
+rg4js('apiKey', 'paste_your_api_key_here');
+```
+
+All unhandled errors will then be sent to Raygun. You can also `require('raygun4js') in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
 
 #### Manual download
 
