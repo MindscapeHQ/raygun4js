@@ -1,6 +1,7 @@
 * v2.5.0
   - Unhandled errors now have a tag added, UnhandledException, for filtering by handled error vs. crash in the Raygun web app
   - Locally cached errors for offline saving are now keyed off the API key, allowing apps running on different subdomains to use offline caching
+  - Adds UMD module support for React Native and other non-web bundled app scenarios
 
 * v2.4.3
   - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
