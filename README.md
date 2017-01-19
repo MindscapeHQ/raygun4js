@@ -75,7 +75,7 @@ Visual Studio users can get it by opening the Package Manager Console and typing
 
 #### React Native
 
-React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS with its UMD module:
+React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
 
 ```
 // Install the library
@@ -90,7 +90,7 @@ rg4js('enableCrashReporting', true);
 rg4js('apiKey', 'paste_your_api_key_here');
 ```
 
-All unhandled errors will then be sent to Raygun. You can also `require('raygun4js') in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
+All unhandled errors will then be sent to Raygun. You can also `require('raygun4js')` in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
 
 #### Manual download
 
