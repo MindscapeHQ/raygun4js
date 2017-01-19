@@ -130,6 +130,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['webdriver']);
 
-  // Default task.
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify', 'test']);
+  grunt.registerTask('build', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
+
+  grunt.registerTask('default', ['build', 'test']);
 };
