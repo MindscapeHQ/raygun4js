@@ -19,9 +19,16 @@
 
   var windw = this;
 
-  // Same approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
-  // script is executed
+  // Similar approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
+  // script is executed, and later overwritten by the loader once it's finished
   (function(wind) { wind['RaygunObject'] = 'rg4js';
-  wind['rg4js'] = wind['rg4js'] || function() {
-      (wind['rg4js'].o = wind['rg4js'].o || []).push(arguments)
+  wind[wind['RaygunObject']] = wind[wind['RaygunObject']] || function() {
+      if (wind && typeof wind['Raygun'] === 'undefined' || document.readyState !== 'complete') {
+        // onload hasn't been called, cache the commands just like the snippet
+        (wind[wind['RaygunObject']].o = wind[wind['RaygunObject']].o || []).push(arguments)
+      } else {
+        // onload has been called and provider has executed, call the executor proxy function
+        wind[wind['RaygunObject']](arguments[0], arguments[1]);
+      }
+      
   }})(windw);
