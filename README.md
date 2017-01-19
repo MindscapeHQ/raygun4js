@@ -1,6 +1,6 @@
 # Raygun4js
 
-[Raygun.io][raygunio] plugin for JavaScript
+[Raygun.io][raygunio] provider for client-side JavaScript
 
 [raygunio]: https://raygun.io
 
