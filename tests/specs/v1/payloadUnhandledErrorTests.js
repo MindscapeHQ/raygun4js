@@ -8,7 +8,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   it("performs an XHR to /entries when Raygun.send() is called", function () {
     browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var inFlightXhrs = browser.execute(function () {
       return window.__inFlightXHRs;
@@ -151,7 +151,7 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
 
     browser.url(pageUrl);
 
-    browser.pause(4000);
+    browser.pause(6000);
 
     var requestPayloads = browser.execute(function () {
       return window.__requestPayloads;
@@ -159,6 +159,46 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
 
     var passes = _.any(requestPayloads.value, function (payload) {
       return payload.Details.Version === '1.0.0.0';
+    });
+
+    expect(passes).toBe(true);
+  });
+
+  it("has a UnhandleException tag for crash vs. error support", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return _.any(payload.Details.Tags, function (tag) {
+        return tag === 'UnhandledException';
+      });
+    });
+
+    expect(passes).toBe(true);
+  });
+
+  it("has existing tags and an UnhandleException tag for crash vs. error support", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return _.any(payload.Details.Tags, function (tag) {
+        return tag === 'UnhandledException';
+      });
     });
 
     expect(passes).toBe(true);

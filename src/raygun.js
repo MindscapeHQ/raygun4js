@@ -169,14 +169,18 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             try {
-                processUnhandledException(_traceKit.computeStackTrace(ex), {
-                    customData: typeof _customData === 'function' ?
-                        merge(_customData(), customData) :
-                        merge(_customData, customData),
-                    tags: typeof _tags === 'function' ?
-                        mergeArray(_tags(), tags) :
-                        mergeArray(_tags, tags)
-                });
+                processUnhandledException(
+                    _traceKit.computeStackTrace(ex),
+                    {
+                        customData: typeof _customData === 'function' ?
+                            merge(_customData(), customData) :
+                            merge(_customData, customData),
+                        tags: typeof _tags === 'function' ?
+                            mergeArray(_tags(), tags) :
+                            mergeArray(_tags, tags)
+                    },
+                    true
+                );
             }
             catch (traceKitException) {
                 if (ex !== traceKitException) {
@@ -457,7 +461,7 @@ var raygunFactory = function (window, $, undefined) {
         var dateTime = new Date().toJSON();
 
         try {
-            var key = 'raygunjs=' + dateTime + '=' + getRandomInt();
+            var key = 'raygunjs+' + _raygunApiKey + '=' + dateTime + '=' + getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -478,13 +482,19 @@ var raygunFactory = function (window, $, undefined) {
     function sendSavedErrors() {
         if (localStorageAvailable() && localStorage && localStorage.length > 0) {
             for (var key in localStorage) {
-                if (key.substring(0, 9) === 'raygunjs=') {
+
+                // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
-                        var payload = JSON.parse(localStorage[key]);
-                        makePostCorsRequest(payload.url, payload.data);
+                        sendToRaygun(JSON.parse(localStorage[key]));
+                    } catch (e) {
+                        _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
+                    }
+
+                    try {
                         localStorage.removeItem(key);
                     } catch (e) {
-                        _private.log('Raygun4JS: Unable to send saved error');
+                        _private.log('Raygun4JS: Unable to remove error');
                     }
                 }
             }
@@ -564,7 +574,7 @@ var raygunFactory = function (window, $, undefined) {
         return filteredObject;
     }
 
-    function processUnhandledException(stackTrace, options) {
+    function processUnhandledException(stackTrace, options, userTriggered) {
         var scriptError = 'Script error';
 
         var stack = [],
@@ -688,6 +698,14 @@ var raygunFactory = function (window, $, undefined) {
             } else {
                 options.tags = _tags;
             }
+        }
+
+        if (!userTriggered) {
+            if (!options.tags) {
+                options.tags = [];
+            }
+
+            options.tags.push('UnhandledException');
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
@@ -833,6 +851,8 @@ var raygunFactory = function (window, $, undefined) {
         if (typeof _beforeXHRCallback === 'function') {
             _beforeXHRCallback(xhr);
         }
+
+        _private.log("Is offline enabled? " + _enableOfflineSave);
 
         if ('withCredentials' in xhr) {
 

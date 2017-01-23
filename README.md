@@ -1,6 +1,6 @@
 # Raygun4js
 
-[Raygun.io][raygunio] plugin for JavaScript
+[Raygun.io][raygunio] provider for client-side JavaScript
 
 [raygunio]: https://raygun.io
 
@@ -53,7 +53,9 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 ### Synchronous methods
 
-Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded.
+Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
+
+This will also disrupt Pulse timings, making them erroneous. For Pulse, it is especially importing that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -70,6 +72,27 @@ This lets you require the library with tools such as Webpack or Browserify.
 #### From NuGet
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
+
+#### React Native/as a UMD module
+
+React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
+
+```
+// Install the library
+
+npm install raygun4js --save
+
+// In a central module, reference and install the library
+
+var rg4js = require('raygun4js');
+
+rg4js('enableCrashReporting', true);
+rg4js('apiKey', 'paste_your_api_key_here');
+```
+
+All unhandled errors will then be sent to Raygun. You can also `require('raygun4js')` in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
+
+If you use this approach, we appreciate your feedback as this is a new feature for the library.
 
 #### Manual download
 
@@ -160,7 +183,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `excludedUserAgents` - Prevents errors from being sent from certain user agents by providing an array of strings. This is very helpful to exclude errors reported by certain browsers or test automation with `CasperJS`, `PhantomJS` or any other testing utility that sends a custom user agent. If a part of the client's `navigator.userAgent` matches one of the given strings in the array, then the client will be excluded from error reporting.
 
-`disableCrashReporting` - Prevent uncaught errors from being sent.
+`disableErrorTracking` - Prevent uncaught errors from being sent.
 
 `disablePulse` - Prevent Pulse real user monitoring events from being sent.
 
@@ -182,7 +205,7 @@ rg4js('options', {
   wrapAsynchronousCallbacks: true,
   excludedHostnames: ['\.local'],
   excludedUserAgents: ['Mosaic'],
-  disableCrashReporting: false,
+  disableErrorTracking: false,
   disablePulse: false,
   pulseMaxVirtualPageDuration: 1800000,
   pulseIgnoreUrlCasing: false
@@ -338,7 +361,7 @@ You can also pass custom data with manual send calls, with an options object. Th
 ```javascript
 rg4js('send', {
   error: e,
-  customData: [{ foo: 'bar' }];
+  customData: [{ foo: 'bar' }]
 });
 ```
 
@@ -418,7 +441,7 @@ Only `identifier` or the first parameter is required. This method takes addition
 setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 ```
 
-`user` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
+`user|identifier` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
 
 `isAnonymous` is a bool indicating whether the user is anonymous or actually has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
 

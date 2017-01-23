@@ -1,9 +1,9 @@
 {
   "name": "raygun4js",
-  "main": "dist/raygun.js",
+  "main": "dist/raygun.umd.js",
   "title": "Raygun4js",
   "description": "Raygun.io plugin for JavaScript",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "homepage": "https://github.com/MindscapeHQ/raygun4js",
   "author": {
     "name": "MindscapeHQ",

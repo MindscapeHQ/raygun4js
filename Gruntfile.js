@@ -23,7 +23,8 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js']
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js'],
+          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.js-url.js', 'src/raygun.loader.js', 'src/umd.outro.js']
         }
       }
     },
@@ -35,7 +36,8 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'dist/raygun.min.js': ['dist/raygun.js'],
-          'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js']
+          'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js'],
+          'dist/raygun.umd.min.js': ['dist/raygun.umd.js']
         }
       },
       snippet:{
@@ -60,7 +62,7 @@ module.exports = function(grunt) {
       src: {
         options: {
           jshintrc: 'src/.jshintrc',
-          ignores: ['src/snippet/**/*.js']
+          ignores: ['src/snippet/**/*.js', 'src/umd.*']
         },
         src: ['src/**/*.js']
       }
@@ -126,9 +128,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-string-replace');
   grunt.loadNpmTasks('grunt-webdriver');
 
-
   grunt.registerTask('test', ['webdriver']);
 
-  // Default task.
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'string-replace', 'uglify', 'test']);
+  grunt.registerTask('build', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
+
+  grunt.registerTask('default', ['build', 'test']);
 };
