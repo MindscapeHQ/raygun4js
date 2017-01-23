@@ -73,7 +73,7 @@ This lets you require the library with tools such as Webpack or Browserify.
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
 
-#### React Native
+#### React Native/as a UMD module
 
 React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
 
@@ -91,6 +91,8 @@ rg4js('apiKey', 'paste_your_api_key_here');
 ```
 
 All unhandled errors will then be sent to Raygun. You can also `require('raygun4js')` in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
+
+If you use this approach, we appreciate your feedback as this is a new feature for the library.
 
 #### Manual download
 
