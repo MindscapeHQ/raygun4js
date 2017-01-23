@@ -18,7 +18,7 @@
         // Browser globals
         root.Raygun = factory();
     }
-}(this, function (raygun4js) {
+}(this, function () {
 
   var windw = this;
 
