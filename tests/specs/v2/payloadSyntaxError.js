@@ -15,10 +15,11 @@ describe("Payload functional validation tests for V2 syntax error caught with th
     });
 
     var doesHaveLineNumbersAndColumnNumbers = _.any(requestPayloads.value, function (req) {
-      return typeof req.Details.Error.StackTrace[0].LineNumber === 'number' &&
-        typeof req.Details.Error.StackTrace[0].ColumnNumber === 'number' &&
+      return req.Details.Error.StackTrace[0].MethodName === 'eval' &&
         typeof req.Details.Error.StackTrace[1].LineNumber === 'number' &&
-        typeof req.Details.Error.StackTrace[1].ColumnNumber === 'number'
+        typeof req.Details.Error.StackTrace[1].ColumnNumber === 'number' &&
+        typeof req.Details.Error.StackTrace[2].LineNumber === 'number' &&
+        typeof req.Details.Error.StackTrace[2].ColumnNumber === 'number'
     });
 
     expect(doesHaveLineNumbersAndColumnNumbers).toBe(true);
