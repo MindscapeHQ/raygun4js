@@ -1,3 +1,6 @@
+* v2.5.1
+  - Loader option setters and errors/trackEvent calls are now executed once onLoad, fixing edge cases and race conditions with `rg4js` calls during various stages of the page lifecycle
+
 * v2.5.0
   - Unhandled errors now have a tag added, UnhandledException, for filtering by handled error vs. crash in the Raygun web app
   - Update regexes to support stacktraces from Electron, Chrome with Webpack, and many other scenarios/edge cases
