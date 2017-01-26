@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.5.0 - 2017-01-24
+/*! Raygun4js - v2.5.1 - 2017-01-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1952,7 +1952,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.5.0'
+                    'Version': '2.5.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2883,18 +2883,18 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
   var delayedExecutionFunctions = ['trackEvent', 'send'];
 
-  var parseSnippetOptions = function (queueDelayedCommands) {
+  var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
     
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {
-        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
+          // Config pair, can execute immediately
           executor(pair);
-        } else { // Pair which requires lib to be fully parsed, delay till onload
-          if (queueDelayedCommands) {
-            delayedCommands.push(pair);
-          }
+        } else {
+          // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
+          delayedCommands.push(pair);
         }
       }
     }
@@ -2996,12 +2996,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  parseSnippetOptions(true);
-
   var onLoadHandler = function () {
-    if (!hasLoaded) {
-      parseSnippetOptions(false);
-    }
+    parseSnippetOptions();
 
     if (noConflict) {
       rg = Raygun.noConflict();
