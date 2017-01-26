@@ -165,4 +165,3 @@ describe("Payload functional validation tests for V2 manual send", function() {
   });
 
 });
-

@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>Raygun4JS with V2 API</title>
+  </head>
+  <body>
+      <script type="text/javascript">
+  // Simulate slow loading/instantiation
+  
+      (function(wind, doc, scriptTag, url, obj, s, n, o) {
+          wind['RaygunObject'] = obj;
+          wind[obj] = wind[obj] || function() {
+              (wind[obj].o = wind[obj].o || []).push(arguments)
+          },
+          s = doc.createElement(scriptTag),
+          n = doc.getElementsByTagName(scriptTag)[0];
+
+          setTimeout(function () {
+            s.async = 1;
+            s.src = url;
+            n.parentNode.insertBefore(s, n);
+          
+            o = wind.onerror;
+            wind.onerror = function (msg, url, line, col, err) {
+              if (o) {
+                o(msg, url, line, col, err);
+              }
+
+              if (!err) {
+                err = new Error(msg);
+              }
+
+              wind[obj].q = wind[obj].q || [];
+              wind[obj].q.push({e: err});
+            };
+
+          }, 2000);
+
+      })(window, document, 'script', '/dist/raygun.js', 'rg4js');
+    
+  </script>
+    <script type="text/javascript">
+      window.didPerformOnBeforeSend = [];
+      setTimeout(function () {
+        rg4js('apiKey', 'abcdef==');
+        rg4js('enableCrashReporting', true);
+      }, 1);
+      
+      (function (scope) {
+        this.beforeSend = function (param) {
+            window.didPerformOnBeforeSend.push('beforesendcalled');
+            window.didPerformOnBeforeSend.push(scope);
+            window.didPerformOnBeforeSend.push(typeof param);
+        };
+
+        setTimeout(function () {
+          rg4js('onBeforeSend', this.beforeSend);
+        }, 1000);
+      })('the_scope');
+
+      setTimeout(function () {
+        throw new Error('foo');
+      }, 3000);
+    </script>
+  </body>
+</html>
