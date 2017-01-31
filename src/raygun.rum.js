@@ -228,11 +228,8 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         };
 
-        // Custom load time: cause a session_start/WRT when the user tells us the page has loaded
-        this.customPageLoaded = function () {
-          getSessionId(function (isNewSession) {
-            self.pageLoaded(isNewSession);
-          });
+        this.sendCustomTimings = function (customTimings) {
+          self.postCustomTimings(customTimings);
         };
 
         this.sendPerformance = function (flush, firstLoad) {
@@ -256,6 +253,26 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
 
             self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+        };
+
+        this.postCustomTimings = function (customTimings) {
+            if (typeof customTimings === 'object' && (
+                typeof customTimings.custom1 === 'number' ||
+                typeof customTimings.custom2 === 'number' ||
+                typeof customTimings.custom3 === 'number')) {
+
+              var payload = {
+                  eventData: [{
+                      sessionId: self.sessionId,
+                      timestamp: new Date().toISOString(),
+                      type: 'custom_timings',
+                      data: JSON.stringify(customTimings)
+                  }]
+              };
+
+              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+            }
+
         };
 
         function stringToByteLength(str) {

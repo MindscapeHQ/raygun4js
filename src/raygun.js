@@ -52,7 +52,6 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _breadcrumbs = new Raygun.Breadcrumbs(),
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
-        _pulseCustomLoadTimeEnabled = null,
         _providerState = ProviderStates.LOADING,
         _loadedFrom,
         _processExceptionQueue = [],
@@ -105,7 +104,6 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 _excludedUserAgents = options.excludedUserAgents || false;
                 _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
                 _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
-                _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -336,8 +334,8 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
-                } else if (type === 'customPageLoaded') {
-                    _rum.customPageLoaded();
+                } else if (type === 'customTimings' && options.timings) {
+                    _rum.sendCustomTimings(options.timings);
                 }
             }
         },
