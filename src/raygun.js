@@ -56,6 +56,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _loadedFrom,
         _processExceptionQueue = [],
         _trackEventQueue = [],
+        _pulseCustomLoadTimeEnabled = null,
         $document;
 
    var rand = Math.random();
@@ -104,6 +105,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 _excludedUserAgents = options.excludedUserAgents || false;
                 _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
                 _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
+                _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;

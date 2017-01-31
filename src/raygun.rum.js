@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customLoadTimeEnabled) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customTimingsEnabled) {
         var self = this;
         var _private = {};
 
@@ -18,7 +18,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.excludedUserAgents = excludedUserAgents;
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
-        this.customLoadTimeEnabled = customLoadTimeEnabled;
+        this.customTimingsEnabled = customTimingsEnabled;
+        this.pendingPerformancePayload = null;
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -63,12 +64,9 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.offset = 0;
 
         this.attach = function () {
-            // Cause a session_start/WRT upon onload
-            if (!this.customLoadTimeEnabled) {
-              getSessionId(function (isNewSession) {
-                self.pageLoaded(isNewSession);
-              });
-            }
+            getSessionId(function (isNewSession) {
+              self.pageLoaded(isNewSession);
+            });
 
             var clickHandler = function () {
                 this.updateCookieTimestamp();
@@ -136,6 +134,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             self.sendPerformance(true, true);
+            
             self.heartBeat();
 
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
@@ -143,6 +142,27 @@ var raygunRumFactory = function (window, $, Raygun) {
             } else {
                 self.initalStaticPageLoadTimestamp = 0;
             }
+        };
+
+        this.sendCustomTimings = function (customTimings) {
+            if (typeof customTimings === 'object' && (
+              typeof customTimings.custom1 === 'number' ||
+              typeof customTimings.custom2 === 'number' ||
+              typeof customTimings.custom3 === 'number')) {
+
+                  if (self.pendingPerformancePayload) {
+                    var payloadObject = JSON.parse(self.pendingPerformancePayload);
+                    var resourceObjects = JSON.parse(payloadObject.eventData[0].data);
+                    
+                    resourceObjects[0].customTiming = customTimings;
+
+                    payloadObject.eventData[0].data = JSON.stringify(resourceObjects);
+
+                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payloadObject));
+
+                    self.pendingPerformancePayload = null;
+                  }
+              }
         };
 
         this.setUser = function (user) {
@@ -228,10 +248,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         };
 
-        this.sendCustomTimings = function (customTimings) {
-          self.postCustomTimings(customTimings);
-        };
-
         this.sendPerformance = function (flush, firstLoad) {
             var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
 
@@ -252,27 +268,12 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }]
             };
 
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
-        };
-
-        this.postCustomTimings = function (customTimings) {
-            if (typeof customTimings === 'object' && (
-                typeof customTimings.custom1 === 'number' ||
-                typeof customTimings.custom2 === 'number' ||
-                typeof customTimings.custom3 === 'number')) {
-
-              var payload = {
-                  eventData: [{
-                      sessionId: self.sessionId,
-                      timestamp: new Date().toISOString(),
-                      type: 'custom_timings',
-                      data: JSON.stringify(customTimings)
-                  }]
-              };
-
+            if (!self.customTimingsEnabled) {
               self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+            } else {
+              // Queue the WRT until the custom timings are provided
+              self.pendingPerformancePayload = JSON.stringify(payload);
             }
-
         };
 
         function stringToByteLength(str) {
