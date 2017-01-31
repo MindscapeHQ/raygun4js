@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customLoadTimeEnabled) {
         var self = this;
         var _private = {};
 
@@ -18,6 +18,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.excludedUserAgents = excludedUserAgents;
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
+        this.customLoadTimeEnabled = customLoadTimeEnabled;
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -61,9 +62,12 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.offset = 0;
 
         this.attach = function () {
-            getSessionId(function (isNewSession) {
+            // Cause a session_start/WRT upon onload
+            if (!this.customLoadTimeEnabled) {
+              getSessionId(function (isNewSession) {
                 self.pageLoaded(isNewSession);
-            });
+              });
+            }
 
             var clickHandler = function () {
                 this.updateCookieTimestamp();
@@ -214,6 +218,15 @@ var raygunRumFactory = function (window, $, Raygun) {
                     this.previousVirtualPageLoadTimestamp = 0;
                 }
             }
+        };
+
+        // Custom load time: cause a session_start/WRT when the user tells us the page has loaded
+        this.customPageLoaded = function () {
+          var customPageLoadedTime = window.performance.now();
+
+          getSessionId(function (isNewSession) {
+            self.pageLoaded(isNewSession);
+          });
         };
 
         this.sendPerformance = function (flush, firstLoad) {
