@@ -279,7 +279,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var sessionCookie = readCookie(self.cookieName);
                 var id = readSessionCookieElement(sessionCookie, 'id');
 
-                if (id === 'undefined') {
+                if (id === 'undefined' || id === 'null') {
                     self.sessionId = randomKey(32);
                     createCookie(self.cookieName, self.sessionId);
                     callback(true);
