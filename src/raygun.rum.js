@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customLoadTimeEnabled) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customLoadTimeEnabled) {
         var self = this;
         var _private = {};
 
@@ -58,6 +58,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.virtualPage = null;
         this.user = user;
         this.version = version;
+        this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
 
@@ -91,6 +92,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                             user: self.user,
                             version: self.version || 'Not supplied',
                             device: navigator.userAgent,
+                            tags: self.tags,
                             data: JSON.stringify(data)
                         }]
                     };
@@ -125,6 +127,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                         type: 'session_start',
                         user: self.user,
                         version: self.version || 'Not supplied',
+                        tags: self.tags,
                         device: navigator.userAgent
                     }]
                 };
@@ -144,6 +147,10 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.setUser = function (user) {
             self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
         };
 
         this.endSession = function () {
@@ -178,6 +185,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                                 user: self.user,
                                 version: self.version || 'Not supplied',
                                 device: navigator.userAgent,
+                                tags: self.tags,
                                 data: dataJson
                             }]
                         };
@@ -222,8 +230,6 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         // Custom load time: cause a session_start/WRT when the user tells us the page has loaded
         this.customPageLoaded = function () {
-          var customPageLoadedTime = window.performance.now();
-
           getSessionId(function (isNewSession) {
             self.pageLoaded(isNewSession);
           });
@@ -244,6 +250,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                     user: self.user,
                     version: self.version || 'Not supplied',
                     device: navigator.userAgent,
+                    tags: self.tags,
                     data: JSON.stringify(performanceData)
                 }]
             };

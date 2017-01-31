@@ -150,6 +150,11 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         withTags: function (tags) {
             _tags = tags;
+
+            if (_rum !== undefined && _rum !== null) {
+              _rum.withTags(tags);
+            }
+
             return Raygun;
         },
 
