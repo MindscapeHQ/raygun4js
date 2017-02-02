@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.5.1 - 2017-01-27
+/*! Raygun4js - v2.5.2 - 2017-02-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1664,6 +1664,16 @@ var raygunFactory = function (window, $, undefined) {
         return true;
     }
 
+    function contains(array, obj) {
+        var i = array.length;
+        while (i--) {
+            if (array[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function getRandomInt() {
         return Math.floor(Math.random() * 9007199254740993);
     }
@@ -1923,8 +1933,10 @@ var raygunFactory = function (window, $, undefined) {
             if (!options.tags) {
                 options.tags = [];
             }
-
-            options.tags.push('UnhandledException');
+        
+            if (!contains(options.tags, 'UnhandledException')) {
+                options.tags.push('UnhandledException');
+            }
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
@@ -1986,7 +1998,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.5.1'
+                    'Version': '2.5.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
