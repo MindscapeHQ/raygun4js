@@ -715,8 +715,9 @@ var raygunFactory = function (window, $, undefined) {
                 options.tags = [];
             }
         
-        if (!contains(options.tags, 'UnhandledException')) {
-            options.tags.push('UnhandledException');
+            if (!contains(options.tags, 'UnhandledException')) {
+                options.tags.push('UnhandledException');
+            }
         }
 
         var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
