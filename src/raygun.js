@@ -715,7 +715,7 @@ var raygunFactory = function (window, $, undefined) {
                 options.tags = [];
             }
         
-        if (!contains(options.tags, 'UnhandledException'))
+        if (!contains(options.tags, 'UnhandledException')) {
             options.tags.push('UnhandledException');
         }
 
