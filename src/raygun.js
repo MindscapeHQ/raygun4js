@@ -445,6 +445,16 @@ var raygunFactory = function (window, $, undefined) {
         return true;
     }
 
+    function contains(array, obj) {
+        var i = array.length;
+        while (i--) {
+            if (array[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function getRandomInt() {
         return Math.floor(Math.random() * 9007199254740993);
     }
@@ -704,7 +714,8 @@ var raygunFactory = function (window, $, undefined) {
             if (!options.tags) {
                 options.tags = [];
             }
-
+        
+        if (!contains(options.tags, 'UnhandledException'))
             options.tags.push('UnhandledException');
         }
 
