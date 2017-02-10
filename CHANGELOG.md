@@ -1,3 +1,6 @@
+* v2.5.2
+  - Fix for duplicate UnhandledException tags as added in v2.5.0
+
 * v2.5.1
   - Loader option setters and errors/trackEvent calls are now executed once onLoad, fixing edge cases and race conditions with `rg4js` calls during various stages of the page lifecycle
 
