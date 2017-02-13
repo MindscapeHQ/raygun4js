@@ -497,7 +497,7 @@ var raygunFactory = function (window, $, undefined) {
                 if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
                         var payload = JSON.parse(localStorage[key]);
--                       makePostCorsRequest(payload.url, payload.data);
+                        makePostCorsRequest(payload.url, JSON.stringify(payload.data));
                     } catch (e) {
                         _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
                     }
