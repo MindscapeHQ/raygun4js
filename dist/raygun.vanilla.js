@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.5.2 - 2017-02-10
+/*! Raygun4js - v2.5.3 - 2017-02-14
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1613,7 +1613,8 @@ var raygunFactory = function (window, $, undefined) {
                 // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
                 if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
-                        sendToRaygun(JSON.parse(localStorage[key]));
+                        var payload = JSON.parse(localStorage[key]);
+                        makePostCorsRequest(payload.url, payload.data);
                     } catch (e) {
                         _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
                     }
@@ -1896,7 +1897,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.5.2'
+                    'Version': '2.5.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,

@@ -1,3 +1,6 @@
+* v2.5.3
+  - Fixed offline errors failing to send to Raygun when back online.
+
 * v2.5.2
   - Fix for duplicate UnhandledException tags as added in v2.5.0
 
