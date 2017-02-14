@@ -496,7 +496,8 @@ var raygunFactory = function (window, $, undefined) {
                 // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
                 if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + _raygunApiKey) {
                     try {
-                        sendToRaygun(JSON.parse(localStorage[key]));
+                        var payload = JSON.parse(localStorage[key]);
+                        makePostCorsRequest(payload.url, payload.data);
                     } catch (e) {
                         _private.log('Raygun4JS: Invalid JSON object in LocalStorage');
                     }
