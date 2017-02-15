@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.5.3 - 2017-02-14
+/*! Raygun4js - v2.5.3 - 2017-02-16
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1195,7 +1195,11 @@ window.TraceKit = TraceKit;
 
   var _oldReady = $.fn.ready;
   $.fn.ready = function traceKitjQueryReadyWrapper(fn) {
-    return _oldReady.call(this, TraceKit.wrap(fn));
+    if( typeof fn === 'function') {
+        return _oldReady.call(this, TraceKit.wrap(fn));
+    } else {
+        return _oldReady.call(this, fn);
+    }
   };
 
   var _oldAjax = $.ajax;
