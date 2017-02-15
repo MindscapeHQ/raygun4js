@@ -41,7 +41,11 @@
 
   var _oldReady = $.fn.ready;
   $.fn.ready = function traceKitjQueryReadyWrapper(fn) {
-    return _oldReady.call(this, TraceKit.wrap(fn));
+    if( typeof fn === 'function') {
+        return _oldReady.call(this, TraceKit.wrap(fn));
+    } else {
+        return _oldReady.call(this, fn);
+    }
   };
 
   var _oldAjax = $.ajax;
