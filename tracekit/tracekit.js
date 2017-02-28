@@ -345,9 +345,17 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
             url = url || "";
 
-            if (url.indexOf && url.indexOf(document.domain) !== -1) {
+            var domain;
+            if (typeof document !== 'undefined') {
+                domain = document.domain;
+            } else {
+                domain = window.location.hostname;
+            }
+
+            if (url.indexOf && url.indexOf(domain) !== -1) {
                 source = loadSource(url);
             }
+
             sourceCache[url] = source ? source.split('\n') : [];
         }
 
@@ -676,7 +684,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'mode': 'stack',
             'name': ex.name,
             'message': ex.message,
-            'url': document.location.href,
+            'url': typeof document !== 'undefined' ? document.location.href : window.location.href,
             'stack': stack,
             'useragent': navigator.userAgent
         };

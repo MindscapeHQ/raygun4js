@@ -179,12 +179,17 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     window[window['RaygunObject']].q = errorQueue;
   };
 
-  if (document.readyState === 'complete') {
-    onLoadHandler();
-  } else if (window.addEventListener) {
-    window.addEventListener('load', onLoadHandler);
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'complete') {
+      onLoadHandler();
+    } else if (window.addEventListener) {
+      window.addEventListener('load', onLoadHandler);
+    } else {
+      window.attachEvent('onload', onLoadHandler);
+    }
   } else {
-    window.attachEvent('onload', onLoadHandler);
+    // Corner case for React Native which lacks document, but is loaded immediately
+    onLoadHandler();
   }
 
 })(window, window.__instantiatedRaygun);

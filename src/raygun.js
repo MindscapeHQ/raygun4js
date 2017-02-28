@@ -460,11 +460,19 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     function getViewPort() {
+        if (!hasGlobalDocument()) {
+            return { width: 'Not available', height: 'Not available' };
+        }
+
         var e = document.documentElement,
             g = document.getElementsByTagName('body')[0],
             x = window.innerWidth || e.clientWidth || g.clientWidth,
             y = window.innerHeight || e.clientHeight || g.clientHeight;
         return {width: x, height: y};
+    }
+
+    function hasGlobalDocument() {
+        return typeof document !== 'undefined';
     }
 
     function offlineSave(url, data) {
@@ -721,7 +729,8 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        var screen = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
+        var screenData = window.screen || {width: getViewPort().width, height: getViewPort().height, colorDepth: 8};
+
         var custom_message = options.customData && options.customData.ajaxErrorMessage;
 
         var finalCustomData;
@@ -767,12 +776,12 @@ var raygunFactory = function (window, $, undefined) {
                 'Environment': {
                     'UtcOffset': new Date().getTimezoneOffset() / -60.0,
                     'User-Language': navigator.userLanguage,
-                    'Document-Mode': document.documentMode,
+                    'Document-Mode': hasGlobalDocument() ? document.documentMode : 'Not available',
                     'Browser-Width': getViewPort().width,
                     'Browser-Height': getViewPort().height,
-                    'Screen-Width': screen.width,
-                    'Screen-Height': screen.height,
-                    'Color-Depth': screen.colorDepth,
+                    'Screen-Width': screenData.width,
+                    'Screen-Height': screenData.height,
+                    'Color-Depth': screenData.colorDepth,
                     'Browser': navigator.appCodeName,
                     'Browser-Name': navigator.appName,
                     'Browser-Version': navigator.appVersion,
@@ -789,8 +798,8 @@ var raygunFactory = function (window, $, undefined) {
                     'QueryString': qs,
                     'Headers': {
                         'User-Agent': navigator.userAgent,
-                        'Referer': document.referrer,
-                        'Host': document.domain
+                        'Referer': hasGlobalDocument() ? document.referrer : 'Not available',
+                        'Host': hasGlobalDocument() ? document.domain : 'Not available'
                     }
                 },
                 'Version': _version || 'Not supplied'
