@@ -38,8 +38,7 @@ var raygunFactory = function (window, $, undefined) {
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
         $document;
-
-
+    
     var Raygun =
     {
         noConflict: function () {

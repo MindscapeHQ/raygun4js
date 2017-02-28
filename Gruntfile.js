@@ -79,7 +79,7 @@ module.exports = function(grunt) {
       },
       src: {
         files: '<%= jshint.src.src %>',
-        tasks: ['jshint:src', 'jasmine']
+        tasks: ['compile']
       }
     },
     'string-replace': {
@@ -129,6 +129,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-webdriver');
 
   grunt.registerTask('test', ['webdriver']);
+
+  grunt.registerTask('compile', ['jshint', 'clean', 'concat', 'uglify:dist']);
 
   grunt.registerTask('build', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
 
