@@ -310,6 +310,10 @@ var raygunFactory = function (window, $, undefined) {
     };
 
     _private.createCookie = function (name, value, hours) {
+        if (!hasGlobalDocument()) {
+            return;
+        }
+
         var expires;
         if (hours) {
             var date = new Date();
@@ -324,6 +328,10 @@ var raygunFactory = function (window, $, undefined) {
     };
 
     _private.readCookie = function (name) {
+        if (!hasGlobalDocument()) {
+            return null;
+        }
+        
         var nameEQ = name + "=";
         var ca = document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {
@@ -843,8 +851,9 @@ var raygunFactory = function (window, $, undefined) {
 
         xhr = new window.XMLHttpRequest();
 
-        if ("withCredentials" in xhr) {
-            // XHR for Chrome/Firefox/Opera/Safari.
+        if ("withCredentials" in xhr || !hasGlobalDocument()) {
+            // XHR for Chrome/Firefox/Opera/Safari
+            // as well as React Native's custom XHR implementation
             xhr.open(method, url, true);
 
         } else if (window.XDomainRequest) {
