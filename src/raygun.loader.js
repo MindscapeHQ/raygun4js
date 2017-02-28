@@ -188,8 +188,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
       window.attachEvent('onload', onLoadHandler);
     }
   } else {
-    // Corner case for React Native which lacks document, but is loaded immediately
-    onLoadHandler();
+    // Corner case for React Native which lacks document
+    setTimeout(function () {
+      onLoadHandler();
+    }, 1000);
   }
 
 })(window, window.__instantiatedRaygun);
