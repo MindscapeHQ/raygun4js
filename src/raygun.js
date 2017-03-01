@@ -98,26 +98,32 @@ var raygunFactory = function (window, $, undefined) {
                 }
             }
 
-            ensureUser();
+            function bootRaygun(error) {
+                if (error) {
+                    _private.log("Failed to boot: " + error);
+                }
 
-            if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
-                var startRum = function () {
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
-                    _rum.attach();
-                };
+                if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
+                    var startRum = function () {
+                        _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                        _rum.attach();
+                    };
 
-                if (options && options.from === 'onLoad') {
-                    startRum();
-                } else {
-                    if (window.addEventListener) {
-                        window.addEventListener('load', startRum);
+                    if (options && options.from === 'onLoad') {
+                        startRum();
                     } else {
-                        window.attachEvent('onload', startRum);
+                        if (window.addEventListener) {
+                            window.addEventListener('load', startRum);
+                        } else {
+                            window.attachEvent('onload', startRum);
+                        }
                     }
                 }
-            }
 
-            sendSavedErrors();
+                sendSavedErrors();
+            };
+            
+            ensureUser(bootRaygun);
 
             return Raygun;
         },
@@ -311,6 +317,7 @@ var raygunFactory = function (window, $, undefined) {
 
     _private.createCookie = function (name, value, hours) {
         if (!hasGlobalDocument()) {
+            _private.indexedDBStorage.setWithExpiry(name, value, hours);
             return;
         }
 
@@ -329,7 +336,7 @@ var raygunFactory = function (window, $, undefined) {
 
     _private.readCookie = function (name) {
         if (!hasGlobalDocument()) {
-            return null;
+            return _private.indexedDBStorage.get(name);
         }
         
         var nameEQ = name + "=";
@@ -347,6 +354,11 @@ var raygunFactory = function (window, $, undefined) {
     };
 
     _private.clearCookie = function (key) {
+        if (!hasGlobalDocument()) {
+            _private.indexedDBStorage.clear(key);
+            return;
+        }
+
         _private.createCookie(key, '', -1);
     };
 
@@ -533,21 +545,31 @@ var raygunFactory = function (window, $, undefined) {
         }
     }
 
-    function ensureUser() {
+    function ensureUser(bootRaygunCallback) {
         if (!_user && !_disableAnonymousUserTracking) {
             var userKey = 'raygun4js-userid';
-            var rgUserId = _private.readCookie(userKey);
-            var anonymousUuid;
 
-            if (!rgUserId) {
-                anonymousUuid = _private.getUuid();
+            function setUserComplete(error, userId) {
+                var userIdentifier;
 
-                _private.createCookie(userKey, anonymousUuid, 24 * 31);
-            } else {
-                anonymousUuid = rgUserId;
+                // When user ID getting (e.g from IndexedDB) fails, creating a new anon id every load will set
+                // the user count in the dashboard == to error count, so as a failsafe make it report one user
+                if (error) {
+                    userIdentifier = "Unknown";
+                }
+
+                if (!rgUserId) {
+                    userIdentifier = _private.getUuid();
+
+                    _private.createCookie(userKey, userIdentifier, 24 * 31);
+                } else {
+                    userIdentifier = rgUserId;
+                }
+
+                Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
             }
 
-            Raygun.setUser(anonymousUuid, true, null, null, null, anonymousUuid);
+            _private.readCookie(userKey, setUserComplete);
         }
     }
 
