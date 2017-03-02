@@ -52,19 +52,18 @@ var raygunPersistenceFactory = function (window, Raygun) {
       
       var request = metadataObjectStore.get(key);
 
-      var result;
       request.onsuccess = function (evnt) {
-        result = evnt.result; // .value
-        doneCallback(null, evnt.result);
+        var result = evnt.target.result.value;
+
+        doneCallback(null, result);
       };
 
       request.onerror = function () {
-        // TODO
-        var err = new Error(this.error.name + ": " + this.error.message);
-        doneCallback(err);
+        if (this.error && this.error.name && this.error.message) {
+          var err = new Error(this.error.name + ": " + this.error.message);
+          doneCallback(err);
+        }
       }
-
-      return result;
     },
 
     clear: function (key) {
