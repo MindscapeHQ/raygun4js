@@ -189,6 +189,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   } else {
     // Corner case for React Native which lacks document
+    // We expect rg4js() settings to come after the import which triggered the execution of this script,
+    // so delay
     setTimeout(function () {
       onLoadHandler();
     }, 1000);
@@ -196,7 +198,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
 })(window, window.__instantiatedRaygun);
 
-try 
+try
 { 
     delete window.__instantiatedRaygun;
 } 

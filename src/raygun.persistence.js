@@ -46,7 +46,7 @@ var raygunPersistenceFactory = function (window, Raygun) {
       metadataObjectStore.add({ key: key, value: value });
     },
 
-    get: function (key) {
+    get: function (key, doneCallback) {
       var transaction = db.transaction('metadata', 'readwrite');
       var metadataObjectStore = transaction.objectStore('metadata');
       
@@ -55,12 +55,13 @@ var raygunPersistenceFactory = function (window, Raygun) {
       var result;
       request.onsuccess = function (evnt) {
         result = evnt.result; // .value
-      }.bind(this);
+        doneCallback(null, evnt.result);
+      };
 
-      var loopCount = 0;
-
-      while (typeof result === 'undefined' && loopCount < 100) {
-        loopCount++;
+      request.onerror = function () {
+        // TODO
+        var err = new Error(this.error.name + ": " + this.error.message);
+        doneCallback(err);
       }
 
       return result;

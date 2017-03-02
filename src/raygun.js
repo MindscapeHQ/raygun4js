@@ -6,7 +6,15 @@
  * Licensed under the MIT license.
  */
 var raygunFactory = function (window, $, undefined) {
-    // pull local copy of TraceKit to handle stack trace collection
+    // Constants
+    var ProviderStates = {
+        LOADING: 0,
+        READY: 1
+    };
+
+    var _userKey = 'raygun4js-userid';
+
+    // State variables
     var _traceKit = TraceKit,
         _raygun = window.Raygun,
         _raygunApiKey,
@@ -37,7 +45,11 @@ var raygunFactory = function (window, $, undefined) {
         _rum = null,
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
+        _providerState = ProviderStates.LOADING,
+        _processExceptionQueue = [],
+        _trackEventQueue = [],
         $document;
+
     
     var Raygun =
     {
@@ -97,33 +109,8 @@ var raygunFactory = function (window, $, undefined) {
                     _raygunApiUrl = options.apiEndpoint;
                 }
             }
-
-            function bootRaygun(error) {
-                if (error) {
-                    _private.log("Failed to boot: " + error);
-                }
-
-                if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
-                    var startRum = function () {
-                        _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
-                        _rum.attach();
-                    };
-
-                    if (options && options.from === 'onLoad') {
-                        startRum();
-                    } else {
-                        if (window.addEventListener) {
-                            window.addEventListener('load', startRum);
-                        } else {
-                            window.attachEvent('onload', startRum);
-                        }
-                    }
-                }
-
-                sendSavedErrors();
-            };
             
-            ensureUser(bootRaygun);
+            ensureUser();
 
             return Raygun;
         },
@@ -147,7 +134,7 @@ var raygunFactory = function (window, $, undefined) {
                 window.onerror = null;
             }
 
-            _traceKit.report.subscribe(processUnhandledException);
+            _traceKit.report.subscribe(processException);
 
             if (_wrapAsynchronousCallbacks) {
                 _traceKit.extendToAsynchronousCallbacks();
@@ -160,7 +147,7 @@ var raygunFactory = function (window, $, undefined) {
         },
 
         detach: function () {
-            _traceKit.report.unsubscribe(processUnhandledException);
+            _traceKit.report.unsubscribe(processException);
             if ($document) {
                 $document.unbind('ajaxError', processJQueryAjaxError);
             }
@@ -174,7 +161,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             try {
-                processUnhandledException(
+                processException(
                     _traceKit.computeStackTrace(ex),
                     {
                         customData: typeof _customData === 'function' ?
@@ -285,6 +272,11 @@ var raygunFactory = function (window, $, undefined) {
         },
 
         trackEvent: function (type, options) {
+            if (_providerState !== ProviderStates.READY) {
+                _trackEventQueue.push({ type: type, options: options });
+                return;
+            }
+
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
@@ -334,9 +326,11 @@ var raygunFactory = function (window, $, undefined) {
         document.cookie = name + "=" + value + expires + "; path=/";
     };
 
-    _private.readCookie = function (name) {
+    _private.readCookie = function (name, doneCallback) {
         if (!hasGlobalDocument()) {
-            return _private.indexedDBStorage.get(name);
+            _private.indexedDBStorage.get(name, doneCallback);
+
+            return;
         }
         
         var nameEQ = name + "=";
@@ -347,10 +341,15 @@ var raygunFactory = function (window, $, undefined) {
                 c = c.substring(1, c.length);
             }
             if (c.indexOf(nameEQ) === 0) {
-                return c.substring(nameEQ.length, c.length);
+                var cookieValue = c.substring(nameEQ.length, c.length);
+
+                doneCallback(null, cookieValue);
+
+                return;
             }
         }
-        return null;
+
+        doneCallback(null, null);
     };
 
     _private.clearCookie = function (key) {
@@ -373,6 +372,26 @@ var raygunFactory = function (window, $, undefined) {
     };
 
     /* internals */
+    
+    function isApiKeyConfigured() {
+        if (_raygunApiKey && _raygunApiKey !== '') {
+            return true;
+        }
+        _private.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
+        return false;
+    }
+
+    function hasGlobalDocument() {
+        return typeof document !== 'undefined';
+    }
+
+    function localStorageAvailable() {
+        try {
+            return ('localStorage' in window) && window['localStorage'] !== null;
+        } catch (e) {
+            return false;
+        }
+    }
 
     function truncateURL(url) {
         // truncate after fourth /, or 24 characters, whichever is shorter
@@ -394,41 +413,6 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         return truncated;
-    }
-
-    function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
-        var message = 'AJAX Error: ' +
-            (jqXHR.statusText || 'unknown') + ' ' +
-            (ajaxSettings.type || 'unknown') + ' ' +
-            (truncateURL(ajaxSettings.url) || 'unknown');
-
-        // ignore ajax abort if set in the options
-        if (_ignoreAjaxAbort) {
-            if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
-                return;
-            }
-        }
-
-        Raygun.send(thrownError || event.type, {
-            status: jqXHR.status,
-            statusText: jqXHR.statusText,
-            type: ajaxSettings.type,
-            url: ajaxSettings.url,
-            ajaxErrorMessage: message,
-            contentType: ajaxSettings.contentType,
-            requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
-            responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
-            activeTarget: event.target && event.target.activeElement && event.target.activeElement.outerHTML && event.target.activeElement.outerHTML.slice ? event.target.activeElement.outerHTML.slice(0, 10240) : undefined
-        });
-    }
-
-
-    function isApiKeyConfigured() {
-        if (_raygunApiKey && _raygunApiKey !== '') {
-            return true;
-        }
-        _private.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
-        return false;
     }
 
     function merge(o1, o2) {
@@ -490,8 +474,86 @@ var raygunFactory = function (window, $, undefined) {
         return {width: x, height: y};
     }
 
-    function hasGlobalDocument() {
-        return typeof document !== 'undefined';
+
+    function callAfterSend(response) {
+        if (typeof _afterSendCallback === 'function') {
+            _afterSendCallback(response);
+        }
+    }
+
+    function ensureUser() {
+        if (!_user && !_disableAnonymousUserTracking) {
+
+            _private.readCookie(_userKey, setUserComplete);
+        }
+    }
+    
+    // The final initializing logic is provided as a callback due to IndexedDB storing user data for React Native
+    // The common case executes it immediately due to that data being provided by the cookie synchronously
+    function bootRaygun() {
+        _providerState = ProviderStates.READY;
+
+        if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
+            var startRum = function () {
+                _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                _rum.attach();
+            };
+
+            if (options && options.from === 'onLoad') {
+                startRum();
+            } else {
+                if (window.addEventListener) {
+                    window.addEventListener('load', startRum);
+                } else {
+                    window.attachEvent('onload', startRum);
+                }
+            }
+        }
+
+        retriggerDelayedCommands();
+
+        sendSavedErrors();
+    }
+
+
+    function setUserComplete(error, userId) {
+        var userIdentifier;
+
+        // When user ID getting (e.g from IndexedDB) fails, creating a new anon id every load will set
+        // the user count in the dashboard == to error count, so as a failsafe make it report one user
+        if (error) {
+            userIdentifier = "Unknown";
+        }
+
+        if (!userId) {
+            userIdentifier = _private.getUuid();
+
+            _private.createCookie(_userKey, userIdentifier, 24 * 31);
+        } else {
+            userIdentifier = userId;
+        }
+
+        Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
+
+        if (_providerState === ProviderStates.LOADING) {
+            bootRaygun(error);
+        }
+    }
+
+    // We need to delay handled/unhandled send() and trackEvent() calls until the user data callback has returned
+    function retriggerDelayedCommands() {
+        var i;
+        for (i = 0; i < _processExceptionQueue.length; i++) {
+            processException(_processExceptionQueue[i].stackTrace, _processExceptionQueue[i].options, _processExceptionQueue[i].userTriggered);
+        }
+
+        _processExceptionQueue = [];
+
+        for (i = 0; i < _trackEventQueue.length; i++) {
+            _rum.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+        }
+
+        _trackEventQueue = [];
     }
 
     function offlineSave(url, data) {
@@ -505,14 +567,6 @@ var raygunFactory = function (window, $, undefined) {
             }
         } catch (e) {
             _private.log('Raygun4JS: LocalStorage full, cannot save exception');
-        }
-    }
-
-    function localStorageAvailable() {
-        try {
-            return ('localStorage' in window) && window['localStorage'] !== null;
-        } catch (e) {
-            return false;
         }
     }
 
@@ -536,40 +590,6 @@ var raygunFactory = function (window, $, undefined) {
                     }
                 }
             }
-        }
-    }
-
-    function callAfterSend(response) {
-        if (typeof _afterSendCallback === 'function') {
-            _afterSendCallback(response);
-        }
-    }
-
-    function ensureUser(bootRaygunCallback) {
-        if (!_user && !_disableAnonymousUserTracking) {
-            var userKey = 'raygun4js-userid';
-
-            function setUserComplete(error, userId) {
-                var userIdentifier;
-
-                // When user ID getting (e.g from IndexedDB) fails, creating a new anon id every load will set
-                // the user count in the dashboard == to error count, so as a failsafe make it report one user
-                if (error) {
-                    userIdentifier = "Unknown";
-                }
-
-                if (!rgUserId) {
-                    userIdentifier = _private.getUuid();
-
-                    _private.createCookie(userKey, userIdentifier, 24 * 31);
-                } else {
-                    userIdentifier = rgUserId;
-                }
-
-                Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
-            }
-
-            _private.readCookie(userKey, setUserComplete);
         }
     }
 
@@ -622,7 +642,38 @@ var raygunFactory = function (window, $, undefined) {
         return filteredObject;
     }
 
-    function processUnhandledException(stackTrace, options, userTriggered) {
+    function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
+        var message = 'AJAX Error: ' +
+            (jqXHR.statusText || 'unknown') + ' ' +
+            (ajaxSettings.type || 'unknown') + ' ' +
+            (truncateURL(ajaxSettings.url) || 'unknown');
+
+        // ignore ajax abort if set in the options
+        if (_ignoreAjaxAbort) {
+            if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
+                return;
+            }
+        }
+
+        Raygun.send(thrownError || event.type, {
+            status: jqXHR.status,
+            statusText: jqXHR.statusText,
+            type: ajaxSettings.type,
+            url: ajaxSettings.url,
+            ajaxErrorMessage: message,
+            contentType: ajaxSettings.contentType,
+            requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
+            responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
+            activeTarget: event.target && event.target.activeElement && event.target.activeElement.outerHTML && event.target.activeElement.outerHTML.slice ? event.target.activeElement.outerHTML.slice(0, 10240) : undefined
+        });
+    }
+
+    function processException(stackTrace, options, userTriggered) {
+        if (_providerState !== ProviderStates.READY) {
+            _processExceptionQueue.push({ stackTrace: stackTrace, options: options, userTriggered: userTriggered });
+            return;
+        }
+
         var scriptError = 'Script error';
 
         var stack = [],
