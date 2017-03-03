@@ -134,6 +134,13 @@ var raygunFactory = function (window, $, undefined) {
                 window.onerror = null;
             }
 
+            // React Native
+            if (!hasGlobalDocument()) {
+                if (!__DEV__  && ErrorUtils && ErrorUtils.setGlobalHandler) {
+                    ErrorUtils.setGlobalHandler(TraceKit.report);
+                }
+            }
+
             _traceKit.report.subscribe(processException);
 
             if (_wrapAsynchronousCallbacks) {
@@ -698,7 +705,8 @@ var raygunFactory = function (window, $, undefined) {
                 msg = scriptError;
             }
 
-            if (msg.substring(0, scriptError.length) === scriptError &&
+            if (hasGlobalDocument() &&
+                msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
                 (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
@@ -736,7 +744,7 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        if (_excludedUserAgents instanceof Array) {
+        if (_excludedUserAgents instanceof Array && hasGlobalDocument()) {
             for (var userAgentIndex in _excludedUserAgents) {
                 if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
                     if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
@@ -748,7 +756,7 @@ var raygunFactory = function (window, $, undefined) {
             }
         }
 
-        if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
+        if (hasGlobalDocument() && navigator.userAgent.match("RaygunPulseInsightsCrawler"))
         {
             return;
         }
@@ -845,6 +853,13 @@ var raygunFactory = function (window, $, undefined) {
             finalMessage = finalMessage.substring(0, 512);
         }
 
+        var pageLocation;
+        if (hasGlobalDocument()) {
+            pageLocation = [location.protocol, '//', location.host, location.pathname, location.hash].join('')
+        } else {
+            pageLocation = '/';
+        }
+
         var payload = {
             'OccurredOn': new Date(),
             'Details': {
@@ -874,7 +889,7 @@ var raygunFactory = function (window, $, undefined) {
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
                 'Request': {
-                    'Url': [location.protocol, '//', location.host, location.pathname, location.hash].join(''),
+                    'Url': pageLocation,
                     'QueryString': qs,
                     'Headers': {
                         'User-Agent': navigator.userAgent,

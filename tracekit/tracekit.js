@@ -211,7 +211,11 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {Error} ex
      */
     function report(ex) {
-        var args = _slice.call(arguments, 1);
+        var args;
+        if (typeof document !== 'undefined') {
+            args = _slice.call(arguments, 1);
+        }
+
         if (lastExceptionStack) {
             if (lastException === ex) {
                 return; // already caught by an inner catch block, ignore
@@ -239,7 +243,9 @@ TraceKit.report = (function reportModuleWrapper() {
             }
         }, (stack.incomplete ? 2000 : 0));
 
-        throw ex; // re-throw to propagate to the top level (and cause window.onerror)
+        if (typeof document !== 'undefined') {
+            throw ex; // re-throw to propagate to the top level (and cause window.onerror)
+        }
     }
 
     report.subscribe = subscribe;

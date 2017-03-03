@@ -8,6 +8,10 @@ var raygunJsUrlFactory = function (window, Raygun) {
     }
 
     return (function(arg, url) {
+        if (typeof document === 'undefined') {
+            return '';
+        }
+        
         var _ls = url || window.location.toString();
 
         if (!arg) { return _ls; }
