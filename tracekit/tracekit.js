@@ -771,7 +771,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': ex.message,
             'url': document.location.href,
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': navigator.userAgent,
+            'stackstring': stacktrace
         };
     }
 
