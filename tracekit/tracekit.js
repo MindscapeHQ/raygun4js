@@ -620,80 +620,118 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Computes stack trace information from the stack property.
      * Chrome and Gecko use this property.
      * Added WinJS regex for Raygun4JS's offline caching support
+     * Added stack string sanitization for React Native in release mode, for JavaScriptCore, which uses the Gecko regex
      * @param {Error} ex
      * @return {?Object.<string, *>} Stack trace information.
      */
     function computeStackTraceFromStackProp(ex) {
-        if (!ex.stack) {
-            return null;
-        }
+        var parseError;
 
-        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
-            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            lines = ex.stack.split('\n'),
-            stack = [],
-            parts,
-            element,
-            reference = /^(.*) is undefined$/.exec(ex.message);
+        try {
+            if (!ex.stack) {
+                return { "tracekitResult": "nostack" };
+            }
 
-        for (var i = 0, j = lines.length; i < j; ++i) {
-            if ((parts = gecko.exec(lines[i]))) {
-                element = {
-                    'url': parts[3],
-                    'func': parts[1] || UNKNOWN_FUNCTION,
-                    'args': parts[2] ? parts[2].split(',') : '',
-                    'line': +parts[4],
-                    'column': parts[5] ? +parts[5] : null
-                };
-            } else if ((parts = chrome.exec(lines[i]))) {
+            //ex.stack = "value@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:12:639\nfile:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:12:767\ncallTimer@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:55:626\ncallTimers@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:55:1010\nvalue@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:2623\nfile:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:858\nd@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:127\nvalue@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:830\nvalue@[native code]";
+
+            var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+                gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native|\/).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+                winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+                lines = ex.stack.split('\n'),
+                stack = [],
+                parts,
+                element,
+                reference = /^(.*) is undefined$/.exec(ex.message);
+
+            if (typeof document === 'undefined') {
+                window.loggerInstance('Applying the replaces');
+                var reactNativeDevicePathStripRegex = /^(.*@)?.*\/[^\.]+(\.app|CodePush)\/?(.*)/;
+
+                for (var i = 0; i < lines.length; i++) {
+                    parts = reactNativeDevicePathStripRegex.exec(lines[i]);
+
+                    if (parts !== null) {
+                        var functionName = parts[1] ? parts[1] : 'anonymous@';
+                        var filenameLineNumAndColumnNum = parts[3];
+                        lines[i] = functionName + '/' + filenameLineNumAndColumnNum; // Fwdslash after the @ matches gecko: [native|\/
+                    }
+                }
+            }
+
+            for (var i = 0, j = lines.length; i < j; ++i) {
+                loggerInstance('Regexing line ' + i);
+
+                    loggerInstance('Trying gecko');
+                if ((parts = gecko.exec(lines[i]))) {
+                    loggerInstance('Gecko match');
+                    element = {
+                        'url': parts[3],
+                        'func': parts[1] || UNKNOWN_FUNCTION,
+                        'args': parts[2] ? parts[2].split(',') : '',
+                        'line': +parts[4],
+                        'column': parts[5] ? +parts[5] : null
+                    };
+                } else if ((parts = chrome.exec(lines[i]))) {
+                    element = {
+                        'url': parts[2],
+                        'func': parts[1] || UNKNOWN_FUNCTION,
+                        'line': +parts[3],
+                        'column': parts[4] ? +parts[4] : null
+                    };
+                } else if ((parts = winjs.exec(lines[i]))) {
                 element = {
                     'url': parts[2],
                     'func': parts[1] || UNKNOWN_FUNCTION,
                     'line': +parts[3],
                     'column': parts[4] ? +parts[4] : null
                 };
-            } else if ((parts = winjs.exec(lines[i]))) {
-              element = {
-                'url': parts[2],
-                'func': parts[1] || UNKNOWN_FUNCTION,
-                'line': +parts[3],
-                'column': parts[4] ? +parts[4] : null
-              };
-            } else {
-                continue;
+                } else {
+                    continue;
+                }
+
+                if (!element.func && element.line) {
+                    loggerInstance('Guessing function name');
+                    element.func = guessFunctionName(element.url, element.line);
+                }
+
+                if (typeof document !== 'undefined' && element.line) {
+                    loggerInstance('Gathering context');
+                    element.context = gatherContext(element.url, element.line);
+                }
+
+                stack.push(element);
             }
 
-            if (!element.func && element.line) {
-                element.func = guessFunctionName(element.url, element.line);
+            if (stack[0] && stack[0].line && !stack[0].column && reference) {
+                stack[0].column = findSourceInLine(reference[1], stack[0].url, stack[0].line);
+            } else if (!stack[0].column && typeof ex.columnNumber !== 'undefined') {
+                // Firefox column number
+                stack[0].column = ex.columnNumber + 1;
             }
 
-            if (element.line) {
-                element.context = gatherContext(element.url, element.line);
+            if (!stack.length) {
+                return null;
             }
 
-            stack.push(element);
+        } catch (e) {
+            window.loggerInstance('Got a parse error:');
+            window.loggerInstance(JSON.stringify(e));
         }
 
-        if (stack[0] && stack[0].line && !stack[0].column && reference) {
-            stack[0].column = findSourceInLine(reference[1], stack[0].url, stack[0].line);
-        } else if (!stack[0].column && typeof ex.columnNumber !== 'undefined') {
-            // Firefox column number
-            stack[0].column = ex.columnNumber + 1;
-        }
-
-        if (!stack.length) {
-            return null;
-        }
-
-        return {
+        var res = {
             'mode': 'stack',
-            'name': ex.name,
-            'message': ex.message,
-            'url': typeof document !== 'undefined' ? document.location.href : window.location.href,
+            'name': ex ? ex.name : '',
+            'message': ex ? ex.message : '',
+            'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': navigator ? navigator.userAgent : '',
+            'stackstring': ex && ex.stack ? ex.stack.toString() : '',
         };
+
+        window.loggerInstance('Returning DTO');
+        window.loggerInstance(JSON.stringify(res));
+
+        return res;
     }
 
     /**
