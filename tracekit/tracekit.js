@@ -215,7 +215,7 @@ TraceKit.report = (function reportModuleWrapper() {
         if (typeof document !== 'undefined') {
             args = _slice.call(arguments, 1);
         }
-
+        
         if (lastExceptionStack) {
             if (lastException === ex) {
                 return; // already caught by an inner catch block, ignore
@@ -1064,7 +1064,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         return {
-            'mode': 'failed'
+            'tracekitResult': 'failedToComputeAnyStackTrace'
         };
     }
 

@@ -675,7 +675,13 @@ var raygunFactory = function (window, $, undefined) {
         });
     }
 
+    var rnLogger = require('react-native-logger');
+    var loggerInstance = rnLogger.default();
+    window.loggerInstance = loggerInstance;
+
     function processException(stackTrace, options, userTriggered) {
+        loggerInstance('Started calling processException');
+
         if (_providerState !== ProviderStates.READY) {
             _processExceptionQueue.push({ stackTrace: stackTrace, options: options, userTriggered: userTriggered });
             return;
@@ -866,7 +872,8 @@ var raygunFactory = function (window, $, undefined) {
                 'Error': {
                     'ClassName': stackTrace.name,
                     'Message': finalMessage,
-                    'StackTrace': stack
+                    'StackTrace': stack,
+                    'StackString': stackTrace.stackstring
                 },
                 'Environment': {
                     'UtcOffset': new Date().getTimezoneOffset() / -60.0,
@@ -921,6 +928,8 @@ var raygunFactory = function (window, $, undefined) {
         } else {
             sendToRaygun(payload);
         }
+
+        loggerInstance('Finished calling processException');
     }
 
     function sendToRaygun(data) {
