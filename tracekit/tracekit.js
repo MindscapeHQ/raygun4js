@@ -641,7 +641,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             reference = /^(.*) is undefined$/.exec(ex.message);
 
         if (typeof document === 'undefined') {
-            window.loggerInstance('Applying the replaces');
             var reactNativeDevicePathStripRegex = /^(.*@)?.*\/[^\.]+(\.app|CodePush)\/?(.*)/;
 
             for (var i = 0; i < lines.length; i++) {
