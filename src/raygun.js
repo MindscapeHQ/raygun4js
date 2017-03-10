@@ -496,12 +496,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         });
     }
 
-    var rnLogger = require('react-native-logger');
-    var loggerInstance = rnLogger.default();
-    window.loggerInstance = loggerInstance;
+    //var rnLogger = require('react-native-logger');
+    //var loggerInstance = rnLogger.default();
+    //window.loggerInstance = loggerInstance;
 
     function processException(stackTrace, options, userTriggered) {
-        loggerInstance('Started processException');
+        //loggerInstance('Started processException');
 
         if (_providerState !== ProviderStates.READY) {
             _processExceptionQueue.push({ stackTrace: stackTrace, options: options, userTriggered: userTriggered });
