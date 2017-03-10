@@ -3,7 +3,47 @@
 // js-url - see LICENSE file
 
 var raygunUtilityFactory = function (window) {
-  
+
+  // Mozilla's toISOString() shim for IE8
+  if (!Date.prototype.toISOString) {
+      (function () {
+          function pad(number) {
+              var r = String(number);
+              if (r.length === 1) {
+                  r = '0' + r;
+              }
+              return r;
+          }
+
+           Date.prototype.toISOString = function () {
+              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
+           };
+      }());
+  }
+
+  // Mozilla's bind() shim for IE8
+  if (!Function.prototype.bind) {
+      Function.prototype.bind = function (oThis) {
+          if (typeof this !== 'function') {
+              throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+          }
+
+            var aArgs = Array.prototype.slice.call(arguments, 1),
+              fToBind = this,
+              FNOP = function () {
+              },
+              fBound = function () {
+                  return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
+                      aArgs.concat(Array.prototype.slice.call(arguments)));
+              };
+
+          FNOP.prototype = this.prototype;
+          fBound.prototype = new FNOP();
+
+          return fBound;
+      };
+  }
+
   var rg = {
     Utilities: {
       
