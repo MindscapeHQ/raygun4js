@@ -188,12 +188,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
       window.attachEvent('onload', onLoadHandler);
     }
   } else {
-    // Corner case for React Native which lacks document
-    // We expect rg4js() settings to come after the import which triggered the execution of this script,
-    // so delay
-    setTimeout(function () {
-      onLoadHandler();
-    }, 1);
+    Raygun.Utilities.log('The V2 API cannot be used from React Native or non-document envs currently. Please use the V1 API');
   }
 
 })(window, window.__instantiatedRaygun);

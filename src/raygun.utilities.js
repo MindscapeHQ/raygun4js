@@ -58,7 +58,6 @@ var raygunUtilityFactory = function (window) {
 
       createCookie: function (name, value, hours) {
           if (Raygun.Utilities.isReactNative()) {
-              Raygun.Utilities.indexedDBStorage.setWithExpiry(name, value); // doneCallback?
               return;
           }
 
@@ -77,8 +76,6 @@ var raygunUtilityFactory = function (window) {
 
       readCookie: function (name, doneCallback) {
           if (Raygun.Utilities.isReactNative()) {
-              Raygun.Utilities.indexedDBStorage.get(name, doneCallback);
-
               doneCallback(null, 'none');
 
               return;
@@ -105,7 +102,6 @@ var raygunUtilityFactory = function (window) {
 
       clearCookie: function (key) {
           if (Raygun.Utilities.isReactNative()) {
-              Raygun.Utilities.indexedDBStorage.clear(key);
               return;
           }
 
