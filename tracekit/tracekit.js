@@ -640,7 +640,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             element,
             reference = /^(.*) is undefined$/.exec(ex.message);
 
-        if (typeof document === 'undefined') {
+        if (Raygun.Utilities.isReactNative()) {
             var reactNativeDevicePathStripRegex = /^(.*@)?.*\/[^\.]+(\.app|CodePush)\/?(.*)/;
 
             for (var i = 0; i < lines.length; i++) {

@@ -1,7 +1,7 @@
 
 var raygunUtilityFactory = function (window) {
   
-  var Raygun = {
+  var rg = {
     Utilities: {
       parseUrl: function(arg, url) {
         function isNumeric(arg) {
@@ -265,7 +265,7 @@ var raygunUtilityFactory = function (window) {
   };
     
   if (!window.Raygun) {
-      window.Raygun = Raygun;
+      window.Raygun = rg;
   }
 };
 

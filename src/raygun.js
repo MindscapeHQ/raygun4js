@@ -323,7 +323,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(this.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
                 _rum.attach();
             };
 
@@ -388,7 +388,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         var dateTime = new Date().toJSON();
 
         try {
-            var key = 'raygunjs+' + this.Options._raygunApiKey + '=' + dateTime + '=' + Raygun.Utilities.getRandomInt();
+            var key = 'raygunjs+' + Raygun.Options._raygunApiKey + '=' + dateTime + '=' + Raygun.Utilities.getRandomInt();
 
             if (typeof localStorage[key] === 'undefined') {
                 localStorage[key] = JSON.stringify({url: url, data: data});
@@ -399,11 +399,11 @@ var raygunFactory = function (window, $, Raygun, undefined) {
     }
 
     function sendSavedErrors() {
-        if (Raygun.Utilities.isReactNative() && localStorage && localStorage.length > 0) {
+        if (Raygun.Utilities.localStorageAvailable()) {
             for (var key in localStorage) {
 
                 // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
-                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + this.Options._raygunApiKey) {
+                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + Raygun.Options._raygunApiKey) {
                     try {
                         var payload = JSON.parse(localStorage[key]);
                         makePostCorsRequest(payload.url, payload.data);
@@ -757,7 +757,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         Raygun.Utilities.log('Sending exception data to Raygun:', data);
-        var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(this.Options._raygunApiKey);
+        var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
         makePostCorsRequest(url, JSON.stringify(data));
     }
 
@@ -767,7 +767,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
         xhr = new window.XMLHttpRequest();
 
-        if ("withCredentials" in xhr || Raygun.isReactNative()) {
+        if ("withCredentials" in xhr || Raygun.Utilities.isReactNative()) {
             // XHR for Chrome/Firefox/Opera/Safari
             // as well as React Native's custom XHR implementation
             xhr.open(method, url, true);
@@ -889,6 +889,8 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             return fBound;
         };
     }
+
+    Raygun = _raygun = window.Raygun;
 
     return Raygun;
 };
