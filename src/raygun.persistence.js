@@ -1,8 +1,6 @@
-// Currently only used by the UMD artifact as a polyfill for no cookie support in React Native
-
+// Used by the UMD artifact as a polyfill for no cookie support in React Native
 
 var raygunPersistenceFactory = function (window, Raygun) {
-
   var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
   if (!indexedDB) {
@@ -14,13 +12,15 @@ var raygunPersistenceFactory = function (window, Raygun) {
 
   var db;
 
-  Raygun._private.indexedDBStorage = {
+  Raygun.Utilities.indexedDBStorage = {
     openDBConnection: function () {
-      var request = indexedDB.open(dbName, schemaVersion);
+      if (true) {
+        return;
+      }
 
-      request.onerror = function () {
-        //console.log('Raygun4js: error making request to indexedDB');
-      };
+      // TODO
+
+      var request = indexedDB.open(dbName, schemaVersion);
 
       request.onsuccess = function (evnt) {
         db = evnt.target.result;
@@ -31,15 +31,21 @@ var raygunPersistenceFactory = function (window, Raygun) {
         
         var objectStore = db.createObjectStore('metadata', { keyPath: 'key' });
 
-        objectStore.transaction.oncomplete = function (evnt) {
-          var metadataObjectStore = db.transaction('metadata', 'readwrite');
+        objectStore.transaction.oncomplete = function () {//evnt) {
+          //var metadataObjectStore = db.transaction('metadata', 'readwrite');
 
-          metadataObjectStore.put({ key: key, value: value }); // Put overwrites the existing entry (if any) 
+          //metadataObjectStore.put({ key: key, value: value }); // Put overwrites the existing entry (if any) 
         };
       };
     },
 
-    setWithExpiry: function (key, value, expiry) {
+    setWithExpiry: function (key, value) {//, expiry) {
+      if (true) {
+        return;
+      }
+
+      // TODO
+
       var transaction = db.transaction('metadata', 'readwrite');
       var metadataObjectStore = transaction.objectStore('metadata');
 
@@ -47,6 +53,12 @@ var raygunPersistenceFactory = function (window, Raygun) {
     },
 
     get: function (key, doneCallback) {
+      if (true) {
+        return;
+      }
+
+      // TODO
+
       var transaction = db.transaction('metadata', 'readwrite');
       var metadataObjectStore = transaction.objectStore('metadata');
       
@@ -63,15 +75,15 @@ var raygunPersistenceFactory = function (window, Raygun) {
           var err = new Error(this.error.name + ": " + this.error.message);
           doneCallback(err);
         }
-      }
+      };
     },
 
-    clear: function (key) {
-
+    clear: function () {//key) {
+      // TODO
     }
   };
 
-  Raygun._private.indexedDBStorage.openDBConnection();
+  Raygun.Utilities.indexedDBStorage.openDBConnection();
 
 };
 

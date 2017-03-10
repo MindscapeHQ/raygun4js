@@ -193,7 +193,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     // so delay
     setTimeout(function () {
       onLoadHandler();
-    }, 1000);
+    }, 1);
   }
 
 })(window, window.__instantiatedRaygun);
