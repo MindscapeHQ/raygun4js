@@ -316,6 +316,28 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
     }
     
+    function setUserComplete(error, userId) {
+        var userIdentifier;
+
+        if (error) {
+            userIdentifier = "Unknown";
+        }
+
+        if (!userId) {
+            userIdentifier = Raygun.Utilities.getUuid();
+
+            Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
+        } else {
+            userIdentifier = userId;
+        }
+
+        Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
+
+        if (_providerState === ProviderStates.LOADING) {
+            bootRaygun(error);
+        }
+    }
+
     // The final initializing logic is provided as a callback due to IndexedDB storing user data for React Native
     // The common case executes it immediately due to that data being provided by the cookie synchronously
     function bootRaygun() {
@@ -341,31 +363,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         retriggerDelayedCommands();
 
         sendSavedErrors();
-    }
-
-
-    function setUserComplete(error, userId) {
-        var userIdentifier;
-
-        // When user ID getting (e.g from IndexedDB) fails, creating a new anon id every load will set
-        // the user count in the dashboard == to error count, so as a failsafe make it report one user
-        if (error) {
-            userIdentifier = "Unknown";
-        }
-
-        if (!userId) {
-            userIdentifier = Raygun.Utilities.getUuid();
-
-            Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
-        } else {
-            userIdentifier = userId;
-        }
-
-        Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
-
-        if (_providerState === ProviderStates.LOADING) {
-            bootRaygun(error);
-        }
     }
 
     // We need to delay handled/unhandled send() and trackEvent() calls until the user data callback has returned

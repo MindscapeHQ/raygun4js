@@ -5,6 +5,7 @@
 
   var snippetOptions = window[window['RaygunObject']].o;
   var hasLoaded = false,
+    globalExecutorInstalled = false,
     errorQueue,
     delayedCommands = [],
     apiKey,
@@ -43,6 +44,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
     if (key) {
       switch (key) {
+        // React Native only
+        case 'boot':
+          onLoadHandler();
+          break;
         // Immediate execution config functions
         case 'noConflict':
           noConflict = value;
@@ -133,6 +138,14 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
+  var installGlobalExecutor = function () {
+    window[window['RaygunObject']] = function () {
+      return executor(arguments);
+    };
+
+    globalExecutorInstalled = true;
+  }
+
   var onLoadHandler = function () {
     parseSnippetOptions();
 
@@ -173,13 +186,14 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
     delayedCommands = [];
 
-    window[window['RaygunObject']] = function () {
-      return executor(arguments);
-    };
+    if (!globalExecutorInstalled) {
+      installGlobalExecutor();
+    }
+
     window[window['RaygunObject']].q = errorQueue;
   };
 
-  if (typeof document !== 'undefined') {
+  if (!Raygun.Utilities.isReactNative()) {
     if (document.readyState === 'complete') {
       onLoadHandler();
     } else if (window.addEventListener) {
@@ -188,7 +202,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
       window.attachEvent('onload', onLoadHandler);
     }
   } else {
-    Raygun.Utilities.log('The V2 API cannot be used from React Native or non-document envs currently. Please use the V1 API');
+    // Special case for React Native: set up the executor immediately,
+    // then a manual rg4js('boot') call will trigger onLoadHandler, as the above events aren't available
+    installGlobalExecutor();
   }
 
 })(window, window.__instantiatedRaygun);
