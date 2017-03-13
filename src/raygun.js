@@ -2,7 +2,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2013 MindscapeHQ
+ * Copyright (c) 2013-2017 Raygun Limited
  * Licensed under the MIT license.
  */
 var raygunFactory = function (window, $, Raygun, undefined) {
@@ -221,6 +221,10 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _rum.setUser(_user);
             }
 
+            if (_providerState === ProviderStates.LOADING) {
+                bootRaygun();
+            }
+
             return Raygun;
         },
 
@@ -332,15 +336,16 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
-
-        if (_providerState === ProviderStates.LOADING) {
-            bootRaygun(error);
-        }
     }
 
-    // The final initializing logic is provided as a callback due to IndexedDB storing user data for React Native
+    // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
     // The common case executes it immediately due to that data being provided by the cookie synchronously
+    // The case when Affected User Tracking is enabled calls this function when the code sets the user data
     function bootRaygun() {
+        if (_providerState === ProviderStates.READY) {
+            return;
+        }
+
         _providerState = ProviderStates.READY;
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {

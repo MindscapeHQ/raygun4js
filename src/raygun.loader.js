@@ -144,7 +144,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     };
 
     globalExecutorInstalled = true;
-  }
+  };
 
   var onLoadHandler = function () {
     parseSnippetOptions();
