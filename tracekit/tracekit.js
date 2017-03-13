@@ -243,9 +243,10 @@ TraceKit.report = (function reportModuleWrapper() {
             }
         }, (stack.incomplete ? 2000 : 0));
 
-        if (typeof document !== 'undefined') {
+        if (!Raygun.Utilities.isReactNative()) {
             throw ex; // re-throw to propagate to the top level (and cause window.onerror)
         }
+        // Else case for this is handled in attach
     }
 
     report.subscribe = subscribe;
@@ -631,8 +632,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return { "tracekitResult": "nostack" };
         }
 
-        // ex.stack = "value@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:12:639\nfile:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:12:767\ncallTimer@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:55:626\ncallTimers@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:55:1010\nvalue@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:2623\nfile:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:858\nd@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:127\nvalue@file:///Users/callum/Library/Developer/CoreSimulator/Devices/37D155DF-7D8B-4C74-9570-B2F8E4AD5DEE/data/Containers/Bundle/Application/4FE01FBD-4794-479E-BC65-F5B47A0C8FA1/Raygun4JSRNSample.app/main.jsbundle:53:830\nvalue@[native code]";
-
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
             gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
@@ -653,7 +652,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     var functionName = parts[1] ? parts[1] : 'anonymous@';
                     var filenameLineNumAndColumnNum = parts[3];
                     lines[i] = functionName + sourcemapPrefix + filenameLineNumAndColumnNum;
-                    //loggerInstance(lines[i]);
                 }
             }
         }

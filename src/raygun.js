@@ -142,10 +142,16 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 window.onerror = null;
             }
 
-            // Attach React Native's handler
+            // Attach React Native's handler in Release mode
             if (Raygun.Utilities.isReactNative()) {
                 if (!window.__DEV__  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
-                    window.ErrorUtils.setGlobalHandler(TraceKit.report);
+                    window.ErrorUtils.setGlobalHandler(function (error, fatal) {
+                        TraceKit.report(error);
+
+                        setTimeout(function () {
+                            Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
+                        }, 3000);
+                    });
                 }
             }
 
@@ -498,13 +504,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         });
     }
 
-    //var rnLogger = require('react-native-logger');
-    //var loggerInstance = rnLogger.default();
-    //window.loggerInstance = loggerInstance;
-
     function processException(stackTrace, options, userTriggered) {
-        //loggerInstance('Started processException');
-
         if (_providerState !== ProviderStates.READY) {
             _processExceptionQueue.push({ stackTrace: stackTrace, options: options, userTriggered: userTriggered });
             return;
@@ -644,6 +644,10 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             if (!Raygun.Utilities.contains(options.tags, 'UnhandledException')) {
                 options.tags.push('UnhandledException');
             }
+        }
+
+        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags), 'React Native') {
+            options.tags.push('React Native');
         }
 
         var screenData = window.screen || {width: Raygun.Utilities.getViewPort().width, height: Raygun.Utilities.getViewPort().height, colorDepth: 8};

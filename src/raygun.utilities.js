@@ -118,7 +118,6 @@ var raygunUtilityFactory = function (window) {
           }
       },
 
-
       isApiKeyConfigured: function () {
           if (Raygun.Options._raygunApiKey && Raygun.Options._raygunApiKey !== '') {
               return true;
@@ -128,8 +127,13 @@ var raygunUtilityFactory = function (window) {
       },
       
       isReactNative: function () {
-        // TODO: Check more state here
-        return typeof document === 'undefined';
+          return typeof document === 'undefined' && typeof window.__DEV__ !== 'undefined';
+      },
+
+      defaultReactNativeGlobalHandler: function (error, fatal) {
+          if (typeof _defaultReactNativeGlobalHandler === 'function') {
+              _defaultReactNativeGlobalHandler(error, fatal);
+          }
       },
 
       localStorageAvailable: function () {
@@ -306,6 +310,11 @@ var raygunUtilityFactory = function (window) {
     
   if (!window.Raygun) {
       window.Raygun = rg;
+  }
+
+  var _defaultReactNativeGlobalHandler;
+  if (Raygun.Utilities.isReactNative() && !window.__DEV__ && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+      _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
 };
 
