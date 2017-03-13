@@ -1,3 +1,6 @@
+* v2.6.0
+  - Initial beta support for React Native in Release (production) mode
+
 * v2.5.3
   - Fixed offline errors failing to send to Raygun when back online.
 
