@@ -227,9 +227,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _rum.setUser(_user);
             }
 
-            if (_providerState === ProviderStates.LOADING) {
-                bootRaygun();
-            }
 
             return Raygun;
         },
@@ -321,8 +318,9 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
     function ensureUser() {
         if (!_user && !_disableAnonymousUserTracking) {
-
             Raygun.Utilities.readCookie(_userKey, setUserComplete);
+        } else {
+            bootRaygun();
         }
     }
     
@@ -342,6 +340,8 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
+        
+        bootRaygun();
     }
 
     // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
