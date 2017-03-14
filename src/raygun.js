@@ -144,7 +144,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
             // Attach React Native's handler in Release mode
             if (Raygun.Utilities.isReactNative()) {
-                if (!window['__DEV__']  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
+                if (window['__DEV__'] !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
                     window.ErrorUtils.setGlobalHandler(function (error, fatal) {
                         TraceKit.report(error);
 
