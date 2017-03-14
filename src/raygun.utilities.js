@@ -127,7 +127,7 @@ var raygunUtilityFactory = function (window) {
       },
       
       isReactNative: function () {
-          return typeof document === 'undefined' && typeof window.__DEV__ !== 'undefined';
+          return typeof document === 'undefined' && '__DEV__' in window;
       },
 
       defaultReactNativeGlobalHandler: function (error, fatal) {
