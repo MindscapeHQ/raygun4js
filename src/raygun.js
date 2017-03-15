@@ -5,6 +5,8 @@
  * Copyright (c) 2013-2017 Raygun Limited
  * Licensed under the MIT license.
  */
+
+/*globals __DEV__ */
 var raygunFactory = function (window, $, Raygun, undefined) {
     // Constants
     var ProviderStates = {
@@ -144,7 +146,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
             // Attach React Native's handler in Release mode
             if (Raygun.Utilities.isReactNative()) {
-                if (window['__DEV__'] !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
+                if (__DEV__ !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
                     window.ErrorUtils.setGlobalHandler(function (error, fatal) {
                         TraceKit.report(error);
 

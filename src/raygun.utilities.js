@@ -1,4 +1,4 @@
-/*globals Raygun */
+/*globals Raygun, __DEV__ */
 
 // js-url - see LICENSE file
 
@@ -127,7 +127,7 @@ var raygunUtilityFactory = function (window) {
       },
       
       isReactNative: function () {
-          return typeof document === 'undefined' && typeof window['__DEV__'] !== 'undefined';
+          return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
       },
 
       defaultReactNativeGlobalHandler: function (error, fatal) {
@@ -313,7 +313,7 @@ var raygunUtilityFactory = function (window) {
   }
 
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && window['__DEV__'] !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
 };
