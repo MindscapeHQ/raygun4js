@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.4 - 2017-03-15
+/*! Raygun4js - v2.6.0-SNAPSHOT.5 - 2017-03-16
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1625,7 +1625,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
                         setTimeout(function () {
                             Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
-                        }, 3000);
+                        }, 500);
                     });
                 }
             }
@@ -2121,7 +2121,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             }
         }
 
-        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags), 'React Native') {
+        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags, 'React Native')) {
             options.tags.push('React Native');
         }
 
@@ -2193,7 +2193,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.0-SNAPSHOT.4'
+                    'Version': '2.6.0-SNAPSHOT.5'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
