@@ -313,7 +313,7 @@ var raygunUtilityFactory = function (window) {
   }
 
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && !window.__DEV__ && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (Raygun.Utilities.isReactNative() && window['__DEV__'] !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
 };
