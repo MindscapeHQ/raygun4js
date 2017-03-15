@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.3 - 2017-03-15
+/*! Raygun4js - v2.6.0-SNAPSHOT.4 - 2017-03-15
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1389,7 +1389,7 @@ var raygunUtilityFactory = function (window) {
       },
       
       isReactNative: function () {
-          return typeof document === 'undefined' && typeof window['__DEV__'] !== 'undefined';
+          return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
       },
 
       defaultReactNativeGlobalHandler: function (error, fatal) {
@@ -1575,13 +1575,14 @@ var raygunUtilityFactory = function (window) {
   }
 
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && window['__DEV__'] !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
 };
 
 
 raygunUtilityFactory(window);
+/*globals __DEV__ */
 var raygunFactory = function (window, $, Raygun, undefined) {
     // Constants
     var ProviderStates = {
@@ -1721,7 +1722,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
             // Attach React Native's handler in Release mode
             if (Raygun.Utilities.isReactNative()) {
-                if (window['__DEV__'] !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
+                if (__DEV__ !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
                     window.ErrorUtils.setGlobalHandler(function (error, fatal) {
                         TraceKit.report(error);
 
@@ -2295,7 +2296,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.0-SNAPSHOT.3'
+                    'Version': '2.6.0-SNAPSHOT.4'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
