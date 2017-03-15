@@ -152,7 +152,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
                         setTimeout(function () {
                             Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
-                        }, 3000);
+                        }, 500);
                     });
                 }
             }
@@ -648,7 +648,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             }
         }
 
-        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags), 'React Native') {
+        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags, 'React Native')) {
             options.tags.push('React Native');
         }
 
