@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.5 - 2017-03-16
+/*! Raygun4js - v2.6.0-SNAPSHOT.5 - 2017-03-21
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1281,6 +1281,36 @@ var raygunUtilityFactory = function (window) {
               return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
            };
       }());
+  }
+
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+  if (!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(searchElement, fromIndex) {
+      var k;
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+      var o = Object(this);
+      var len = o.length >>> 0;
+
+      if (len === 0) {
+        return -1;
+      }
+      var n = fromIndex | 0;
+
+      if (n >= len) {
+        return -1;
+      }
+      k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      while (k < len) {
+        if (k in o && o[k] === searchElement) {
+          return k;
+        }
+        k++;
+      }
+      return -1;
+    };
   }
 
   // Mozilla's bind() shim for IE8
