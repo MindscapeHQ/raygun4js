@@ -84,7 +84,7 @@ npm install raygun4js --save
 
 // In a central module, reference and install the library
 
-import 'rg4js' from 'raygun4js'; // Import the library with this syntax
+import rg4js from 'raygun4js'; // Import the library with this syntax
 var rg4js = require('raygun4js'); // Or this syntax
 
 rg4js('enableCrashReporting', true);
