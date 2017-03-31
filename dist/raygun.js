@@ -1303,7 +1303,6 @@ var raygunUtilityFactory = function (window) {
 
   var rg = {
     Utilities: {
-      
       getUuid: function () {
           function _p8(s) {
               var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -1491,7 +1490,7 @@ var raygunUtilityFactory = function (window) {
         if (typeof document === 'undefined') {
             return '';
         }
-        
+
         var _ls = url || window.location.toString();
 
         if (!arg) { return _ls; }
@@ -1564,7 +1563,7 @@ var raygunUtilityFactory = function (window) {
 
     }
   };
-    
+
   if (!window.Raygun) {
       window.Raygun = rg;
   }
@@ -2433,6 +2432,11 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         if (!xhr) {
             Raygun.Utilities.log('CORS not supported');
             return;
+        }
+
+        // Old versions of RN fail to send errors without this
+        if (Raygun.Utilities.isReactNative()) {
+          xhr.setRequestHeader("Content-type", "application/json;charset=UTF-8");
         }
 
         xhr.send(data);

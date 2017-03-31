@@ -863,6 +863,11 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             return;
         }
 
+        // Old versions of RN fail to send errors without this
+        if (Raygun.Utilities.isReactNative()) {
+          xhr.setRequestHeader("Content-type", "application/json;charset=UTF-8");
+        }
+
         xhr.send(data);
     }
 
