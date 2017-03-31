@@ -23,7 +23,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
   var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
-    
+
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {

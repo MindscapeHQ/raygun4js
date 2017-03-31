@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.5 - 2017-03-21
+/*! Raygun4js - v2.6.0-SNAPSHOT.5 - 2017-03-31
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1269,7 +1269,7 @@ var raygunUtilityFactory = function (window) {
 
               return;
           }
-          
+
           var nameEQ = name + "=";
           var ca = document.cookie.split(';');
           for (var i = 0; i < ca.length; i++) {
@@ -1314,7 +1314,7 @@ var raygunUtilityFactory = function (window) {
           Raygun.Utilities.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
           return false;
       },
-      
+
       isReactNative: function () {
           return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
       },
@@ -1509,6 +1509,7 @@ var raygunUtilityFactory = function (window) {
 
 
 raygunUtilityFactory(window);
+
 /*globals __DEV__ */
 var raygunFactory = function (window, $, Raygun, undefined) {
     // Constants
@@ -1555,7 +1556,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         _trackEventQueue = [],
         $document;
 
-    
     var _publicRaygunFunctions =
     {
         Options: { },
@@ -1622,7 +1622,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     _loadedFrom = options.from;
                 }
             }
-            
+
             ensureUser();
 
             return Raygun;
@@ -1649,13 +1649,22 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
             // Attach React Native's handler in Release mode
             if (Raygun.Utilities.isReactNative()) {
-                if (__DEV__ !== true  && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
+                if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
                     window.ErrorUtils.setGlobalHandler(function (error, fatal) {
-                        TraceKit.report(error);
+                        // Calling the defaultReactNativeGlobalHandler in release mode instantly closes the application
+                        // If an exception is currently being sent it will be lost, this sets our own afterSendCallback
+                        // to notify us when the error is done sending so we can call the default handler
+                        var originalAfterSendCallback = _afterSendCallback;
+                        _afterSendCallback = function () {
+                            if (typeof originalAfterSendCallback === 'function') {
+                              originalAfterSendCallback();
+                            }
 
-                        setTimeout(function () {
                             Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
-                        }, 500);
+                            _afterSendCallback = originalAfterSendCallback;
+                        };
+
+                        TraceKit.report(error);
                     });
                 }
             }
@@ -1828,7 +1837,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             bootRaygun();
         }
     }
-    
+
     function setUserComplete(error, userId) {
         var userIdentifier;
 
@@ -1845,7 +1854,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
-        
+
         bootRaygun();
     }
 
@@ -2145,7 +2154,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             if (!options.tags) {
                 options.tags = [];
             }
-        
+
             if (!Raygun.Utilities.contains(options.tags, 'UnhandledException')) {
                 options.tags.push('UnhandledException');
             }
@@ -2223,7 +2232,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.0-SNAPSHOT.5'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2311,8 +2320,8 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
         Raygun.Utilities.log("Is offline enabled? " + _enableOfflineSave);
 
-        if ('withCredentials' in xhr) {
-
+        // For some reason this check is false in React Native but these handlers still need to be attached
+        if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) {
                     return;
@@ -2341,7 +2350,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
             xhr.onload = function () {
                 Raygun.Utilities.log('posted to Raygun');
-                
+
                 sendSavedErrors();
                 callAfterSend(this);
             };
@@ -2360,7 +2369,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
         xhr.send(data);
     }
-    
+
     Raygun = _raygun = window.Raygun;
 
     return Raygun;
@@ -3032,7 +3041,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
   var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
-    
+
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {

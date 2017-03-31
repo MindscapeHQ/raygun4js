@@ -110,7 +110,7 @@ var raygunUtilityFactory = function (window) {
 
               return;
           }
-          
+
           var nameEQ = name + "=";
           var ca = document.cookie.split(';');
           for (var i = 0; i < ca.length; i++) {
@@ -155,7 +155,7 @@ var raygunUtilityFactory = function (window) {
           Raygun.Utilities.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
           return false;
       },
-      
+
       isReactNative: function () {
           return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
       },
