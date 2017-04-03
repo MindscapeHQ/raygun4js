@@ -410,8 +410,24 @@ var raygunUtilityFactory = function (window) {
 
         return '';
         })(arg, url);
-      }
+      },
+      // Replace existing function on object with new, but call old one afterwards still
+      // Returns function that when called will un-enhance object
+      enhance: function(object, property, newFunction) {
+        var existingFunction = object[property];
 
+        object[property] = function enhanced() {
+          newFunction.apply(this, arguments);
+
+          if (typeof existingFunction === "function") {
+            existingFunction.apply(this, arguments);
+          }
+        };
+
+        return function unhenance() {
+          object[property] = existingFunction;
+        };
+      },
     }
   };
 
