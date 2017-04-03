@@ -19,7 +19,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
   var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
@@ -133,6 +133,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
           }
+          break;
+        case 'recordBreadcrumb':
+          rg.recordBreadcrumb(pair[1], pair[2]);
           break;
       }
     }

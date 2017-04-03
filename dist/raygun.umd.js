@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-03-31
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-03
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1650,6 +1650,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _breadcrumbs = null,
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
         _providerState = ProviderStates.LOADING,
@@ -1920,8 +1921,10 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     _rum.virtualPageLoaded(options.path);
                 }
             }
+        },
+        recordBreadcrumb: function() {
+            _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
         }
-
     };
 
     window.Raygun = window.Raygun.Utilities.merge(window.Raygun, _publicRaygunFunctions);
@@ -1985,6 +1988,10 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     window.attachEvent('onload', startRum);
                 }
             }
+        }
+
+        if (Raygun.Breadcrumbs !== undefined) {
+            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
         }
 
         retriggerDelayedCommands();
@@ -2334,7 +2341,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.0-SNAPSHOT.6'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2352,6 +2359,22 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         };
 
         payload.Details.User = _user;
+
+        if (_breadcrumbs.any()) {
+            payload.Details.Breadcrumbs = [];
+            var crumbs = _breadcrumbs.all();
+
+            for (var j = 0;j < crumbs.length;j++) {
+                var crumb = crumbs[j];
+
+                if (crumb.metadata) {
+                    crumb.CustomData = crumb.metadata;
+                    delete crumb.metadata;
+                }
+
+                payload.Details.Breadcrumbs.push(crumb);
+            }
+        }
 
         if (_filterScope === 'all') {
             payload = filterObject(payload);
@@ -3123,6 +3146,72 @@ var raygunRumFactory = function (window, $, Raygun) {
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 
+var raygunBreadcrumbsFactory = function(window, $, Raygun) {
+    Raygun.Breadcrumbs = function(debugMode) {
+        this.debugMode = debugMode;
+        this.breadcrumbLevel = 'info';
+        this.breadcrumbs = [];
+        this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
+        this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+    };
+
+    Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
+        var crumb = {
+            level: this.DEFAULT_BREADCRUMB_LEVEL,
+            timestamp: new Date().getTime()
+        };
+
+        switch (typeof value) {
+            case "object":
+                    crumb = Raygun.Utilities.merge(crumb, value);
+                break;
+            case "string":
+                crumb = Raygun.Utilities.merge(
+                    Raygun.Utilities.merge(
+                        crumb, {
+                            message: value,
+                        }
+                    ),
+                    metadata
+                );
+                break;
+            default:
+                Raygun.Utilities.log(
+                    "expected first argument to recordBreadcrumb to be a 'string' or 'object', got " + typeof value
+                );
+                return;
+        }
+
+        if (this.BREADCRUMB_LEVELS.indexOf(crumb.level) === -1) {
+            Raygun.Utilities.log(
+                "unknown breadcrumb level " + crumb.level + " setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+            );
+            crumb.level = this.DEFAULT_BREADCRUMB_LEVEL;
+        }
+
+        if (this.shouldRecord(crumb)) {
+            this.breadcrumbs.push(crumb);
+        }
+    };
+
+    Raygun.Breadcrumbs.prototype.shouldRecord = function(crumb) {
+        var crumbLevel = this.BREADCRUMB_LEVELS.indexOf(crumb.level);
+        var activeLevel = this.BREADCRUMB_LEVELS.indexOf(this.breadcrumbLevel);
+
+        return crumbLevel >= activeLevel;
+    };
+
+    Raygun.Breadcrumbs.prototype.any = function() {
+        return this.breadcrumbs.length > 0;
+    };
+
+    Raygun.Breadcrumbs.prototype.all = function() {
+        return this.breadcrumbs;
+    };
+};
+
+raygunBreadcrumbsFactory(window, window.jQuery, window.__instantiatedRaygun);
+
 (function (window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
@@ -3144,7 +3233,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
   var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
@@ -3258,6 +3347,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
           }
+          break;
+        case 'recordBreadcrumb':
+          rg.recordBreadcrumb(pair[1], pair[2]);
           break;
       }
     }
