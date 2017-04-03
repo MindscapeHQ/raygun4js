@@ -5,6 +5,8 @@
  * Copyright (c) 2017 MindscapeHQ
  * Licensed under the MIT license.
  */
+/* globals console */
+
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function(debugMode) {
         this.debugMode = debugMode;
@@ -12,6 +14,10 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.breadcrumbs = [];
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+
+        this.unenhanceConsoleFunctions = [];
+
+        this.enableAutoBreadcrumbsConsole();
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -66,6 +72,34 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
     Raygun.Breadcrumbs.prototype.all = function() {
         return this.breadcrumbs;
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
+        if (typeof window.console === "undefined") {
+            return;
+        }
+
+        var consoleProperties = ['log', 'warn', 'error'];
+
+        var logConsoleCall = function logConsoleCall(severity, args) {
+            this.recordBreadcrumb({
+                type: 'console',
+                level: severity,
+                message: Array.prototype.slice.call(args).join(", ")
+            });
+        }.bind(this);
+
+        this.unenhanceConsoleProperties = consoleProperties.map(function(property) {
+            return Raygun.Utilities.enhance(console, property, function() {
+                var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
+
+                logConsoleCall(severity, arguments);
+            });
+        });
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
+        this.unenhanceConsoleProperties.forEach(function(unenhance) { unenhance(); } );
     };
 };
 

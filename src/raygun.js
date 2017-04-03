@@ -318,6 +318,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         },
         recordBreadcrumb: function() {
             _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
+        },
+        enableAutoBreadcrumbs: function(type) {
+            _breadcrumbs['enableAutoBreadcrumbs' + type]();
+        },
+        disableAutoBreadcrumbs: function(type) {
+            _breadcrumbs['disableAutoBreadcrumbs' + type]();
         }
     };
 

@@ -137,6 +137,12 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'recordBreadcrumb':
           rg.recordBreadcrumb(pair[1], pair[2]);
           break;
+        case 'enableAutoBreadcrumbsConsole':
+          rg.enableAutoBreadcrumbs('Console');
+          break;
+        case 'disableAutoBreadcrumbsConsole':
+          rg.disableAutoBreadcrumbs('Console');
+          break;
       }
     }
   };
