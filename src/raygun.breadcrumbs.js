@@ -17,9 +17,11 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
+        this.disableClicksTracking = function() {};
 
         this.enableAutoBreadcrumbsConsole();
         this.enableAutoBreadcrumbsNavigation();
+        this.enableAutoBreadcrumbsClicks();
 
         // This constructor gets called during the page loaded event, so we can't hook into it
         // Instead, just leave the breadcrumb manually
@@ -197,6 +199,37 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
         this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
         this.disableNavigationFunctions = [];
+    };
+
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking = Raygun.Utilities.addEventHandler(window, 'click', function(e) {
+            var text, selector;
+
+            try {
+                text = Raygun.Utilities.nodeText(e.target);
+                selector = Raygun.Utilities.nodeSelector(e.target);
+            } catch(exception) {
+                text = "[unknown]";
+                selector = "[unknown]";
+
+                Raygun.Utilities.log("Error retrieving node text/selector. Most likely due to a cross domain error");
+            }
+
+            this.recordBreadcrumb({
+                type: 'click-event',
+                message: 'UI Click',
+                level: 'info',
+                metadata: {
+                    text: text,
+                    selector: selector
+                }
+            });
+        }.bind(this), true);
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking();
     };
 };
 

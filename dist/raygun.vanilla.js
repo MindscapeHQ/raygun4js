@@ -1587,20 +1587,48 @@ var raygunUtilityFactory = function (window) {
           object[property] = existingFunction;
         };
       },
-      addEventHandler: function(element, event, handler) {
+      addEventHandler: function(element, event, handler, useCapture) {
+        var capture = useCapture || false;
+
         if (element.addEventListener) {
-          element.addEventListener(event, handler);
+          element.addEventListener(event, handler, capture);
         } else if (element.attachEvent) {
           element.attachEvent('on' + event, handler);
         }
 
         return function() {
           if (element.removeEventListener) {
-            element.removeEventListener(event, handler);
+            element.removeEventListener(event, handler, capture);
           } else if (element.detachEvent) {
             element.detachEvent('on' + event, handler);
           }
         };
+      },
+      nodeText: function(node) {
+        var text = node.textContent || node.innerText || "";
+
+        if (["submit", "button"].indexOf(node.type) !== -1) {
+          text = node.value;
+        }
+
+        text = text.replace(/^\s+|\s+$/g, "");
+
+        return text;
+      },
+      nodeSelector: function(node) {
+        var parts = [node.tagName];
+
+        if (node.id) {
+          parts.push("#" + node.id);
+        }
+
+        if (node.className && node.className.length) {
+          parts.push(
+            "." + node.className.split(" ").join(".")
+          );
+        }
+
+        return parts.join("");
       }
     }
   };
@@ -3171,9 +3199,11 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
+        this.disableClicksTracking = function() {};
 
         this.enableAutoBreadcrumbsConsole();
         this.enableAutoBreadcrumbsNavigation();
+        this.enableAutoBreadcrumbsClicks();
 
         // This constructor gets called during the page loaded event, so we can't hook into it
         // Instead, just leave the breadcrumb manually
@@ -3352,6 +3382,37 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
         this.disableNavigationFunctions = [];
     };
+
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking = Raygun.Utilities.addEventHandler(window, 'click', function(e) {
+            var text, selector;
+
+            try {
+                text = Raygun.Utilities.nodeText(e.target);
+                selector = Raygun.Utilities.nodeSelector(e.target);
+            } catch(exception) {
+                text = "[unknown]";
+                selector = "[unknown]";
+
+                Raygun.Utilities.log("Error retrieving node text/selector. Most likely due to a cross domain error");
+            }
+
+            this.recordBreadcrumb({
+                type: 'click-event',
+                message: 'UI Click',
+                level: 'info',
+                metadata: {
+                    text: text,
+                    selector: selector
+                }
+            });
+        }.bind(this), true);
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking();
+    };
 };
 
 raygunBreadcrumbsFactory(window, window.jQuery, window.__instantiatedRaygun);
@@ -3506,6 +3567,12 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'disableAutoBreadcrumbsNavigation':
           rg.disableAutoBreadcrumbs('Navigation');
+          break;
+        case 'enableAutoBreadcrumbsClicks':
+          rg.enableAutoBreadcrumbs('Clicks');
+          break;
+        case 'disableAutoBreadcrumbsClicks':
+          rg.disableAutoBreadcrumbs('Clicks');
           break;
       }
     }

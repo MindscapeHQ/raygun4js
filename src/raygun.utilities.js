@@ -428,20 +428,48 @@ var raygunUtilityFactory = function (window) {
           object[property] = existingFunction;
         };
       },
-      addEventHandler: function(element, event, handler) {
+      addEventHandler: function(element, event, handler, useCapture) {
+        var capture = useCapture || false;
+
         if (element.addEventListener) {
-          element.addEventListener(event, handler);
+          element.addEventListener(event, handler, capture);
         } else if (element.attachEvent) {
           element.attachEvent('on' + event, handler);
         }
 
         return function() {
           if (element.removeEventListener) {
-            element.removeEventListener(event, handler);
+            element.removeEventListener(event, handler, capture);
           } else if (element.detachEvent) {
             element.detachEvent('on' + event, handler);
           }
         };
+      },
+      nodeText: function(node) {
+        var text = node.textContent || node.innerText || "";
+
+        if (["submit", "button"].indexOf(node.type) !== -1) {
+          text = node.value;
+        }
+
+        text = text.replace(/^\s+|\s+$/g, "");
+
+        return text;
+      },
+      nodeSelector: function(node) {
+        var parts = [node.tagName];
+
+        if (node.id) {
+          parts.push("#" + node.id);
+        }
+
+        if (node.className && node.className.length) {
+          parts.push(
+            "." + node.className.split(" ").join(".")
+          );
+        }
+
+        return parts.join("");
       }
     }
   };
