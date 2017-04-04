@@ -15,10 +15,12 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
 
+        this.disableXHRFunctions = [];
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
         this.disableClicksTracking = function() {};
 
+        this.enableAutoBreadcrumbsXHR();
         this.enableAutoBreadcrumbsConsole();
         this.enableAutoBreadcrumbsNavigation();
         this.enableAutoBreadcrumbsClicks();
@@ -26,7 +28,6 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         // This constructor gets called during the page loaded event, so we can't hook into it
         // Instead, just leave the breadcrumb manually
         this.recordBreadcrumb({message: 'Page loaded', type: 'navigation'});
-        console.log('wadasda');
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -230,6 +231,49 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
         this.disableClicksTracking();
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
+        var self = this;
+
+        Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
+            self.recordBreadcrumb({
+                type: 'request',
+                message: 'Opening request to ' + arguments[1],
+                level: 'info',
+                metadata: {
+                    method: arguments[0]
+                }
+            });
+
+            this.addEventListener('load', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Finished request to ' + this.responseURL,
+                    level: 'info',
+                    metadata: {
+                        status: this.status
+                    }
+                });
+            });
+            this.addEventListener('error', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Failed request to ' + this.responseURL,
+                    level: 'info',
+                    metadata: {
+                        status: this.status
+                    }
+                });
+            });
+            this.addEventListener('abort', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Request to ' + this.responseURL + 'aborted',
+                    level: 'info',
+                });
+            });
+        });
     };
 };
 
