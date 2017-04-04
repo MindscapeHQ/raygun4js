@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-04
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1732,6 +1732,15 @@ var raygunUtilityFactory = function (window) {
         }
 
         return parts.join("");
+      },
+      truncate: function(text, length) {
+        var omission = "(...)";
+
+        if (text.length > length) {
+          return text.slice(0, length - omission.length) + omission;
+        } else {
+           return text;
+        }
       }
     }
   };
@@ -3293,22 +3302,22 @@ raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 /* globals console */
 
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
-    Raygun.Breadcrumbs = function(debugMode) {
-        this.debugMode = debugMode;
+    Raygun.Breadcrumbs = function() {
         this.breadcrumbLevel = 'info';
         this.breadcrumbs = [];
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+        this.MAX_BREADCRUMBS = 32;
 
-        this.disableXHRFunctions = [];
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
+        this.disableXHRLogging = function() {};
         this.disableClicksTracking = function() {};
 
         this.enableAutoBreadcrumbsXHR();
+        this.enableAutoBreadcrumbsClicks();
         this.enableAutoBreadcrumbsConsole();
         this.enableAutoBreadcrumbsNavigation();
-        this.enableAutoBreadcrumbsClicks();
 
         // This constructor gets called during the page loaded event, so we can't hook into it
         // Instead, just leave the breadcrumb manually
@@ -3351,6 +3360,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
         if (this.shouldRecord(crumb)) {
             this.breadcrumbs.push(crumb);
+            this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
         }
     };
 
@@ -3374,8 +3384,6 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             return;
         }
 
-        var consoleProperties = ['log', 'warn', 'error'];
-
         var logConsoleCall = function logConsoleCall(severity, args) {
             this.recordBreadcrumb({
                 type: 'console',
@@ -3384,6 +3392,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             });
         }.bind(this);
 
+        var consoleProperties = ['log', 'warn', 'error'];
         this.disableConsoleFunctions = consoleProperties.map(function(property) {
             return Raygun.Utilities.enhance(console, property, function() {
                 var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
@@ -3493,7 +3502,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             var text, selector;
 
             try {
-                text = Raygun.Utilities.nodeText(e.target);
+                text = Raygun.Utilities.truncate(Raygun.Utilities.nodeText(e.target), 150);
                 selector = Raygun.Utilities.nodeSelector(e.target);
             } catch(exception) {
                 text = "[unknown]";
@@ -3521,44 +3530,60 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
         var self = this;
 
-        Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
+        this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
+            var initTime = new Date().getTime();
+            var url = arguments[1];
+            var method = arguments[0];
+
             self.recordBreadcrumb({
                 type: 'request',
-                message: 'Opening request to ' + arguments[1],
+                message: 'Opening request to ' + url,
                 level: 'info',
                 metadata: {
-                    method: arguments[0]
+                    method: method,
                 }
             });
 
             this.addEventListener('load', function() {
                 self.recordBreadcrumb({
                     type: 'request',
-                    message: 'Finished request to ' + this.responseURL,
+                    message: 'Finished request to ' + url,
                     level: 'info',
                     metadata: {
-                        status: this.status
+                        status: this.status,
+                        responseURL: this.responseURL,
+                        responseText: Raygun.Utilities.truncate(this.responseText, 150),
+                        duration: new Date().getTime() - initTime + "ms"
                     }
                 });
             });
             this.addEventListener('error', function() {
                 self.recordBreadcrumb({
                     type: 'request',
-                    message: 'Failed request to ' + this.responseURL,
+                    message: 'Failed request to ' + url,
                     level: 'info',
                     metadata: {
-                        status: this.status
+                        status: this.status,
+                        responseURL: this.responseURL,
+                        duration: new Date().getTime() - initTime + "ms"
                     }
                 });
             });
             this.addEventListener('abort', function() {
                 self.recordBreadcrumb({
                     type: 'request',
-                    message: 'Request to ' + this.responseURL + 'aborted',
+                    message: 'Request to ' + url + 'aborted',
                     level: 'info',
+                    metadata: {
+                        duration: new Date().getTime() - initTime + "ms"
+                    }
                 });
             });
         });
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
+        this.disableXHRLogging();
     };
 };
 
@@ -3720,6 +3745,12 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'disableAutoBreadcrumbsClicks':
           rg.disableAutoBreadcrumbs('Clicks');
+          break;
+        case 'enableAutoBreadcrumbsXHR':
+          rg.enableAutoBreadcrumbs('XHR');
+          break;
+        case 'disableAutoBreadcrumbsXHR':
+          rg.disableAutoBreadcrumbs('XHR');
           break;
       }
     }

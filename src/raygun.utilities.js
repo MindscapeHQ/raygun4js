@@ -470,6 +470,15 @@ var raygunUtilityFactory = function (window) {
         }
 
         return parts.join("");
+      },
+      truncate: function(text, length) {
+        var omission = "(...)";
+
+        if (text.length > length) {
+          return text.slice(0, length - omission.length) + omission;
+        } else {
+           return text;
+        }
       }
     }
   };
