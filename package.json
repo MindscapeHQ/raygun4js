@@ -36,6 +36,7 @@
     "wdio-phantomjs-service": "^0.2.2",
     "wdio-selenium-standalone-service": "0.0.7",
     "wdio-static-server-service": "^1.0.1",
+    "wdio-testingbot-service": "^0.1.7",
     "webdriverio": "^4.5.0"
   },
   "dependencies": {},

@@ -1,13 +1,15 @@
 sudo: false
-
 language: node_js
 node_js:
-  - "6.1"
-
+  - '6'
 cache:
   directories:
-    - node_modules
-
+  - node_modules
 before_script:
+  - cp wdio.conf.travis.js wdio.conf.js
   - npm install -g grunt
 script: grunt
+env:
+  global:
+  - secure: AMkB4zN/djLAvcIeHb2BS+1E64A0+88obfeFAJ+kiiG23vJ5QMjKv+MdgOqvi2Y5swVhAatXQvUv0oUFGy8z/qfWtfrhzM4sNAC7NHlWEB5rpVpp9WK7DGX2z0oJ9+qsiCjy73yoyCam+VW4yJG3M1cnRDLies5/q0PRLujXxSM=
+  - secure: LYjkDdVOZtuIYKxkrjidiTuRtmL9hfF0T86nE82kgIVLt1A/in9PKt9yDCJCkZzhJkgVsK721z5TKx8pG8aTr8UP0I5DLraSnmyKqDkVb55IrtiAAoPJXHbLy761iKjEE6xI0IX1cnqlpMuy1Qi/4l7Piwnb31NCm5JGUT7sjXI=
