@@ -120,6 +120,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 }
             }
 
+            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
             ensureUser();
 
             return Raygun;
@@ -391,7 +392,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         if (Raygun.Breadcrumbs !== undefined) {
-            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
+            // _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
         }
 
         retriggerDelayedCommands();

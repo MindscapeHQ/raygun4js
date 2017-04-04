@@ -143,6 +143,12 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'disableAutoBreadcrumbsConsole':
           rg.disableAutoBreadcrumbs('Console');
           break;
+        case 'enableAutoBreadcrumbsNavigation':
+          rg.enableAutoBreadcrumbs('Navigation');
+          break;
+        case 'disableAutoBreadcrumbsNavigation':
+          rg.disableAutoBreadcrumbs('Navigation');
+          break;
       }
     }
   };

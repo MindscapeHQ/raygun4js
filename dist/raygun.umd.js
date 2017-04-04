@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-03
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-04
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1313,6 +1313,84 @@ var raygunUtilityFactory = function (window) {
     };
   }
 
+  // Production steps of ECMA-262, Edition 5, 15.4.4.19
+  // Reference: http://es5.github.io/#x15.4.4.19
+  if (!Array.prototype.map) {
+
+    Array.prototype.map = function(callback/*, thisArg*/) {
+
+      var T, A, k;
+
+      if (this == null) {
+        throw new TypeError('this is null or not defined');
+      }
+
+      var O = Object(this);
+      var len = O.length >>> 0;
+
+      if (typeof callback !== 'function') {
+        throw new TypeError(callback + ' is not a function');
+      }
+
+      if (arguments.length > 1) {
+        T = arguments[1];
+      }
+
+      A = new Array(len);
+      k = 0;
+
+      while (k < len) {
+        var kValue, mappedValue;
+
+        if (k in O) {
+          kValue = O[k];
+
+          mappedValue = callback.call(T, kValue, k, O);
+          A[k] = mappedValue;
+        }
+        k++;
+      }
+
+      return A;
+    };
+  }
+
+  // Production steps of ECMA-262, Edition 5, 15.4.4.18
+  // Reference: http://es5.github.io/#x15.4.4.18
+  if (!Array.prototype.forEach) {
+
+    Array.prototype.forEach = function(callback/*, thisArg*/) {
+      var T, k;
+
+      if (this == null) {
+        throw new TypeError('this is null or not defined');
+      }
+
+      var O = Object(this);
+      var len = O.length >>> 0;
+
+      if (typeof callback !== 'function') {
+        throw new TypeError(callback + ' is not a function');
+      }
+
+      if (arguments.length > 1) {
+        T = arguments[1];
+      }
+
+      k = 0;
+      while (k < len) {
+        var kValue;
+
+        if (k in O) {
+          kValue = O[k];
+
+          callback.call(T, kValue, k, O);
+        }
+        k++;
+      }
+    };
+  }
+
   // Mozilla's bind() shim for IE8
   if (!Function.prototype.bind) {
       Function.prototype.bind = function (oThis) {
@@ -1594,8 +1672,39 @@ var raygunUtilityFactory = function (window) {
 
         return '';
         })(arg, url);
-      }
+      },
+      // Replace existing function on object with new, but call old one afterwards still
+      // Returns function that when called will un-enhance object
+      enhance: function(object, property, newFunction) {
+        var existingFunction = object[property];
 
+        object[property] = function enhanced() {
+          newFunction.apply(this, arguments);
+
+          if (typeof existingFunction === "function") {
+            existingFunction.apply(this, arguments);
+          }
+        };
+
+        return function unhenance() {
+          object[property] = existingFunction;
+        };
+      },
+      addEventHandler: function(element, event, handler) {
+        if (element.addEventListener) {
+          element.addEventListener(event, handler);
+        } else if (element.attachEvent) {
+          element.attachEvent('on' + event, handler);
+        }
+
+        return function() {
+          if (element.removeEventListener) {
+            element.removeEventListener(event, handler);
+          } else if (element.detachEvent) {
+            element.detachEvent('on' + event, handler);
+          }
+        };
+      }
     }
   };
 
@@ -1726,6 +1835,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 }
             }
 
+            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
             ensureUser();
 
             return Raygun;
@@ -1924,6 +2034,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         },
         recordBreadcrumb: function() {
             _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
+        },
+        enableAutoBreadcrumbs: function(type) {
+            _breadcrumbs['enableAutoBreadcrumbs' + type]();
+        },
+        disableAutoBreadcrumbs: function(type) {
+            _breadcrumbs['disableAutoBreadcrumbs' + type]();
         }
     };
 
@@ -1991,7 +2107,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
 
         if (Raygun.Breadcrumbs !== undefined) {
-            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
+            // _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
         }
 
         retriggerDelayedCommands();
@@ -3146,6 +3262,8 @@ var raygunRumFactory = function (window, $, Raygun) {
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 
+/* globals console */
+
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function(debugMode) {
         this.debugMode = debugMode;
@@ -3153,6 +3271,17 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.breadcrumbs = [];
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+
+        this.disableConsoleFunctions = [];
+        this.disableNavigationFunctions = [];
+
+        this.enableAutoBreadcrumbsConsole();
+        this.enableAutoBreadcrumbsNavigation();
+
+        // This constructor gets called during the page loaded event, so we can't hook into it
+        // Instead, just leave the breadcrumb manually
+        this.recordBreadcrumb({message: 'Page loaded', type: 'navigation'});
+        console.log('wadasda');
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -3207,6 +3336,124 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
     Raygun.Breadcrumbs.prototype.all = function() {
         return this.breadcrumbs;
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
+        if (typeof window.console === "undefined") {
+            return;
+        }
+
+        var consoleProperties = ['log', 'warn', 'error'];
+
+        var logConsoleCall = function logConsoleCall(severity, args) {
+            this.recordBreadcrumb({
+                type: 'console',
+                level: severity,
+                message: Array.prototype.slice.call(args).join(", ")
+            });
+        }.bind(this);
+
+        this.disableConsoleFunctions = consoleProperties.map(function(property) {
+            return Raygun.Utilities.enhance(console, property, function() {
+                var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
+
+                logConsoleCall(severity, arguments);
+            });
+        });
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
+        this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
+        if (!window.addEventListener || !window.history || !window.history.pushState) {
+            return;
+        }
+
+        var buildStateChange = function(name, state, title, url) {
+            var currentPath = location.pathname + location.search + location.hash;
+            var prevState = null;
+
+            if (window.history.state) {
+                prevState = history.state;
+            }
+
+            return {
+                message: 'History ' + name,
+                type: 'navigation',
+                level: 'info',
+                metadata: {
+                    from: currentPath,
+                    to: url || currentPath,
+                    prevState: prevState || 'unsupported',
+                    nextState: state
+                }
+            };
+        }.bind(this);
+
+        var parseHash = function(url) {
+            return url.split("#")[1] || "";
+        };
+
+        var historyFunctionsToEnhance = ["pushState", "replaceState"];
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            historyFunctionsToEnhance.map(function(stateChange) {
+                return Raygun.Utilities.enhance(history, stateChange, function(state, title, url) {
+                    this.recordBreadcrumb(buildStateChange(stateChange, state, title, url));
+                }.bind(this));
+            }.bind(this))
+        );
+
+        var buildHashChange = function(e) {
+            var oldURL = e.oldURL;
+            var newURL = e.newURL;
+            var metadata;
+
+            if (oldURL && newURL) {
+                metadata = {
+                    from: parseHash(oldURL),
+                    to: parseHash(newURL)
+                };
+            } else {
+                metadata = {
+                    to: location.hash
+                };
+            }
+
+            return {
+                type: 'navigation',
+                message: 'Hash change',
+                metadata: metadata
+            };
+        };
+
+        var eventsWithHandlers = [
+            {event: 'hashchange', handler: buildHashChange},
+            {event: 'popstate', handler: function() {
+                return { type: 'navigation', message: 'Navigated back' };
+            }},
+            {event: 'pagehide', handler: function() {
+                return { type: 'navigation', message: 'Page hidden' };
+            }},
+            {event: 'pageshow', handler: function() {
+                return { type: 'navigation', message: 'Page shown' };
+            }},
+            {event: 'DOMContentLoaded', handler: function() {
+                return { type: 'navigation', message: 'DOMContentLoaded' };
+            }},
+        ];
+
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            eventsWithHandlers.map(function(mapping) {
+                return Raygun.Utilities.addEventHandler(window, mapping.event, mapping.handler);
+            }.bind(this))
+        );
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
+        this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
+        this.disableNavigationFunctions = [];
     };
 };
 
@@ -3350,6 +3597,18 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'recordBreadcrumb':
           rg.recordBreadcrumb(pair[1], pair[2]);
+          break;
+        case 'enableAutoBreadcrumbsConsole':
+          rg.enableAutoBreadcrumbs('Console');
+          break;
+        case 'disableAutoBreadcrumbsConsole':
+          rg.disableAutoBreadcrumbs('Console');
+          break;
+        case 'enableAutoBreadcrumbsNavigation':
+          rg.enableAutoBreadcrumbs('Navigation');
+          break;
+        case 'disableAutoBreadcrumbsNavigation':
+          rg.disableAutoBreadcrumbs('Navigation');
           break;
       }
     }

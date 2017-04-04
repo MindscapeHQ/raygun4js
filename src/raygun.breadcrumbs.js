@@ -15,9 +15,16 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
 
-        this.unenhanceConsoleFunctions = [];
+        this.disableConsoleFunctions = [];
+        this.disableNavigationFunctions = [];
 
         this.enableAutoBreadcrumbsConsole();
+        this.enableAutoBreadcrumbsNavigation();
+
+        // This constructor gets called during the page loaded event, so we can't hook into it
+        // Instead, just leave the breadcrumb manually
+        this.recordBreadcrumb({message: 'Page loaded', type: 'navigation'});
+        console.log('wadasda');
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -89,7 +96,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             });
         }.bind(this);
 
-        this.unenhanceConsoleProperties = consoleProperties.map(function(property) {
+        this.disableConsoleFunctions = consoleProperties.map(function(property) {
             return Raygun.Utilities.enhance(console, property, function() {
                 var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
 
@@ -99,7 +106,97 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
-        this.unenhanceConsoleProperties.forEach(function(unenhance) { unenhance(); } );
+        this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
+        if (!window.addEventListener || !window.history || !window.history.pushState) {
+            return;
+        }
+
+        var buildStateChange = function(name, state, title, url) {
+            var currentPath = location.pathname + location.search + location.hash;
+            var prevState = null;
+
+            if (window.history.state) {
+                prevState = history.state;
+            }
+
+            return {
+                message: 'History ' + name,
+                type: 'navigation',
+                level: 'info',
+                metadata: {
+                    from: currentPath,
+                    to: url || currentPath,
+                    prevState: prevState || 'unsupported',
+                    nextState: state
+                }
+            };
+        }.bind(this);
+
+        var parseHash = function(url) {
+            return url.split("#")[1] || "";
+        };
+
+        var historyFunctionsToEnhance = ["pushState", "replaceState"];
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            historyFunctionsToEnhance.map(function(stateChange) {
+                return Raygun.Utilities.enhance(history, stateChange, function(state, title, url) {
+                    this.recordBreadcrumb(buildStateChange(stateChange, state, title, url));
+                }.bind(this));
+            }.bind(this))
+        );
+
+        var buildHashChange = function(e) {
+            var oldURL = e.oldURL;
+            var newURL = e.newURL;
+            var metadata;
+
+            if (oldURL && newURL) {
+                metadata = {
+                    from: parseHash(oldURL),
+                    to: parseHash(newURL)
+                };
+            } else {
+                metadata = {
+                    to: location.hash
+                };
+            }
+
+            return {
+                type: 'navigation',
+                message: 'Hash change',
+                metadata: metadata
+            };
+        };
+
+        var eventsWithHandlers = [
+            {event: 'hashchange', handler: buildHashChange},
+            {event: 'popstate', handler: function() {
+                return { type: 'navigation', message: 'Navigated back' };
+            }},
+            {event: 'pagehide', handler: function() {
+                return { type: 'navigation', message: 'Page hidden' };
+            }},
+            {event: 'pageshow', handler: function() {
+                return { type: 'navigation', message: 'Page shown' };
+            }},
+            {event: 'DOMContentLoaded', handler: function() {
+                return { type: 'navigation', message: 'DOMContentLoaded' };
+            }},
+        ];
+
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            eventsWithHandlers.map(function(mapping) {
+                return Raygun.Utilities.addEventHandler(window, mapping.event, mapping.handler);
+            }.bind(this))
+        );
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
+        this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
+        this.disableNavigationFunctions = [];
     };
 };
 
