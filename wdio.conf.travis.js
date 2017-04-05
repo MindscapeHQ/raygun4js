@@ -15,10 +15,11 @@ exports.config = {
     specs: [
         './tests/specs/**/*.js'
     ],
+    maxInstances: 2,
     capabilities: [{
-        browserName: 'firefox',
-        platform: 'WIN8',
-        version: 'latest'
+        browserName: 'internet explorer',
+        platform: 'WIN7',
+        version: '8'
     }],
     //
     // ===================
@@ -91,6 +92,7 @@ exports.config = {
     services: ['testingbot', 'static-server'],
     user: process.env.TB_KEY,
     key: process.env.TB_SECRET,
+    tbTunnel: true,
 
     //
     // Framework you want to run your specs with.
