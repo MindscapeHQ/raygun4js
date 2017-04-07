@@ -12,10 +12,10 @@ describe("Basic Raygun4JS V1 API tests", function() {
 
   it('has global Raygun object present', function () {
     var result = browser.execute(function () {
-      return typeof Raygun === 'object';
+      return typeof Raygun;
     });
 
-    expect(result.value).toBe(true);
+    expect(result.value).toBe('object');
   });
 
   it('has CR sending function', function () {

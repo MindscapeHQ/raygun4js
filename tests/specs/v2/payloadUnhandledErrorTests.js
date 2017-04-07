@@ -1,5 +1,6 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
+var common = require('../common');
 
 var _entriesEndpoint = 'https://api.raygun.io/entries';
 
@@ -32,6 +33,7 @@ describe("Payload functional validation tests for v2 automatic unhandled error s
 
     var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
+;
     });
 
     expect(didPerformRequest).toBe(false);

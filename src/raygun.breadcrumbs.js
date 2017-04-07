@@ -44,7 +44,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 crumb = Raygun.Utilities.merge(
                     Raygun.Utilities.merge(
                         crumb, {
-                            message: value,
+                            message: value
                         }
                     ),
                     metadata
@@ -246,7 +246,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 message: 'Opening request to ' + url,
                 level: 'info',
                 metadata: {
-                    method: method,
+                    method: method
                 }
             });
 

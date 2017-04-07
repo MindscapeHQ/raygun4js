@@ -1,5 +1,4 @@
 exports.config = {
-    
     //
     // ==================
     // Specify Test Files
@@ -15,12 +14,78 @@ exports.config = {
     specs: [
         './tests/specs/**/*.js'
     ],
-    maxInstances: 2,
-    capabilities: [{
+    // Patterns to exclude.
+    exclude: [
+        // 'path/to/excluded/files'
+    ],
+    //
+    // ============
+    // Capabilities
+    // ============
+    // Define your capabilities here. WebdriverIO can run multiple capabilities at the same
+    // time. Depending on the number of capabilities, WebdriverIO launches several test
+    // sessions. Within your capabilities you can overwrite the spec and exclude options in
+    // order to group specific specs to a specific capability.
+    //
+    // First, you can define how many instances should be started at the same time. Let's
+    // say you have 3 different capabilities (Chrome, Firefox, and Safari) and you have
+    // set maxInstances to 1; wdio will spawn 3 processes. Therefore, if you have 10 spec
+    // files and you set maxInstances to 10, all spec files will get tested at the same time
+    // and 30 processes will get spawned. The property handles how many capabilities
+    // from the same test should run tests.
+    //
+    maxInstances: 8,
+    capabilities: [
+    {
         browserName: 'internet explorer',
         platform: 'WIN7',
-        version: '8'
-    }],
+        version: '9',
+        maxInstances: 1
+    },
+    {
+        browserName: 'internet explorer',
+        platform: 'WIN8',
+        version: '10',
+        maxInstances: 1
+    },
+    {
+        browserName: 'internet explorer',
+        platform: 'WIN10',
+        version: '11',
+        maxInstances: 1
+    },
+    {
+        browserName: 'microsoftedge',
+        platform: 'WIN10',
+        version: 'latest',
+        maxInstances: 1
+    },
+    {
+        browserName: 'chrome',
+        platform: 'WIN10',
+        version: 'latest',
+        maxInstances: 1
+    },
+    {
+        browserName: 'firefox',
+        platform: 'WIN10',
+        version: 'latest',
+        maxInstances: 1
+    },
+    {
+        browserName: 'safari',
+        platform: 'macOS 10.12',
+        version: '10.0',
+        maxInstances: 1
+    },
+    {
+        browserName: 'safari',
+        platform: 'OS X 10.11',
+        version: '9.0',
+        maxInstances: 1
+    }
+    ],
+
     //
     // ===================
     // Test Configurations
@@ -51,7 +116,7 @@ exports.config = {
 
     host: 'localhost',
 
-    port: 4444,
+    port: 4445,
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -89,10 +154,9 @@ exports.config = {
     plugins: {
     },
 
-    services: ['testingbot', 'static-server'],
-    user: process.env.TB_KEY,
-    key: process.env.TB_SECRET,
-    tbTunnel: true,
+    services: ['sauce', 'static-server'],
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
 
     //
     // Framework you want to run your specs with.
@@ -142,8 +206,15 @@ exports.config = {
     // resolved to continue.
     //
     // Gets executed once before all workers get launched.
-    // onPrepare: function (config, capabilities) {
-    // },
+    onPrepare: function (config, capabilities) {
+        if (process.env.TRAVIS) {
+            for (var i = 0;i < capabilities.length; i++) {
+                capabilities[i]['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
+                capabilities[i].build = process.env.TRAVIS_BUILD_NUMBER;
+            }
+            console.log(capabilities);
+        }
+    },
     //
     // Gets executed just before initialising the webdriver session and test framework. It allows you
     // to manipulate configurations depending on the capability or spec.

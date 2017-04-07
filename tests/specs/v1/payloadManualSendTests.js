@@ -1,5 +1,6 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
+var common = require('../common');
 
 var _entriesEndpoint = 'https://api.raygun.io/entries';
 
@@ -48,7 +49,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.Message === 'Manual send';
+      return payload.Details.Error.Message === 'Manual send' || payload.Details.Error.Message === 'Script error';
     });
 
     expect(passes).toBe(true);
@@ -67,7 +68,10 @@ describe("Payload functional validation tests for V1 manual send", function() {
       return payload.Details.Error.ClassName === 'Error';
     });
 
-    expect(passes).toBe(true);
+    if (!common.isOldIE())
+      expect(passes).toBe(true);
+    else
+      expect(passes).toBe(false);
   });
 
   it("has the filename in the stacktrace payload set", function () {
@@ -82,10 +86,14 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.StackTrace[0].FileName === pageUrl;
+      var stackTrace = payload.Details.Error.StackTrace[0];
+      return stackTrace && stackTrace.FileName === pageUrl;
     });
 
-    expect(passes).toBe(true);
+    if (!common.isOldIE())
+      expect(passes).toBe(true);
+    else
+      expect(passes).toBe(false);
   });
 
   it("has tags in the payload when tags are passed in", function () {

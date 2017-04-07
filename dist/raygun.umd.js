@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-05
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -745,7 +745,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
             'useragent': navigator ? navigator.userAgent : '',
-            'stackstring': ex && ex.stack ? ex.stack.toString() : '',
+            'stackstring': ex && ex.stack ? ex.stack.toString() : ''
         };
 
         return res;
@@ -3334,7 +3334,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 crumb = Raygun.Utilities.merge(
                     Raygun.Utilities.merge(
                         crumb, {
-                            message: value,
+                            message: value
                         }
                     ),
                     metadata
@@ -3536,7 +3536,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 message: 'Opening request to ' + url,
                 level: 'info',
                 metadata: {
-                    method: method,
+                    method: method
                 }
             });
 

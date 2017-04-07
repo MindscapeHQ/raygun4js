@@ -34,6 +34,7 @@
     "wdio-dot-reporter": "0.0.6",
     "wdio-jasmine-framework": "^0.2.19",
     "wdio-phantomjs-service": "^0.2.2",
+    "wdio-sauce-service": "^0.3.1",
     "wdio-selenium-standalone-service": "0.0.7",
     "wdio-static-server-service": "^1.0.1",
     "wdio-testingbot-service": "^0.1.7",

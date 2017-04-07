@@ -712,7 +712,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
             'useragent': navigator ? navigator.userAgent : '',
-            'stackstring': ex && ex.stack ? ex.stack.toString() : '',
+            'stackstring': ex && ex.stack ? ex.stack.toString() : ''
         };
 
         return res;

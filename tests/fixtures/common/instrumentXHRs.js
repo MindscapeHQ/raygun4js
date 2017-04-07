@@ -27,4 +27,33 @@
 
     origSend.apply(this, arguments);
   }
+
+  if (XDomainRequest) {
+    var origXOpen = XDomainRequest.prototype.open;
+    var origXSend = XDomainRequest.prototype.send;
+
+    XDomainRequest.prototype.open = function() {
+
+      window.__inFlightXHRs.push({
+        xhr: this,
+        orig: origXOpen,
+        method: arguments[0],
+        // XDomainRequest doesn't support https so it gets trimmed off
+        // Add it back in to be consistent with other tests
+        url: 'https:' + arguments[1]
+      });
+
+      this.onload =  function() {
+        window.__completedXHRs.push(this);
+      };
+
+      origXOpen.apply(this, arguments);
+    };
+
+    XDomainRequest.prototype.send = function() {
+      window.__requestPayloads.push(JSON.parse(arguments[0]));
+
+      origXSend.apply(this, arguments);
+    }
+  }
 })()

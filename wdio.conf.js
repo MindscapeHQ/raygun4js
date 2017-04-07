@@ -35,20 +35,67 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 5,
-    //
-    // If you have trouble getting all important capabilities together, check out the
-    // Sauce Labs platform configurator - a great tool to configure your capabilities:
-    // https://docs.saucelabs.com/reference/platforms-configurator
-    //
-    capabilities: [{
-        // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-        // grid with only 5 firefox instances available you can make sure that not more than
-        // 5 instances get started at a time.
-        maxInstances: 5,
-        //
-        browserName: 'phantomjs'
-    }],
+    maxInstances: 8,
+    // capabilities: [{
+    //     browserName: 'opera',
+    //     maxInstances: 4
+    // }],
+    capabilities: [
+    {
+        browserName: 'internet explorer',
+        platform: 'WIN7',
+        version: '8',
+        maxInstances: 8
+    },
+    // {
+    //     browserName: 'internet explorer',
+    //     platform: 'WIN8',
+    //     version: '10',
+    //     maxInstances: 1
+    // },
+    // {
+    //     browserName: 'internet explorer',
+    //     platform: 'WIN10',
+    //     version: '11',
+    //     maxInstances: 1
+    // },
+    // {
+    //     browserName: 'microsoftedge',
+    //     platform: 'WIN10',
+    //     version: 'latest',
+    //     maxInstances: 1
+    // },
+    // // {
+    // //     browserName: 'opera',
+    // //     platform: 'WIN7',
+    // //     version: 'latest'
+    // // },
+    // {
+    //     browserName: 'chrome',
+    //     platform: 'WIN10',
+    //     version: 'latest',
+    //     maxInstances: 8
+    // },
+    // {
+    //     browserName: 'firefox',
+    //     platform: 'WIN10',
+    //     version: 'latest',
+    //     maxInstances: 1
+    // },
+    // {
+    //     browserName: 'safari',
+    //     platform: 'macOS 10.12',
+    //     version: '10.0',
+    //     maxInstances: 1
+    // },
+    // {
+    //     browserName: 'safari',
+    //     platform: 'OS X 10.11',
+    //     version: '9.0',
+    //     maxInstances: 1
+    // }
+    ],
+
     //
     // ===================
     // Test Configurations
@@ -79,7 +126,7 @@ exports.config = {
 
     host: 'localhost',
 
-    port: 4444,
+    port: 4445,
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -117,7 +164,10 @@ exports.config = {
     plugins: {
     },
 
-    services: ['phantomjs', 'static-server'],
+    services: ['sauce', 'static-server'],
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    sauceConnect: true,
 
     //
     // Framework you want to run your specs with.
