@@ -212,7 +212,6 @@ exports.config = {
                 capabilities[i]['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
                 capabilities[i].build = process.env.TRAVIS_BUILD_NUMBER;
             }
-            console.log(capabilities);
         }
     },
     //
