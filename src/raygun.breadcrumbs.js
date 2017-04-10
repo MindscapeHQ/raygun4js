@@ -44,10 +44,10 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 crumb = Raygun.Utilities.merge(
                     Raygun.Utilities.merge(
                         crumb, {
-                            message: value
+                            message: value,
+                            metadata: metadata
                         }
-                    ),
-                    metadata
+                    )
                 );
                 break;
             default:
@@ -174,6 +174,11 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             };
         };
 
+        var logBreadcrumbWrapper = function(handler) {
+            return function() {
+                this.recordBreadcrumb(handler.apply(null, arguments));
+            }.bind(this);
+        }.bind(this);
         var eventsWithHandlers = [
             {event: 'hashchange', handler: buildHashChange},
             {event: 'popstate', handler: function() {
@@ -192,7 +197,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
         this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
             eventsWithHandlers.map(function(mapping) {
-                return Raygun.Utilities.addEventHandler(window, mapping.event, mapping.handler);
+                return Raygun.Utilities.addEventHandler(window, mapping.event, logBreadcrumbWrapper(mapping.handler));
             }.bind(this))
         );
     };
