@@ -333,6 +333,9 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _breadcrumbs.disableAutoBreadcrumbs();
             }
         },
+        setBreadcrumbLevel: function(level) {
+            _breadcrumbs.setBreadcrumbLevel(level);
+        },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;
         }
@@ -399,10 +402,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     window.attachEvent('onload', startRum);
                 }
             }
-        }
-
-        if (Raygun.Breadcrumbs !== undefined) {
-            // _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
         }
 
         retriggerDelayedCommands();
@@ -775,16 +774,14 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             payload.Details.Breadcrumbs = [];
             var crumbs = _breadcrumbs.all();
 
-            for (var j = 0;j < crumbs.length;j++) {
-                var crumb = crumbs[j];
-
+            crumbs.forEach(function(crumb) {
                 if (crumb.metadata) {
                     crumb.CustomData = crumb.metadata;
                     delete crumb.metadata;
                 }
 
                 payload.Details.Breadcrumbs.push(crumb);
-            }
+            });
         }
 
         if (_filterScope === 'all') {

@@ -1686,6 +1686,8 @@ var raygunUtilityFactory = function (window) {
           object[property] = existingFunction;
         };
       },
+      // Theoretically cross browser event listening
+      // Returns function that when called will remove handler
       addEventHandler: function(element, event, handler, useCapture) {
         var capture = useCapture || false;
 
@@ -1718,6 +1720,7 @@ var raygunUtilityFactory = function (window) {
 
         return text;
       },
+      // Returns simple CSS selector to target node
       nodeSelector: function(node) {
         var parts = [node.tagName];
 
@@ -2085,6 +2088,9 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _breadcrumbs.disableAutoBreadcrumbs();
             }
         },
+        setBreadcrumbLevel: function(level) {
+            _breadcrumbs.setBreadcrumbLevel(level);
+        },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;
         }
@@ -2151,10 +2157,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     window.attachEvent('onload', startRum);
                 }
             }
-        }
-
-        if (Raygun.Breadcrumbs !== undefined) {
-            // _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
         }
 
         retriggerDelayedCommands();
@@ -2527,16 +2529,14 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             payload.Details.Breadcrumbs = [];
             var crumbs = _breadcrumbs.all();
 
-            for (var j = 0;j < crumbs.length;j++) {
-                var crumb = crumbs[j];
-
+            crumbs.forEach(function(crumb) {
                 if (crumb.metadata) {
                     crumb.CustomData = crumb.metadata;
                     delete crumb.metadata;
                 }
 
                 payload.Details.Breadcrumbs.push(crumb);
-            }
+            });
         }
 
         if (_filterScope === 'all') {
@@ -3374,6 +3374,18 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         return crumbLevel >= activeLevel;
     };
 
+    Raygun.Breadcrumbs.prototype.setBreadcrumbLevel = function(level) {
+        if (this.BREADCRUMB_LEVELS.indexOf(level) === -1) {
+            Raygun.Utilities.log(
+                "Breadcrumb level of '" + level + "' is invalid, setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+            );
+
+            return;
+        }
+
+        this.breadcrumbLevel = level;
+    };
+
     Raygun.Breadcrumbs.prototype.any = function() {
         return this.breadcrumbs.length > 0;
     };
@@ -3611,6 +3623,9 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.disableXHRLogging();
     };
 
+    // This ensures that the Breadcrumbs instance is created before the load event fires (so it can hook into it)
+    // Because it is injected into the Raygun namespace after the raygun.js file is parsed it cannot be constructed
+    // there directly
     Raygun.setBreadcrumbs(new Raygun.Breadcrumbs());
 };
 
@@ -3784,6 +3799,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'disableAutoBreadcrumbsXHR':
           rg.disableAutoBreadcrumbs('XHR');
+          break;
+        case 'setBreadcrumbLevel':
+          rg.setBreadcrumbLevel(pair[1]);
           break;
       }
     }

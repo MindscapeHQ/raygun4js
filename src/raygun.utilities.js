@@ -279,6 +279,8 @@ var raygunUtilityFactory = function (window) {
           object[property] = existingFunction;
         };
       },
+      // Theoretically cross browser event listening
+      // Returns function that when called will remove handler
       addEventHandler: function(element, event, handler, useCapture) {
         var capture = useCapture || false;
 
@@ -311,6 +313,7 @@ var raygunUtilityFactory = function (window) {
 
         return text;
       },
+      // Returns simple CSS selector to target node
       nodeSelector: function(node) {
         var parts = [node.tagName];
 

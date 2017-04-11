@@ -1,4 +1,5 @@
-var webdriverio = require('webdriverio');
+/* globals describe, beforeEach, it, expect, browser, window */
+
 var _ = require('underscore');
 var common = require('../common');
 
@@ -37,8 +38,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
 
     expect(didPerformRequest).toBe(false);
   });
-  
-  
+
   it("has the error message in the payload set", function () {
     browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
 
@@ -68,10 +68,9 @@ describe("Payload functional validation tests for V1 manual send", function() {
       return payload.Details.Error.ClassName === 'Error';
     });
 
-    if (!common.isOldIE())
+    if (!common.isOldIE()) {
       expect(passes).toBe(true);
-    else
-      expect(passes).toBe(false);
+    }
   });
 
   it("has the filename in the stacktrace payload set", function () {
@@ -90,10 +89,9 @@ describe("Payload functional validation tests for V1 manual send", function() {
       return stackTrace && stackTrace.FileName === pageUrl;
     });
 
-    if (!common.isOldIE())
+    if (!common.isOldIE()) {
       expect(passes).toBe(true);
-    else
-      expect(passes).toBe(false);
+    }
   });
 
   it("has tags in the payload when tags are passed in", function () {
@@ -148,7 +146,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
         payload.Details.User.IsAnonymous === false &&
         payload.Details.User.FirstName === 'Foo' &&
         payload.Details.User.FullName === 'Foo Bar' &&
-        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
+        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55';
     });
 
     expect(passes).toBe(true);

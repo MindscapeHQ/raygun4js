@@ -70,6 +70,18 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         return crumbLevel >= activeLevel;
     };
 
+    Raygun.Breadcrumbs.prototype.setBreadcrumbLevel = function(level) {
+        if (this.BREADCRUMB_LEVELS.indexOf(level) === -1) {
+            Raygun.Utilities.log(
+                "Breadcrumb level of '" + level + "' is invalid, setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+            );
+
+            return;
+        }
+
+        this.breadcrumbLevel = level;
+    };
+
     Raygun.Breadcrumbs.prototype.any = function() {
         return this.breadcrumbs.length > 0;
     };
@@ -307,6 +319,9 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.disableXHRLogging();
     };
 
+    // This ensures that the Breadcrumbs instance is created before the load event fires (so it can hook into it)
+    // Because it is injected into the Raygun namespace after the raygun.js file is parsed it cannot be constructed
+    // there directly
     Raygun.setBreadcrumbs(new Raygun.Breadcrumbs());
 };
 

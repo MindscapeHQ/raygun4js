@@ -167,6 +167,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'disableAutoBreadcrumbsXHR':
           rg.disableAutoBreadcrumbs('XHR');
           break;
+        case 'setBreadcrumbLevel':
+          rg.setBreadcrumbLevel(pair[1]);
+          break;
       }
     }
   };
