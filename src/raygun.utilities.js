@@ -286,6 +286,8 @@ var raygunUtilityFactory = function (window) {
           element.addEventListener(event, handler, capture);
         } else if (element.attachEvent) {
           element.attachEvent('on' + event, handler);
+        } else {
+          element['on' + event] = handler;
         }
 
         return function() {
@@ -293,6 +295,8 @@ var raygunUtilityFactory = function (window) {
             element.removeEventListener(event, handler, capture);
           } else if (element.detachEvent) {
             element.detachEvent('on' + event, handler);
+          } else {
+            element['on' + event] = function() {};
           }
         };
       },

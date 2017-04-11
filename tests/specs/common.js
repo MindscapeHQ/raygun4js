@@ -20,9 +20,16 @@ module.exports = {
     }).value;
   },
   getBreadcrumbs: function() {
-    return _.tail(browser.execute(function() {
+    var crumbs = browser.execute(function() {
       return window.__requestPayloads[0].Details.Breadcrumbs;
-    }).value);
+    }).value;
+
+    if (!this.isOldIE()) {
+      return _.tail(crumbs);
+    }
+    else {
+      return crumbs;
+    }
   },
   firstBreadcrumb: function() {
     return this.getBreadcrumbs()[0];

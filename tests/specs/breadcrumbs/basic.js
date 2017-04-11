@@ -6,7 +6,7 @@ var common = require("../common");
 describe("Recording a basic breadcrumb", function() {
   beforeEach(function() {
     browser.url("http://localhost:4567/fixtures/breadcrumbs/basic.html");
-    browser.pause(4000);
+    browser.pause(8000);
   });
 
   it("adds the breadcrumb to the payload", function() {

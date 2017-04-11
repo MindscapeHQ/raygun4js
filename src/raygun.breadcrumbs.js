@@ -20,14 +20,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.disableXHRLogging = function() {};
         this.disableClicksTracking = function() {};
 
-        this.enableAutoBreadcrumbsXHR();
-        this.enableAutoBreadcrumbsClicks();
-        this.enableAutoBreadcrumbsConsole();
-        this.enableAutoBreadcrumbsNavigation();
-
-        // This constructor gets called during the page loaded event, so we can't hook into it
-        // Instead, just leave the breadcrumb manually
-        this.recordBreadcrumb({message: 'Page loaded', type: 'navigation'});
+        this.enableAutoBreadcrumbs();
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -83,6 +76,20 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
     Raygun.Breadcrumbs.prototype.all = function() {
         return this.breadcrumbs;
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
+        this.enableAutoBreadcrumbsXHR();
+        this.enableAutoBreadcrumbsClicks();
+        this.enableAutoBreadcrumbsConsole();
+        this.enableAutoBreadcrumbsNavigation();
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbs = function() {
+        this.disableAutoBreadcrumbsXHR();
+        this.disableAutoBreadcrumbsClicks();
+        this.disableAutoBreadcrumbsConsole();
+        this.disableAutoBreadcrumbsNavigation();
     };
 
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
@@ -180,24 +187,27 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             }.bind(this);
         }.bind(this);
         var eventsWithHandlers = [
-            {event: 'hashchange', handler: buildHashChange},
-            {event: 'popstate', handler: function() {
+            {element: window, event: 'hashchange', handler: buildHashChange},
+            {element: window, event: 'load', handler: function() {
+                return { type: 'navigation', message: 'Page loaded'};
+            }},
+            {element: window, event: 'popstate', handler: function() {
                 return { type: 'navigation', message: 'Navigated back' };
             }},
-            {event: 'pagehide', handler: function() {
+            {element: window, event: 'pagehide', handler: function() {
                 return { type: 'navigation', message: 'Page hidden' };
             }},
-            {event: 'pageshow', handler: function() {
+            {element: window, event: 'pageshow', handler: function() {
                 return { type: 'navigation', message: 'Page shown' };
             }},
-            {event: 'DOMContentLoaded', handler: function() {
+            {element: document, event: 'DOMContentLoaded', handler: function() {
                 return { type: 'navigation', message: 'DOMContentLoaded' };
             }},
         ];
 
         this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
             eventsWithHandlers.map(function(mapping) {
-                return Raygun.Utilities.addEventHandler(window, mapping.event, logBreadcrumbWrapper(mapping.handler));
+                return Raygun.Utilities.addEventHandler(mapping.element, mapping.event, logBreadcrumbWrapper(mapping.handler));
             }.bind(this))
         );
     };
@@ -296,6 +306,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
         this.disableXHRLogging();
     };
+
+    Raygun.setBreadcrumbs(new Raygun.Breadcrumbs());
 };
 
 raygunBreadcrumbsFactory(window, window.jQuery, window.__instantiatedRaygun);

@@ -30,7 +30,7 @@
     origSend.apply(this, arguments);
   }
 
-  if (XDomainRequest) {
+  if (window.XDomainRequest) {
     var origXOpen = XDomainRequest.prototype.open;
     var origXSend = XDomainRequest.prototype.send;
 

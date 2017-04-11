@@ -18,8 +18,9 @@
       rg4js('options', {
         allowInsecureSubmissions: true
       });
+      rg4js('disableAutoBreadcrumbs');
 
-rg4js('recordBreadcrumb', 'a message', {customData: true});
+      rg4js('recordBreadcrumb', 'a message', {customData: true});
 
       setTimeout(function() {
         throw new Error('Unhandled error');

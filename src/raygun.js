@@ -120,7 +120,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 }
             }
 
-            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
             ensureUser();
 
             return Raygun;
@@ -321,10 +320,21 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
         },
         enableAutoBreadcrumbs: function(type) {
-            _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            if (type) {
+                _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.enableAutoBreadcrumbs();
+            }
         },
         disableAutoBreadcrumbs: function(type) {
-            _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            if (type) {
+                _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.disableAutoBreadcrumbs();
+            }
+        },
+        setBreadcrumbs: function(breadcrumbs) {
+            _breadcrumbs = breadcrumbs;
         }
     };
 

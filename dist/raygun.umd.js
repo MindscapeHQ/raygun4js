@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-06
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-11
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1693,6 +1693,8 @@ var raygunUtilityFactory = function (window) {
           element.addEventListener(event, handler, capture);
         } else if (element.attachEvent) {
           element.attachEvent('on' + event, handler);
+        } else {
+          element['on' + event] = handler;
         }
 
         return function() {
@@ -1700,6 +1702,8 @@ var raygunUtilityFactory = function (window) {
             element.removeEventListener(event, handler, capture);
           } else if (element.detachEvent) {
             element.detachEvent('on' + event, handler);
+          } else {
+            element['on' + event] = function() {};
           }
         };
       },
@@ -1868,7 +1872,6 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 }
             }
 
-            _breadcrumbs = new Raygun.Breadcrumbs(_debugMode);
             ensureUser();
 
             return Raygun;
@@ -2069,10 +2072,21 @@ var raygunFactory = function (window, $, Raygun, undefined) {
             _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
         },
         enableAutoBreadcrumbs: function(type) {
-            _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            if (type) {
+                _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.enableAutoBreadcrumbs();
+            }
         },
         disableAutoBreadcrumbs: function(type) {
-            _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            if (type) {
+                _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.disableAutoBreadcrumbs();
+            }
+        },
+        setBreadcrumbs: function(breadcrumbs) {
+            _breadcrumbs = breadcrumbs;
         }
     };
 
@@ -3310,14 +3324,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         this.disableXHRLogging = function() {};
         this.disableClicksTracking = function() {};
 
-        this.enableAutoBreadcrumbsXHR();
-        this.enableAutoBreadcrumbsClicks();
-        this.enableAutoBreadcrumbsConsole();
-        this.enableAutoBreadcrumbsNavigation();
-
-        // This constructor gets called during the page loaded event, so we can't hook into it
-        // Instead, just leave the breadcrumb manually
-        this.recordBreadcrumb({message: 'Page loaded', type: 'navigation'});
+        this.enableAutoBreadcrumbs();
     };
 
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -3334,10 +3341,10 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 crumb = Raygun.Utilities.merge(
                     Raygun.Utilities.merge(
                         crumb, {
-                            message: value
+                            message: value,
+                            metadata: metadata
                         }
-                    ),
-                    metadata
+                    )
                 );
                 break;
             default:
@@ -3373,6 +3380,20 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
     Raygun.Breadcrumbs.prototype.all = function() {
         return this.breadcrumbs;
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
+        this.enableAutoBreadcrumbsXHR();
+        this.enableAutoBreadcrumbsClicks();
+        this.enableAutoBreadcrumbsConsole();
+        this.enableAutoBreadcrumbsNavigation();
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbs = function() {
+        this.disableAutoBreadcrumbsXHR();
+        this.disableAutoBreadcrumbsClicks();
+        this.disableAutoBreadcrumbsConsole();
+        this.disableAutoBreadcrumbsNavigation();
     };
 
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
@@ -3464,25 +3485,33 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             };
         };
 
+        var logBreadcrumbWrapper = function(handler) {
+            return function() {
+                this.recordBreadcrumb(handler.apply(null, arguments));
+            }.bind(this);
+        }.bind(this);
         var eventsWithHandlers = [
-            {event: 'hashchange', handler: buildHashChange},
-            {event: 'popstate', handler: function() {
+            {element: window, event: 'hashchange', handler: buildHashChange},
+            {element: window, event: 'load', handler: function() {
+                return { type: 'navigation', message: 'Page loaded'};
+            }},
+            {element: window, event: 'popstate', handler: function() {
                 return { type: 'navigation', message: 'Navigated back' };
             }},
-            {event: 'pagehide', handler: function() {
+            {element: window, event: 'pagehide', handler: function() {
                 return { type: 'navigation', message: 'Page hidden' };
             }},
-            {event: 'pageshow', handler: function() {
+            {element: window, event: 'pageshow', handler: function() {
                 return { type: 'navigation', message: 'Page shown' };
             }},
-            {event: 'DOMContentLoaded', handler: function() {
+            {element: document, event: 'DOMContentLoaded', handler: function() {
                 return { type: 'navigation', message: 'DOMContentLoaded' };
             }},
         ];
 
         this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
             eventsWithHandlers.map(function(mapping) {
-                return Raygun.Utilities.addEventHandler(window, mapping.event, mapping.handler);
+                return Raygun.Utilities.addEventHandler(mapping.element, mapping.event, logBreadcrumbWrapper(mapping.handler));
             }.bind(this))
         );
     };
@@ -3581,6 +3610,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
         this.disableXHRLogging();
     };
+
+    Raygun.setBreadcrumbs(new Raygun.Breadcrumbs());
 };
 
 raygunBreadcrumbsFactory(window, window.jQuery, window.__instantiatedRaygun);
@@ -3723,6 +3754,12 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'recordBreadcrumb':
           rg.recordBreadcrumb(pair[1], pair[2]);
+          break;
+        case 'enableAutoBreadcrumbs':
+          rg.enableAutoBreadcrumbs();
+          break;
+        case 'disableAutoBreadcrumbs':
+          rg.disableAutoBreadcrumbs();
           break;
         case 'enableAutoBreadcrumbsConsole':
           rg.enableAutoBreadcrumbs('Console');
