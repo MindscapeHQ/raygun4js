@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-11
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-13
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1985,8 +1985,8 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _breadcrumbs.disableAutoBreadcrumbs();
             }
         },
-        setBreadcrumbLevel: function(level) {
-            _breadcrumbs.setBreadcrumbLevel(level);
+        setBreadcrumbOption: function(option, value) {
+            _breadcrumbs.setOption(option, value);
         },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;
@@ -3210,11 +3210,14 @@ raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function() {
-        this.breadcrumbLevel = 'info';
-        this.breadcrumbs = [];
+        this.MAX_BREADCRUMBS = 32;
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
-        this.MAX_BREADCRUMBS = 32;
+        this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
+
+        this.breadcrumbLevel = 'info';
+        this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        this.breadcrumbs = [];
 
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
@@ -3281,6 +3284,14 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         }
 
         this.breadcrumbLevel = level;
+    };
+
+    Raygun.Breadcrumbs.prototype.setOption = function(option, value) {
+        if (option === 'breadcrumbLevel') {
+            this.setBreadcrumbLevel(value);
+        } else {
+            this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        }
     };
 
     Raygun.Breadcrumbs.prototype.any = function() {
@@ -3468,6 +3479,16 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             var initTime = new Date().getTime();
             var url = arguments[1];
             var method = arguments[0];
+
+            for (var i = 0;i < self.xhrIgnoredHosts.length;i ++) {
+                var host = self.xhrIgnoredHosts[i];
+
+                if (typeof host === 'string' && url.indexOf(host) > -1) {
+                    return;
+                } else if (typeof host === 'object' && host.exec(url)) {
+                    return;
+                }
+            }
 
             self.recordBreadcrumb({
                 type: 'request',
@@ -3698,7 +3719,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           rg.disableAutoBreadcrumbs('XHR');
           break;
         case 'setBreadcrumbLevel':
-          rg.setBreadcrumbLevel(pair[1]);
+          rg.setBreadcrumbOption('breadcrumbsLevel', pair[1]);
+          break;
+        case 'setAutoBreadcrumbsXHRIgnoredHosts':
+          rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
           break;
       }
     }

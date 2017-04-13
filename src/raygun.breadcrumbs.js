@@ -9,11 +9,14 @@
 
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function() {
-        this.breadcrumbLevel = 'info';
-        this.breadcrumbs = [];
+        this.MAX_BREADCRUMBS = 32;
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
-        this.MAX_BREADCRUMBS = 32;
+        this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
+
+        this.breadcrumbLevel = 'info';
+        this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        this.breadcrumbs = [];
 
         this.disableConsoleFunctions = [];
         this.disableNavigationFunctions = [];
@@ -80,6 +83,14 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         }
 
         this.breadcrumbLevel = level;
+    };
+
+    Raygun.Breadcrumbs.prototype.setOption = function(option, value) {
+        if (option === 'breadcrumbLevel') {
+            this.setBreadcrumbLevel(value);
+        } else {
+            this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        }
     };
 
     Raygun.Breadcrumbs.prototype.any = function() {
@@ -268,8 +279,14 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             var url = arguments[1];
             var method = arguments[0];
 
-            if (url.indexOf('raygun') > -1) {
-                return;
+            for (var i = 0;i < self.xhrIgnoredHosts.length;i ++) {
+                var host = self.xhrIgnoredHosts[i];
+
+                if (typeof host === 'string' && url.indexOf(host) > -1) {
+                    return;
+                } else if (typeof host === 'object' && host.exec(url)) {
+                    return;
+                }
             }
 
             self.recordBreadcrumb({

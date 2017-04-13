@@ -333,8 +333,8 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 _breadcrumbs.disableAutoBreadcrumbs();
             }
         },
-        setBreadcrumbLevel: function(level) {
-            _breadcrumbs.setBreadcrumbLevel(level);
+        setBreadcrumbOption: function(option, value) {
+            _breadcrumbs.setOption(option, value);
         },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;

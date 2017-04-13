@@ -168,7 +168,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           rg.disableAutoBreadcrumbs('XHR');
           break;
         case 'setBreadcrumbLevel':
-          rg.setBreadcrumbLevel(pair[1]);
+          rg.setBreadcrumbOption('breadcrumbsLevel', pair[1]);
+          break;
+        case 'setAutoBreadcrumbsXHRIgnoredHosts':
+          rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
           break;
       }
     }
