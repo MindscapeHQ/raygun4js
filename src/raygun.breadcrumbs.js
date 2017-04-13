@@ -268,6 +268,10 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
             var url = arguments[1];
             var method = arguments[0];
 
+            if (url.indexOf('raygun') > -1) {
+                return;
+            }
+
             self.recordBreadcrumb({
                 type: 'request',
                 message: 'Opening request to ' + url,
