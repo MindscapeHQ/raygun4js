@@ -3333,7 +3333,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
         var crumb = {
             level: this.DEFAULT_BREADCRUMB_LEVEL,
-            timestamp: new Date().getTime()
+            timestamp: new Date().getTime(),
+            type: 'manual'
         };
 
         switch (typeof value) {
