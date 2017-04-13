@@ -41,7 +41,8 @@ describe("Recording a basic breadcrumb with an object", function() {
       'timestamp',
       'message',
       'CustomData',
-      'category'
+      'category',
+      'type'
     ].sort();
 
     expect(keys).toEqual(expectedKeys);

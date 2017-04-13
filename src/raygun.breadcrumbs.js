@@ -87,7 +87,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.setOption = function(option, value) {
-        if (option === 'breadcrumbLevel') {
+        if (option === 'breadcrumbsLevel') {
             this.setBreadcrumbLevel(value);
         } else {
             this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
