@@ -163,8 +163,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 metadata: {
                     from: currentPath,
                     to: url || currentPath,
-                    prevState: prevState || 'unsupported',
-                    nextState: state
+                    prevState: JSON.stringify(prevState) || 'unsupported',
+                    nextState: JSON.stringify(state)
                 }
             };
         }.bind(this);

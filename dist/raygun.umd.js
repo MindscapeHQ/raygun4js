@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-13
+/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-18
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -3467,8 +3467,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 metadata: {
                     from: currentPath,
                     to: url || currentPath,
-                    prevState: prevState || 'unsupported',
-                    nextState: state
+                    prevState: JSON.stringify(prevState) || 'unsupported',
+                    nextState: JSON.stringify(state)
                 }
             };
         }.bind(this);
