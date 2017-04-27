@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-04-18
+/*! Raygun4js - v2.6.0 - 2017-04-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -10,6 +10,7 @@ var _oldTraceKit = window.TraceKit;
 // global reference to slice
 var _slice = [].slice;
 var UNKNOWN_FUNCTION = '?';
+var Raygun;
 
 
 /**
@@ -26,6 +27,15 @@ function _has(object, key) {
 function _isUndefined(what) {
     return typeof what === 'undefined';
 }
+
+/**
+ * TraceKit gets loaded before Raygun
+ * Raygun uses this callback to give TraceKit an instance of Raygun
+ * This is required to use the Utilities module
+ */
+TraceKit.setRaygun = function setRaygun(rg) {
+    Raygun = rg;
+};
 
 /**
  * TraceKit.noConflict: Export TraceKit out to another variable
@@ -1374,9 +1384,8 @@ if (!Function.prototype.bind) {
 
 // js-url - see LICENSE file
 
-var raygunUtilityFactory = function (window) {
+window.raygunUtilityFactory = function (window, Raygun) {
   var rg = {
-    Utilities: {
       getUuid: function () {
           function _p8(s) {
               var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -1387,7 +1396,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       createCookie: function (name, value, hours) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
@@ -1405,7 +1414,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       readCookie: function (name, doneCallback) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               doneCallback(null, 'none');
 
               return;
@@ -1431,11 +1440,11 @@ var raygunUtilityFactory = function (window) {
       },
 
       clearCookie: function (key) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
-          Raygun.Utilities.createCookie(key, '', -1);
+          this.createCookie(key, '', -1);
       },
 
       log: function (message, data) {
@@ -1507,6 +1516,16 @@ var raygunUtilityFactory = function (window) {
           return o3;
       },
 
+      mergeMutate: function(o1, o2) {
+        var a;
+
+        for(a in o2) {
+          o1[a] = o2[a];
+        }
+
+        return o1;
+      },
+
       mergeArray: function (t0, t1) {
           if (t1 != null) {
               return t0.concat(t1);
@@ -1544,7 +1563,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       getViewPort: function () {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return { width: 'Not available', height: 'Not available' };
           }
 
@@ -1710,24 +1729,22 @@ var raygunUtilityFactory = function (window) {
            return text;
         }
       }
-    }
   };
 
-  if (!window.Raygun) {
-      window.Raygun = rg;
-  }
-
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (rg.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
+
+  return rg;
 };
 
+/*globals __DEV__, raygunUtilityFactory */
 
-raygunUtilityFactory(window);
+var raygunFactory = function (window, $, undefined) {
+    var Raygun = {};
+    Raygun.Utilities = raygunUtilityFactory(window, Raygun);
 
-/*globals __DEV__ */
-var raygunFactory = function (window, $, Raygun, undefined) {
     // Constants
     var ProviderStates = {
         LOADING: 0,
@@ -1778,7 +1795,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         Options: { },
 
         noConflict: function () {
-            window.Raygun = _raygun;
+            // Because _raygun potentially gets set before other code sets window.Raygun
+            // this will potentially overwrite the new Raygun object with undefined
+            // Not really much point in restoring undefined so just don't do that
+            if (_raygun) {
+               window.Raygun = _raygun;
+            }
             return Raygun;
         },
 
@@ -2061,7 +2083,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         }
     };
 
-    window.Raygun = window.Raygun.Utilities.merge(window.Raygun, _publicRaygunFunctions);
+   Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
 
     function callAfterSend(response) {
         if (typeof _afterSendCallback === 'function') {
@@ -2628,12 +2650,15 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         xhr.send(data);
     }
 
-    Raygun = _raygun = window.Raygun;
+    if (!window.__raygunNoConflict) {
+      window.Raygun = Raygun;
+    }
+    TraceKit.setRaygun(Raygun);
 
     return Raygun;
 };
 
-window.__instantiatedRaygun = raygunFactory(window, window.jQuery, window.Raygun);
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 
 var raygunRumFactory = function (window, $, Raygun) {
     Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing) {
@@ -3559,14 +3584,23 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 }
             }
 
-            self.recordBreadcrumb({
-                type: 'request',
-                message: 'Opening request to ' + url,
-                level: 'info',
-                metadata: {
+            Raygun.Utilities.enhance(this, 'send', function() {
+                var metadata = {
                     method: method
+                };
+
+                if (arguments[0]) {
+                    metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
                 }
+
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Opening request to ' + url,
+                    level: 'info',
+                    metadata: metadata
+                });
             });
+
 
             this.addEventListener('load', function() {
                 self.recordBreadcrumb({
@@ -3576,7 +3610,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                     metadata: {
                         status: this.status,
                         responseURL: this.responseURL,
-                        responseText: Raygun.Utilities.truncate(this.responseText, 150),
+                        responseText: Raygun.Utilities.truncate(this.responseText, 500),
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
