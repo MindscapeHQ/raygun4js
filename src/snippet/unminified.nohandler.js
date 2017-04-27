@@ -1,4 +1,4 @@
-(function(wind, doc, scriptTag, url, obj, s, n) {
+(function(wind, doc, scriptTag, url, obj, noConflict, s, n) {
     wind['RaygunObject'] = obj;
     wind[obj] = wind[obj] || function() {
         (wind[obj].o = wind[obj].o || []).push(arguments)
@@ -7,5 +7,8 @@
     n = doc.getElementsByTagName(scriptTag)[0];
     s.async = 1;
     s.src = url;
+
+    wind.__raygunNoConflict = !!noConflict;
+
     n.parentNode.insertBefore(s, n);
 })(window, document, 'script', '//cdn.raygun.io/raygun4js/raygun.min.js', 'rg4js');

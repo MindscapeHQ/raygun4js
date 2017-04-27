@@ -1,5 +1,6 @@
-var webdriverio = require('webdriverio');
+/* globals describe, it, expect, browser, window */
 var _ = require('underscore');
+var common = require('../common');
 
 var _eventsEndpoint = 'https://api.raygun.io/events';
 
@@ -20,7 +21,8 @@ describe("XHR functional tests for /events with V1", function() {
       return req.url.indexOf(_eventsEndpoint) === 0;
     });
 
-    expect(didPerformRequest).toBe(true);
+    if (!common.isIEVersion('8')) {
+      expect(didPerformRequest).toBe(true);
+    }
   });
-
 });

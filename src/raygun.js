@@ -6,8 +6,12 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__ */
-var raygunFactory = function (window, $, Raygun, undefined) {
+/*globals __DEV__, raygunUtilityFactory */
+
+var raygunFactory = function (window, $, undefined) {
+    var Raygun = {};
+    Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+
     // Constants
     var ProviderStates = {
         LOADING: 0,
@@ -44,6 +48,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _breadcrumbs = null,
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
         _providerState = ProviderStates.LOADING,
@@ -57,7 +62,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         Options: { },
 
         noConflict: function () {
-            window.Raygun = _raygun;
+            // Because _raygun potentially gets set before other code sets window.Raygun
+            // this will potentially overwrite the new Raygun object with undefined
+            // Not really much point in restoring undefined so just don't do that
+            if (_raygun) {
+               window.Raygun = _raygun;
+            }
             return Raygun;
         },
 
@@ -314,11 +324,33 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     _rum.virtualPageLoaded(options.path);
                 }
             }
+        },
+        recordBreadcrumb: function() {
+            _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
+        },
+        enableAutoBreadcrumbs: function(type) {
+            if (type) {
+                _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.enableAutoBreadcrumbs();
+            }
+        },
+        disableAutoBreadcrumbs: function(type) {
+            if (type) {
+                _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.disableAutoBreadcrumbs();
+            }
+        },
+        setBreadcrumbOption: function(option, value) {
+            _breadcrumbs.setOption(option, value);
+        },
+        setBreadcrumbs: function(breadcrumbs) {
+            _breadcrumbs = breadcrumbs;
         }
-
     };
 
-    window.Raygun = window.Raygun.Utilities.merge(window.Raygun, _publicRaygunFunctions);
+   Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
 
     function callAfterSend(response) {
         if (typeof _afterSendCallback === 'function') {
@@ -747,6 +779,20 @@ var raygunFactory = function (window, $, Raygun, undefined) {
 
         payload.Details.User = _user;
 
+        if (_breadcrumbs.any()) {
+            payload.Details.Breadcrumbs = [];
+            var crumbs = _breadcrumbs.all();
+
+            crumbs.forEach(function(crumb) {
+                if (crumb.metadata) {
+                    crumb.CustomData = crumb.metadata;
+                    delete crumb.metadata;
+                }
+
+                payload.Details.Breadcrumbs.push(crumb);
+            });
+        }
+
         if (_filterScope === 'all') {
             payload = filterObject(payload);
         }
@@ -871,9 +917,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         xhr.send(data);
     }
 
-    Raygun = _raygun = window.Raygun;
+    if (!window.__raygunNoConflict) {
+      window.Raygun = Raygun;
+    }
+    TraceKit.setRaygun(Raygun);
 
     return Raygun;
 };
 
-window.__instantiatedRaygun = raygunFactory(window, window.jQuery, window.Raygun);
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);

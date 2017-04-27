@@ -1,5 +1,7 @@
-var webdriverio = require('webdriverio');
+/* globals describe, beforeEach, it, expect, browser, window */
+
 var _ = require('underscore');
+var common = require('../common');
 
 var _entriesEndpoint = 'https://api.raygun.io/entries';
 
@@ -36,8 +38,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
 
     expect(didPerformRequest).toBe(false);
   });
-  
-  
+
   it("has the error message in the payload set", function () {
     browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
 
@@ -48,7 +49,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.Message === 'Manual send';
+      return payload.Details.Error.Message === 'Manual send' || payload.Details.Error.Message === 'Script error';
     });
 
     expect(passes).toBe(true);
@@ -67,7 +68,9 @@ describe("Payload functional validation tests for V1 manual send", function() {
       return payload.Details.Error.ClassName === 'Error';
     });
 
-    expect(passes).toBe(true);
+    if (!common.isOldIE()) {
+      expect(passes).toBe(true);
+    }
   });
 
   it("has the filename in the stacktrace payload set", function () {
@@ -82,10 +85,13 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     var passes = _.any(requestPayloads.value, function (payload) {
-      return payload.Details.Error.StackTrace[0].FileName === pageUrl;
+      var stackTrace = payload.Details.Error.StackTrace[0];
+      return stackTrace && stackTrace.FileName === pageUrl;
     });
 
-    expect(passes).toBe(true);
+    if (!common.isOldIE()) {
+      expect(passes).toBe(true);
+    }
   });
 
   it("has tags in the payload when tags are passed in", function () {
@@ -140,7 +146,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
         payload.Details.User.IsAnonymous === false &&
         payload.Details.User.FirstName === 'Foo' &&
         payload.Details.User.FullName === 'Foo Bar' &&
-        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
+        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55';
     });
 
     expect(passes).toBe(true);

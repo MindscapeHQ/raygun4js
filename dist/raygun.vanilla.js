@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0-SNAPSHOT.6 - 2017-03-31
+/*! Raygun4js - v2.6.0 - 2017-04-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -10,6 +10,7 @@ var _oldTraceKit = window.TraceKit;
 // global reference to slice
 var _slice = [].slice;
 var UNKNOWN_FUNCTION = '?';
+var Raygun;
 
 
 /**
@@ -26,6 +27,15 @@ function _has(object, key) {
 function _isUndefined(what) {
     return typeof what === 'undefined';
 }
+
+/**
+ * TraceKit gets loaded before Raygun
+ * Raygun uses this callback to give TraceKit an instance of Raygun
+ * This is required to use the Utilities module
+ */
+TraceKit.setRaygun = function setRaygun(rg) {
+    Raygun = rg;
+};
 
 /**
  * TraceKit.noConflict: Export TraceKit out to another variable
@@ -710,7 +720,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
             'useragent': navigator ? navigator.userAgent : '',
-            'stackstring': ex && ex.stack ? ex.stack.toString() : '',
+            'stackstring': ex && ex.stack ? ex.stack.toString() : ''
         };
 
         return res;
@@ -1159,82 +1169,155 @@ window.TraceKit = TraceKit;
 
 }(window));
 
+// Mozilla's toISOString() shim for IE8
+if (!Date.prototype.toISOString) {
+    (function () {
+        function pad(number) {
+            var r = String(number);
+            if (r.length === 1) {
+                r = '0' + r;
+            }
+            return r;
+        }
+
+        Date.prototype.toISOString = function () {
+            return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
+        };
+    }());
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+if (!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(searchElement, fromIndex) {
+        var k;
+        if (this == null) {
+            throw new TypeError('"this" is null or not defined');
+        }
+        var o = Object(this);
+        var len = o.length >>> 0;
+
+        if (len === 0) {
+            return -1;
+        }
+        var n = fromIndex | 0;
+
+        if (n >= len) {
+            return -1;
+        }
+        k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+        while (k < len) {
+            if (k in o && o[k] === searchElement) {
+                return k;
+            }
+            k++;
+        }
+        return -1;
+    };
+}
+
+// Production steps of ECMA-262, Edition 5, 15.4.4.19
+// Reference: http://es5.github.io/#x15.4.4.19
+if (!Array.prototype.map) {
+    Array.prototype.map = function(callback/*, thisArg*/) {
+        var T, A, k;
+
+        if (this == null) {
+            throw new TypeError('this is null or not defined');
+        }
+
+        var O = Object(this);
+        var len = O.length >>> 0;
+
+        if (typeof callback !== 'function') {
+            throw new TypeError(callback + ' is not a function');
+        }
+
+        if (arguments.length > 1) {
+            T = arguments[1];
+        }
+
+        A = new Array(len);
+        k = 0;
+
+        while (k < len) {
+            var kValue, mappedValue;
+
+            if (k in O) {
+                kValue = O[k];
+
+                mappedValue = callback.call(T, kValue, k, O);
+                A[k] = mappedValue;
+            }
+            k++;
+        }
+
+        return A;
+    };
+}
+
+// Production steps of ECMA-262, Edition 5, 15.4.4.18
+// Reference: http://es5.github.io/#x15.4.4.18
+if (!Array.prototype.forEach) {
+    Array.prototype.forEach = function(callback/*, thisArg*/) {
+        var T, k;
+
+        if (this == null) {
+            throw new TypeError('this is null or not defined');
+        }
+
+        var O = Object(this);
+        var len = O.length >>> 0;
+
+        if (typeof callback !== 'function') {
+            throw new TypeError(callback + ' is not a function');
+        }
+
+        if (arguments.length > 1) {
+            T = arguments[1];
+        }
+
+        k = 0;
+        while (k < len) {
+            var kValue;
+
+            if (k in O) {
+                kValue = O[k];
+
+                callback.call(T, kValue, k, O);
+            }
+            k++;
+        }
+    };
+}
+
+// Mozilla's bind() shim for IE8
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+        if (typeof this !== 'function') {
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            FNOP = function () {
+            },
+            fBound = function () {
+                return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+
+        FNOP.prototype = this.prototype;
+        fBound.prototype = new FNOP();
+
+        return fBound;
+    };
+}
+
 // js-url - see LICENSE file
 
-var raygunUtilityFactory = function (window) {
-
-  // Mozilla's toISOString() shim for IE8
-  if (!Date.prototype.toISOString) {
-      (function () {
-          function pad(number) {
-              var r = String(number);
-              if (r.length === 1) {
-                  r = '0' + r;
-              }
-              return r;
-          }
-
-           Date.prototype.toISOString = function () {
-              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
-           };
-      }());
-  }
-
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(searchElement, fromIndex) {
-      var k;
-      if (this == null) {
-        throw new TypeError('"this" is null or not defined');
-      }
-      var o = Object(this);
-      var len = o.length >>> 0;
-
-      if (len === 0) {
-        return -1;
-      }
-      var n = fromIndex | 0;
-
-      if (n >= len) {
-        return -1;
-      }
-      k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-
-      while (k < len) {
-        if (k in o && o[k] === searchElement) {
-          return k;
-        }
-        k++;
-      }
-      return -1;
-    };
-  }
-
-  // Mozilla's bind() shim for IE8
-  if (!Function.prototype.bind) {
-      Function.prototype.bind = function (oThis) {
-          if (typeof this !== 'function') {
-              throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-          }
-
-            var aArgs = Array.prototype.slice.call(arguments, 1),
-              fToBind = this,
-              FNOP = function () {
-              },
-              fBound = function () {
-                  return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
-                      aArgs.concat(Array.prototype.slice.call(arguments)));
-              };
-
-          FNOP.prototype = this.prototype;
-          fBound.prototype = new FNOP();
-
-          return fBound;
-      };
-  }
-
+window.raygunUtilityFactory = function (window, Raygun) {
   var rg = {
-    Utilities: {
       getUuid: function () {
           function _p8(s) {
               var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -1245,7 +1328,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       createCookie: function (name, value, hours) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
@@ -1263,7 +1346,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       readCookie: function (name, doneCallback) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               doneCallback(null, 'none');
 
               return;
@@ -1289,11 +1372,11 @@ var raygunUtilityFactory = function (window) {
       },
 
       clearCookie: function (key) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
-          Raygun.Utilities.createCookie(key, '', -1);
+          this.createCookie(key, '', -1);
       },
 
       log: function (message, data) {
@@ -1365,6 +1448,16 @@ var raygunUtilityFactory = function (window) {
           return o3;
       },
 
+      mergeMutate: function(o1, o2) {
+        var a;
+
+        for(a in o2) {
+          o1[a] = o2[a];
+        }
+
+        return o1;
+      },
+
       mergeArray: function (t0, t1) {
           if (t1 != null) {
               return t0.concat(t1);
@@ -1402,7 +1495,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       getViewPort: function () {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return { width: 'Not available', height: 'Not available' };
           }
 
@@ -1491,26 +1584,99 @@ var raygunUtilityFactory = function (window) {
 
         return '';
         })(arg, url);
-      }
+      },
+      // Replace existing function on object with new, but call old one afterwards still
+      // Returns function that when called will un-enhance object
+      enhance: function(object, property, newFunction) {
+        var existingFunction = object[property];
 
-    }
+        object[property] = function enhanced() {
+          newFunction.apply(this, arguments);
+
+          if (typeof existingFunction === "function") {
+            existingFunction.apply(this, arguments);
+          }
+        };
+
+        return function unhenance() {
+          object[property] = existingFunction;
+        };
+      },
+      // Theoretically cross browser event listening
+      // Returns function that when called will remove handler
+      addEventHandler: function(element, event, handler, useCapture) {
+        var capture = useCapture || false;
+
+        if (element.addEventListener) {
+          element.addEventListener(event, handler, capture);
+        } else if (element.attachEvent) {
+          element.attachEvent('on' + event, handler);
+        } else {
+          element['on' + event] = handler;
+        }
+
+        return function() {
+          if (element.removeEventListener) {
+            element.removeEventListener(event, handler, capture);
+          } else if (element.detachEvent) {
+            element.detachEvent('on' + event, handler);
+          } else {
+            element['on' + event] = function() {};
+          }
+        };
+      },
+      nodeText: function(node) {
+        var text = node.textContent || node.innerText || "";
+
+        if (["submit", "button"].indexOf(node.type) !== -1) {
+          text = node.value;
+        }
+
+        text = text.replace(/^\s+|\s+$/g, "");
+
+        return text;
+      },
+      // Returns simple CSS selector to target node
+      nodeSelector: function(node) {
+        var parts = [node.tagName];
+
+        if (node.id) {
+          parts.push("#" + node.id);
+        }
+
+        if (node.className && node.className.length) {
+          parts.push(
+            "." + node.className.split(" ").join(".")
+          );
+        }
+
+        return parts.join("");
+      },
+      truncate: function(text, length) {
+        var omission = "(...)";
+
+        if (text.length > length) {
+          return text.slice(0, length - omission.length) + omission;
+        } else {
+           return text;
+        }
+      }
   };
 
-  if (!window.Raygun) {
-      window.Raygun = rg;
-  }
-
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (rg.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
+
+  return rg;
 };
 
+/*globals __DEV__, raygunUtilityFactory */
 
-raygunUtilityFactory(window);
+var raygunFactory = function (window, $, undefined) {
+    var Raygun = {};
+    Raygun.Utilities = raygunUtilityFactory(window, Raygun);
 
-/*globals __DEV__ */
-var raygunFactory = function (window, $, Raygun, undefined) {
     // Constants
     var ProviderStates = {
         LOADING: 0,
@@ -1547,6 +1713,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
+        _breadcrumbs = null,
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
         _providerState = ProviderStates.LOADING,
@@ -1560,7 +1727,12 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         Options: { },
 
         noConflict: function () {
-            window.Raygun = _raygun;
+            // Because _raygun potentially gets set before other code sets window.Raygun
+            // this will potentially overwrite the new Raygun object with undefined
+            // Not really much point in restoring undefined so just don't do that
+            if (_raygun) {
+               window.Raygun = _raygun;
+            }
             return Raygun;
         },
 
@@ -1817,11 +1989,33 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                     _rum.virtualPageLoaded(options.path);
                 }
             }
+        },
+        recordBreadcrumb: function() {
+            _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
+        },
+        enableAutoBreadcrumbs: function(type) {
+            if (type) {
+                _breadcrumbs['enableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.enableAutoBreadcrumbs();
+            }
+        },
+        disableAutoBreadcrumbs: function(type) {
+            if (type) {
+                _breadcrumbs['disableAutoBreadcrumbs' + type]();
+            } else {
+                _breadcrumbs.disableAutoBreadcrumbs();
+            }
+        },
+        setBreadcrumbOption: function(option, value) {
+            _breadcrumbs.setOption(option, value);
+        },
+        setBreadcrumbs: function(breadcrumbs) {
+            _breadcrumbs = breadcrumbs;
         }
-
     };
 
-    window.Raygun = window.Raygun.Utilities.merge(window.Raygun, _publicRaygunFunctions);
+   Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
 
     function callAfterSend(response) {
         if (typeof _afterSendCallback === 'function') {
@@ -2231,7 +2425,7 @@ var raygunFactory = function (window, $, Raygun, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.0-SNAPSHOT.6'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2249,6 +2443,20 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         };
 
         payload.Details.User = _user;
+
+        if (_breadcrumbs.any()) {
+            payload.Details.Breadcrumbs = [];
+            var crumbs = _breadcrumbs.all();
+
+            crumbs.forEach(function(crumb) {
+                if (crumb.metadata) {
+                    crumb.CustomData = crumb.metadata;
+                    delete crumb.metadata;
+                }
+
+                payload.Details.Breadcrumbs.push(crumb);
+            });
+        }
 
         if (_filterScope === 'all') {
             payload = filterObject(payload);
@@ -2374,12 +2582,15 @@ var raygunFactory = function (window, $, Raygun, undefined) {
         xhr.send(data);
     }
 
-    Raygun = _raygun = window.Raygun;
+    if (!window.__raygunNoConflict) {
+      window.Raygun = Raygun;
+    }
+    TraceKit.setRaygun(Raygun);
 
     return Raygun;
 };
 
-window.__instantiatedRaygun = raygunFactory(window, window.jQuery, window.Raygun);
+window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 
 var raygunRumFactory = function (window, $, Raygun) {
     Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing) {
@@ -3020,6 +3231,359 @@ var raygunRumFactory = function (window, $, Raygun) {
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 
+/* globals console */
+
+var raygunBreadcrumbsFactory = function(window, $, Raygun) {
+    Raygun.Breadcrumbs = function() {
+        this.MAX_BREADCRUMBS = 32;
+        this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
+        this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+        this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
+
+        this.breadcrumbLevel = 'info';
+        this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        this.breadcrumbs = [];
+
+        this.disableConsoleFunctions = [];
+        this.disableNavigationFunctions = [];
+        this.disableXHRLogging = function() {};
+        this.disableClicksTracking = function() {};
+
+        this.enableAutoBreadcrumbs();
+    };
+
+    Raygun.Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
+        var crumb = {
+            level: this.DEFAULT_BREADCRUMB_LEVEL,
+            timestamp: new Date().getTime(),
+            type: 'manual'
+        };
+
+        switch (typeof value) {
+            case "object":
+                    crumb = Raygun.Utilities.merge(crumb, value);
+                break;
+            case "string":
+                crumb = Raygun.Utilities.merge(
+                    Raygun.Utilities.merge(
+                        crumb, {
+                            message: value,
+                            metadata: metadata
+                        }
+                    )
+                );
+                break;
+            default:
+                Raygun.Utilities.log(
+                    "expected first argument to recordBreadcrumb to be a 'string' or 'object', got " + typeof value
+                );
+                return;
+        }
+
+        if (this.BREADCRUMB_LEVELS.indexOf(crumb.level) === -1) {
+            Raygun.Utilities.log(
+                "unknown breadcrumb level " + crumb.level + " setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+            );
+            crumb.level = this.DEFAULT_BREADCRUMB_LEVEL;
+        }
+
+        if (this.shouldRecord(crumb)) {
+            this.breadcrumbs.push(crumb);
+            this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
+        }
+    };
+
+    Raygun.Breadcrumbs.prototype.shouldRecord = function(crumb) {
+        var crumbLevel = this.BREADCRUMB_LEVELS.indexOf(crumb.level);
+        var activeLevel = this.BREADCRUMB_LEVELS.indexOf(this.breadcrumbLevel);
+
+        return crumbLevel >= activeLevel;
+    };
+
+    Raygun.Breadcrumbs.prototype.setBreadcrumbLevel = function(level) {
+        if (this.BREADCRUMB_LEVELS.indexOf(level) === -1) {
+            Raygun.Utilities.log(
+                "Breadcrumb level of '" + level + "' is invalid, setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+            );
+
+            return;
+        }
+
+        this.breadcrumbLevel = level;
+    };
+
+    Raygun.Breadcrumbs.prototype.setOption = function(option, value) {
+        if (option === 'breadcrumbsLevel') {
+            this.setBreadcrumbLevel(value);
+        } else {
+            this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        }
+    };
+
+    Raygun.Breadcrumbs.prototype.any = function() {
+        return this.breadcrumbs.length > 0;
+    };
+
+    Raygun.Breadcrumbs.prototype.all = function() {
+        return this.breadcrumbs;
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
+        this.enableAutoBreadcrumbsXHR();
+        this.enableAutoBreadcrumbsClicks();
+        this.enableAutoBreadcrumbsConsole();
+        this.enableAutoBreadcrumbsNavigation();
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbs = function() {
+        this.disableAutoBreadcrumbsXHR();
+        this.disableAutoBreadcrumbsClicks();
+        this.disableAutoBreadcrumbsConsole();
+        this.disableAutoBreadcrumbsNavigation();
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
+        if (typeof window.console === "undefined") {
+            return;
+        }
+
+        var logConsoleCall = function logConsoleCall(severity, args) {
+            this.recordBreadcrumb({
+                type: 'console',
+                level: severity,
+                message: Array.prototype.slice.call(args).join(", ")
+            });
+        }.bind(this);
+
+        var consoleProperties = ['log', 'warn', 'error'];
+        this.disableConsoleFunctions = consoleProperties.map(function(property) {
+            return Raygun.Utilities.enhance(console, property, function() {
+                var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
+
+                logConsoleCall(severity, arguments);
+            });
+        });
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
+        this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
+        if (!window.addEventListener || !window.history || !window.history.pushState) {
+            return;
+        }
+
+        var buildStateChange = function(name, state, title, url) {
+            var currentPath = location.pathname + location.search + location.hash;
+            var prevState = null;
+
+            if (window.history.state) {
+                prevState = history.state;
+            }
+
+            return {
+                message: 'History ' + name,
+                type: 'navigation',
+                level: 'info',
+                metadata: {
+                    from: currentPath,
+                    to: url || currentPath,
+                    prevState: JSON.stringify(prevState) || 'unsupported',
+                    nextState: JSON.stringify(state)
+                }
+            };
+        }.bind(this);
+
+        var parseHash = function(url) {
+            return url.split("#")[1] || "";
+        };
+
+        var historyFunctionsToEnhance = ["pushState", "replaceState"];
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            historyFunctionsToEnhance.map(function(stateChange) {
+                return Raygun.Utilities.enhance(history, stateChange, function(state, title, url) {
+                    this.recordBreadcrumb(buildStateChange(stateChange, state, title, url));
+                }.bind(this));
+            }.bind(this))
+        );
+
+        var buildHashChange = function(e) {
+            var oldURL = e.oldURL;
+            var newURL = e.newURL;
+            var metadata;
+
+            if (oldURL && newURL) {
+                metadata = {
+                    from: parseHash(oldURL),
+                    to: parseHash(newURL)
+                };
+            } else {
+                metadata = {
+                    to: location.hash
+                };
+            }
+
+            return {
+                type: 'navigation',
+                message: 'Hash change',
+                metadata: metadata
+            };
+        };
+
+        var logBreadcrumbWrapper = function(handler) {
+            return function() {
+                this.recordBreadcrumb(handler.apply(null, arguments));
+            }.bind(this);
+        }.bind(this);
+        var eventsWithHandlers = [
+            {element: window, event: 'hashchange', handler: buildHashChange},
+            {element: window, event: 'load', handler: function() {
+                return { type: 'navigation', message: 'Page loaded'};
+            }},
+            {element: window, event: 'popstate', handler: function() {
+                return { type: 'navigation', message: 'Navigated back' };
+            }},
+            {element: window, event: 'pagehide', handler: function() {
+                return { type: 'navigation', message: 'Page hidden' };
+            }},
+            {element: window, event: 'pageshow', handler: function() {
+                return { type: 'navigation', message: 'Page shown' };
+            }},
+            {element: document, event: 'DOMContentLoaded', handler: function() {
+                return { type: 'navigation', message: 'DOMContentLoaded' };
+            }},
+        ];
+
+        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+            eventsWithHandlers.map(function(mapping) {
+                return Raygun.Utilities.addEventHandler(mapping.element, mapping.event, logBreadcrumbWrapper(mapping.handler));
+            }.bind(this))
+        );
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
+        this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
+        this.disableNavigationFunctions = [];
+    };
+
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking = Raygun.Utilities.addEventHandler(window, 'click', function(e) {
+            var text, selector;
+
+            try {
+                text = Raygun.Utilities.truncate(Raygun.Utilities.nodeText(e.target), 150);
+                selector = Raygun.Utilities.nodeSelector(e.target);
+            } catch(exception) {
+                text = "[unknown]";
+                selector = "[unknown]";
+
+                Raygun.Utilities.log("Error retrieving node text/selector. Most likely due to a cross domain error");
+            }
+
+            this.recordBreadcrumb({
+                type: 'click-event',
+                message: 'UI Click',
+                level: 'info',
+                metadata: {
+                    text: text,
+                    selector: selector
+                }
+            });
+        }.bind(this), true);
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
+        this.disableClicksTracking();
+    };
+
+    Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
+        var self = this;
+
+        this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
+            var initTime = new Date().getTime();
+            var url = arguments[1];
+            var method = arguments[0];
+
+            for (var i = 0;i < self.xhrIgnoredHosts.length;i ++) {
+                var host = self.xhrIgnoredHosts[i];
+
+                if (typeof host === 'string' && url.indexOf(host) > -1) {
+                    return;
+                } else if (typeof host === 'object' && host.exec(url)) {
+                    return;
+                }
+            }
+
+            Raygun.Utilities.enhance(this, 'send', function() {
+                var metadata = {
+                    method: method
+                };
+
+                if (arguments[0]) {
+                    metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
+                }
+
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Opening request to ' + url,
+                    level: 'info',
+                    metadata: metadata
+                });
+            });
+
+
+            this.addEventListener('load', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Finished request to ' + url,
+                    level: 'info',
+                    metadata: {
+                        status: this.status,
+                        responseURL: this.responseURL,
+                        responseText: Raygun.Utilities.truncate(this.responseText, 500),
+                        duration: new Date().getTime() - initTime + "ms"
+                    }
+                });
+            });
+            this.addEventListener('error', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Failed request to ' + url,
+                    level: 'info',
+                    metadata: {
+                        status: this.status,
+                        responseURL: this.responseURL,
+                        duration: new Date().getTime() - initTime + "ms"
+                    }
+                });
+            });
+            this.addEventListener('abort', function() {
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Request to ' + url + 'aborted',
+                    level: 'info',
+                    metadata: {
+                        duration: new Date().getTime() - initTime + "ms"
+                    }
+                });
+            });
+        });
+    };
+
+    Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
+        this.disableXHRLogging();
+    };
+
+    // This ensures that the Breadcrumbs instance is created before the load event fires (so it can hook into it)
+    // Because it is injected into the Raygun namespace after the raygun.js file is parsed it cannot be constructed
+    // there directly
+    Raygun.setBreadcrumbs(new Raygun.Breadcrumbs());
+};
+
+raygunBreadcrumbsFactory(window, window.jQuery, window.__instantiatedRaygun);
+
 (function (window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
@@ -3041,7 +3605,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
   var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
@@ -3155,6 +3719,45 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
           }
+          break;
+        case 'recordBreadcrumb':
+          rg.recordBreadcrumb(pair[1], pair[2]);
+          break;
+        case 'enableAutoBreadcrumbs':
+          rg.enableAutoBreadcrumbs();
+          break;
+        case 'disableAutoBreadcrumbs':
+          rg.disableAutoBreadcrumbs();
+          break;
+        case 'enableAutoBreadcrumbsConsole':
+          rg.enableAutoBreadcrumbs('Console');
+          break;
+        case 'disableAutoBreadcrumbsConsole':
+          rg.disableAutoBreadcrumbs('Console');
+          break;
+        case 'enableAutoBreadcrumbsNavigation':
+          rg.enableAutoBreadcrumbs('Navigation');
+          break;
+        case 'disableAutoBreadcrumbsNavigation':
+          rg.disableAutoBreadcrumbs('Navigation');
+          break;
+        case 'enableAutoBreadcrumbsClicks':
+          rg.enableAutoBreadcrumbs('Clicks');
+          break;
+        case 'disableAutoBreadcrumbsClicks':
+          rg.disableAutoBreadcrumbs('Clicks');
+          break;
+        case 'enableAutoBreadcrumbsXHR':
+          rg.enableAutoBreadcrumbs('XHR');
+          break;
+        case 'disableAutoBreadcrumbsXHR':
+          rg.disableAutoBreadcrumbs('XHR');
+          break;
+        case 'setBreadcrumbLevel':
+          rg.setBreadcrumbOption('breadcrumbsLevel', pair[1]);
+          break;
+        case 'setAutoBreadcrumbsXHRIgnoredHosts':
+          rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
           break;
       }
     }

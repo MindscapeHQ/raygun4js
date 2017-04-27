@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Raygun4JS with V2 API</title>
+    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script type="text/javascript">
+        !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
+        (a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
+        f.async=1,f.src=d,g.parentNode.insertBefore(f,g),h=a.onerror,a.onerror=function(b,c,d,f,g){
+        h&&h(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],a[e].q.push({
+        e:g})}}(window,document,"script","/dist/raygun.js","rg4js");
+    </script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      rg4js('apiKey', 'abcdef==');
+      rg4js('enableCrashReporting', true);
+      rg4js('options', {
+        allowInsecureSubmissions: true
+      });
+      rg4js('disableAutoBreadcrumbs');
+
+      rg4js('recordBreadcrumb', 'a message', {customData: true});
+
+      setTimeout(function() {
+        throw new Error('Unhandled error');
+      }, 1000);
+    </script>
+
+  </body>
+</html>
