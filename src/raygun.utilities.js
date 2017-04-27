@@ -1,81 +1,9 @@
-/*globals Raygun, __DEV__ */
+/*globals __DEV__ */
 
 // js-url - see LICENSE file
 
-var raygunUtilityFactory = function (window) {
-
-  // Mozilla's toISOString() shim for IE8
-  if (!Date.prototype.toISOString) {
-      (function () {
-          function pad(number) {
-              var r = String(number);
-              if (r.length === 1) {
-                  r = '0' + r;
-              }
-              return r;
-          }
-
-           Date.prototype.toISOString = function () {
-              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':' + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
-           };
-      }());
-  }
-
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(searchElement, fromIndex) {
-      var k;
-      if (this == null) {
-        throw new TypeError('"this" is null or not defined');
-      }
-      var o = Object(this);
-      var len = o.length >>> 0;
-
-      if (len === 0) {
-        return -1;
-      }
-      var n = fromIndex | 0;
-
-      if (n >= len) {
-        return -1;
-      }
-      k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-
-      while (k < len) {
-        if (k in o && o[k] === searchElement) {
-          return k;
-        }
-        k++;
-      }
-      return -1;
-    };
-  }
-
-  // Mozilla's bind() shim for IE8
-  if (!Function.prototype.bind) {
-      Function.prototype.bind = function (oThis) {
-          if (typeof this !== 'function') {
-              throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-          }
-
-            var aArgs = Array.prototype.slice.call(arguments, 1),
-              fToBind = this,
-              FNOP = function () {
-              },
-              fBound = function () {
-                  return fToBind.apply(this instanceof FNOP && oThis ? this : oThis,
-                      aArgs.concat(Array.prototype.slice.call(arguments)));
-              };
-
-          FNOP.prototype = this.prototype;
-          fBound.prototype = new FNOP();
-
-          return fBound;
-      };
-  }
-
+window.raygunUtilityFactory = function (window, Raygun) {
   var rg = {
-    Utilities: {
       getUuid: function () {
           function _p8(s) {
               var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -86,7 +14,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       createCookie: function (name, value, hours) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
@@ -104,7 +32,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       readCookie: function (name, doneCallback) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               doneCallback(null, 'none');
 
               return;
@@ -130,11 +58,11 @@ var raygunUtilityFactory = function (window) {
       },
 
       clearCookie: function (key) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
-          Raygun.Utilities.createCookie(key, '', -1);
+          this.createCookie(key, '', -1);
       },
 
       log: function (message, data) {
@@ -206,6 +134,16 @@ var raygunUtilityFactory = function (window) {
           return o3;
       },
 
+      mergeMutate: function(o1, o2) {
+        var a;
+
+        for(a in o2) {
+          o1[a] = o2[a];
+        }
+
+        return o1;
+      },
+
       mergeArray: function (t0, t1) {
           if (t1 != null) {
               return t0.concat(t1);
@@ -243,7 +181,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       getViewPort: function () {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return { width: 'Not available', height: 'Not available' };
           }
 
@@ -332,20 +270,89 @@ var raygunUtilityFactory = function (window) {
 
         return '';
         })(arg, url);
-      }
+      },
+      // Replace existing function on object with new, but call old one afterwards still
+      // Returns function that when called will un-enhance object
+      enhance: function(object, property, newFunction) {
+        var existingFunction = object[property];
 
-    }
+        object[property] = function enhanced() {
+          newFunction.apply(this, arguments);
+
+          if (typeof existingFunction === "function") {
+            existingFunction.apply(this, arguments);
+          }
+        };
+
+        return function unhenance() {
+          object[property] = existingFunction;
+        };
+      },
+      // Theoretically cross browser event listening
+      // Returns function that when called will remove handler
+      addEventHandler: function(element, event, handler, useCapture) {
+        var capture = useCapture || false;
+
+        if (element.addEventListener) {
+          element.addEventListener(event, handler, capture);
+        } else if (element.attachEvent) {
+          element.attachEvent('on' + event, handler);
+        } else {
+          element['on' + event] = handler;
+        }
+
+        return function() {
+          if (element.removeEventListener) {
+            element.removeEventListener(event, handler, capture);
+          } else if (element.detachEvent) {
+            element.detachEvent('on' + event, handler);
+          } else {
+            element['on' + event] = function() {};
+          }
+        };
+      },
+      nodeText: function(node) {
+        var text = node.textContent || node.innerText || "";
+
+        if (["submit", "button"].indexOf(node.type) !== -1) {
+          text = node.value;
+        }
+
+        text = text.replace(/^\s+|\s+$/g, "");
+
+        return text;
+      },
+      // Returns simple CSS selector to target node
+      nodeSelector: function(node) {
+        var parts = [node.tagName];
+
+        if (node.id) {
+          parts.push("#" + node.id);
+        }
+
+        if (node.className && node.className.length) {
+          parts.push(
+            "." + node.className.split(" ").join(".")
+          );
+        }
+
+        return parts.join("");
+      },
+      truncate: function(text, length) {
+        var omission = "(...)";
+
+        if (text.length > length) {
+          return text.slice(0, length - omission.length) + omission;
+        } else {
+           return text;
+        }
+      }
   };
 
-  if (!window.Raygun) {
-      window.Raygun = rg;
-  }
-
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (rg.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
+
+  return rg;
 };
-
-
-raygunUtilityFactory(window);

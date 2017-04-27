@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Raygun4JS with V2 API</title>
@@ -43,6 +44,9 @@
       setTimeout(function () {
         rg4js('apiKey', 'abcdef==');
         rg4js('enableCrashReporting', true);
+        rg4js('options', {
+          allowInsecureSubmissions: true
+        });
       }, 1);
       
       (function (scope) {

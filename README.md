@@ -254,6 +254,52 @@ $scope.$on('$routeChangeSuccess', function () {
 });
 ```
 
+### Breadcrumbs API
+
+#### Configuration options
+
+These can be controlled via the v2 API
+
+```javascript
+rg4js('one-of-the-below-options')
+```
+
+`disableAutoBreadcrumbs` - Disable all the automatic breadcrumb integrations (clicks, requests, console logs and navigation events). This has an inverse `enableAutoBreadcrumbs` which is the default
+
+`disableAutoBreadcrumbsConsole` - Disable just automatic breadcrumb creation from console messages
+
+`disableAutoBreadcrumbsNavigation` - Disable just automatic breadcrumb creation from navigation events
+
+`disableAutoBreadcrumbsClicks` - Disable just automatic breadcrumb creation from element clicks
+
+`disableAutoBreadcrumbsXHR` - Disable just automatic breadcrumb creation XMLHttpRequests
+
+All of the above have an inverse `enableAutoBreadcrumbs<type>` which is the default
+
+`setAutoBreadcrumbsXHRIgnoredHosts` - This can be set to an array of hosts to not create a breadcrumb for requests/responses to. It can either be a string that an indexOf check against the host is made, or a regex which is matched against the host.
+
+`setBreadcrumbLevel` - Set the minimum level of breadcrumb to record. This works the same as log levels, you may set it to debug, info, warning and error and it will only keep breadcrumbs with a level equal or above what this is set to. Defaults to info.
+
+#### Logging a breadcrumb
+
+Breadcrumbs can be manually logged via `rg4js('recordBreadcrumb', ...)`
+
+There are two argument formats
+
+`rg4js('recordBreadcrumb', 'breadcrumb-message', {object: 'that will be attached to the breadcrumb custom data'})`
+
+This is the quickest way to log basic breadcrumbs, requiring only a message and optionally an object to attach some metadata
+
+If you wish to have further control of the breadcrumb and configure the level (debug, info, warning, error) or set the class/method the breadcrumb was logged from
+
+`rg4js('recordBreadcrumb', {message: 'breadcrumb-message', metadata: {goes: 'here'}, level: 'info', location: 'class:method'})`
+
+You may use the above argument format
+
+#### Payload size conservation
+
+To help ensure your payload does not become too large only the most recent 32 breadcrumbs are kept, as well as limiting the size of recorded network request/response texts to 500 characters.
+
 ### Multiple Raygun objects on a single page
 
 You can have multiple Raygun objects in global scope. This lets you set them up with different API keys for instance, and allow you to send different errors to more than one application in the Raygun web app.
