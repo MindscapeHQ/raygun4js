@@ -290,14 +290,23 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                 }
             }
 
-            self.recordBreadcrumb({
-                type: 'request',
-                message: 'Opening request to ' + url,
-                level: 'info',
-                metadata: {
+            Raygun.Utilities.enhance(this, 'send', function() {
+                var metadata = {
                     method: method
+                };
+
+                if (arguments[0]) {
+                    metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
                 }
+
+                self.recordBreadcrumb({
+                    type: 'request',
+                    message: 'Opening request to ' + url,
+                    level: 'info',
+                    metadata: metadata
+                });
             });
+
 
             this.addEventListener('load', function() {
                 self.recordBreadcrumb({
@@ -307,7 +316,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                     metadata: {
                         status: this.status,
                         responseURL: this.responseURL,
-                        responseText: Raygun.Utilities.truncate(this.responseText, 150),
+                        responseText: Raygun.Utilities.truncate(this.responseText, 500),
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
