@@ -1,10 +1,9 @@
-/*globals Raygun, __DEV__ */
+/*globals __DEV__ */
 
 // js-url - see LICENSE file
 
-var raygunUtilityFactory = function (window) {
+window.raygunUtilityFactory = function (window, Raygun) {
   var rg = {
-    Utilities: {
       getUuid: function () {
           function _p8(s) {
               var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -15,7 +14,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       createCookie: function (name, value, hours) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
@@ -33,7 +32,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       readCookie: function (name, doneCallback) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               doneCallback(null, 'none');
 
               return;
@@ -59,11 +58,11 @@ var raygunUtilityFactory = function (window) {
       },
 
       clearCookie: function (key) {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return;
           }
 
-          Raygun.Utilities.createCookie(key, '', -1);
+          this.createCookie(key, '', -1);
       },
 
       log: function (message, data) {
@@ -135,6 +134,16 @@ var raygunUtilityFactory = function (window) {
           return o3;
       },
 
+      mergeMutate: function(o1, o2) {
+        var a;
+
+        for(a in o2) {
+          o1[a] = o2[a];
+        }
+
+        return o1;
+      },
+
       mergeArray: function (t0, t1) {
           if (t1 != null) {
               return t0.concat(t1);
@@ -172,7 +181,7 @@ var raygunUtilityFactory = function (window) {
       },
 
       getViewPort: function () {
-          if (Raygun.Utilities.isReactNative()) {
+          if (this.isReactNative()) {
               return { width: 'Not available', height: 'Not available' };
           }
 
@@ -338,18 +347,12 @@ var raygunUtilityFactory = function (window) {
            return text;
         }
       }
-    }
   };
 
-  if (!window.Raygun) {
-      window.Raygun = rg;
-  }
-
   var _defaultReactNativeGlobalHandler;
-  if (Raygun.Utilities.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
+  if (rg.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
       _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
+
+  return rg;
 };
-
-
-raygunUtilityFactory(window);

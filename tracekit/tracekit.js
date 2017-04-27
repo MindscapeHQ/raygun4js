@@ -12,6 +12,7 @@ var _oldTraceKit = window.TraceKit;
 // global reference to slice
 var _slice = [].slice;
 var UNKNOWN_FUNCTION = '?';
+var Raygun;
 
 
 /**
@@ -28,6 +29,15 @@ function _has(object, key) {
 function _isUndefined(what) {
     return typeof what === 'undefined';
 }
+
+/**
+ * TraceKit gets loaded before Raygun
+ * Raygun uses this callback to give TraceKit an instance of Raygun
+ * This is required to use the Utilities module
+ */
+TraceKit.setRaygun = function setRaygun(rg) {
+    Raygun = rg;
+};
 
 /**
  * TraceKit.noConflict: Export TraceKit out to another variable
