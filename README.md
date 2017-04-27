@@ -84,10 +84,13 @@ npm install raygun4js --save
 
 // In a central module, reference and install the library
 
-var rg4js = require('raygun4js');
+import rg4js from 'raygun4js'; // Import the library with this syntax
+var rg4js = require('raygun4js'); // Or this syntax
 
 rg4js('enableCrashReporting', true);
 rg4js('apiKey', 'paste_your_api_key_here');
+// Any other config options you want such as rg4js('setUser', ...) [see below]
+rg4js('boot'); // For React Native only: add this after all other config options have been called
 ```
 
 All unhandled errors will then be sent to Raygun. You can also `require('raygun4js')` in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.

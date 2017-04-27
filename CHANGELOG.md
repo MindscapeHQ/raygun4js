@@ -1,3 +1,7 @@
+* v2.6.0
+  - Initial beta support for React Native in Release (production) mode
+  - Fixed indexOf bug for IE8 compatability	
+
 * v2.5.3
   - Fixed offline errors failing to send to Raygun when back online.
 

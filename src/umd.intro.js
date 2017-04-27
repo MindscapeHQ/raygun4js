@@ -23,7 +23,8 @@
   // script is executed, and later overwritten by the loader once it's finished
   (function(wind) { wind['RaygunObject'] = 'rg4js';
   wind[wind['RaygunObject']] = wind[wind['RaygunObject']] || function() {
-      if (wind && typeof wind['Raygun'] === 'undefined' || document.readyState !== 'complete') {
+      if (wind && typeof wind['Raygun'] === 'undefined' ||
+        (typeof document === 'undefined' || document.readyState !== 'complete')) {
         // onload hasn't been called, cache the commands just like the snippet
         (wind[wind['RaygunObject']].o = wind[wind['RaygunObject']].o || []).push(arguments)
       } else {
