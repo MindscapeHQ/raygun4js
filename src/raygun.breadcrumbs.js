@@ -273,6 +273,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
+        return;
         var self = this;
 
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
@@ -347,6 +348,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
+        return;
         this.disableXHRLogging();
     };
 

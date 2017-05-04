@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.0 - 2017-04-27
+/*! Raygun4js - v2.6.1 - 2017-05-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3499,6 +3499,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
+        return;
         var self = this;
 
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
@@ -3573,6 +3574,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
+        return;
         this.disableXHRLogging();
     };
 
