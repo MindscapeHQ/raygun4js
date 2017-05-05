@@ -10,6 +10,7 @@
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function() {
         this.MAX_BREADCRUMBS = 32;
+        this.MAX_MESSAGE_SIZE = 1024;
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
         this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
@@ -62,6 +63,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         }
 
         if (this.shouldRecord(crumb)) {
+            crumb.message = Raygun.Utilities.truncate(crumb.message, this.MAX_MESSAGE_SIZE);
+
             this.breadcrumbs.push(crumb);
             this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
         }
