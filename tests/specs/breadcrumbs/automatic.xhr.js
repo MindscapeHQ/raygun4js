@@ -17,4 +17,14 @@ describe("XHR tracking", function() {
     expect(breadcrumbs[1].type).toBe("request");
     expect(breadcrumbs[1].message).toContain("Finished request");
   });
+
+  it("works when the responseType is non text", function() {
+    var breadcrumbs = common.getBreadcrumbs();
+
+    expect(breadcrumbs[2].type).toBe("request");
+    expect(breadcrumbs[2].message).toContain("Opening request");
+
+    expect(breadcrumbs[3].type).toBe("request");
+    expect(breadcrumbs[3].message).toContain("Finished request");
+  });
 });
