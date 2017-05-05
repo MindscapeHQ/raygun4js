@@ -23,9 +23,11 @@
   };
 
   XMLHttpRequest.prototype.send = function() {
-    var json = JSON.parse(arguments[0]);
-    if (json)
-      window.__requestPayloads.push(json);
+    if (arguments[0]) {
+      var json = JSON.parse(arguments[0]);
+      if (json)
+        window.__requestPayloads.push(json);
+    }
 
     origSend.apply(this, arguments);
   }

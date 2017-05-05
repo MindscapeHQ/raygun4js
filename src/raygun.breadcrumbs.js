@@ -10,6 +10,7 @@
 var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     Raygun.Breadcrumbs = function() {
         this.MAX_BREADCRUMBS = 32;
+        this.MAX_MESSAGE_SIZE = 1024;
         this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
         this.DEFAULT_BREADCRUMB_LEVEL = 'info';
         this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
@@ -62,6 +63,8 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
         }
 
         if (this.shouldRecord(crumb)) {
+            crumb.message = Raygun.Utilities.truncate(crumb.message, this.MAX_MESSAGE_SIZE);
+
             this.breadcrumbs.push(crumb);
             this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
         }
@@ -273,7 +276,6 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
-        return;
         var self = this;
 
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', function() {
@@ -296,7 +298,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                     method: method
                 };
 
-                if (arguments[0]) {
+                if (arguments[0] && typeof(arguments[0]) === 'string') {
                     metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
                 }
 
@@ -310,6 +312,11 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
 
 
             this.addEventListener('load', function() {
+                var responseText = 'N/A for non text responses';
+
+                if (this.responseType === '' || this.responseType === 'text') {
+                    responseText = Raygun.Utilities.truncate(this.responseText, 500);
+                }
                 self.recordBreadcrumb({
                     type: 'request',
                     message: 'Finished request to ' + url,
@@ -317,7 +324,7 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
                     metadata: {
                         status: this.status,
                         responseURL: this.responseURL,
-                        responseText: Raygun.Utilities.truncate(this.responseText, 500),
+                        responseText: responseText,
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
@@ -348,7 +355,6 @@ var raygunBreadcrumbsFactory = function(window, $, Raygun) {
     };
 
     Raygun.Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
-        return;
         this.disableXHRLogging();
     };
 

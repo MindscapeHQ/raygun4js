@@ -25,7 +25,12 @@
       rg4js('disableAutoBreadcrumbsNavigation');
 
       setTimeout(function() {
-        $.get('/');
+        $.get('automatic.xhr.html').always(function() {
+          var request = new XMLHttpRequest();
+          request.open('GET', 'automatic.xhr.html');
+          request.responseType = 'document';
+          request.send();
+        });
 
         setTimeout(function() {
           throw new Error('Unhandled error');
