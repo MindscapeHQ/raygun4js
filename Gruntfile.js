@@ -22,7 +22,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.breadcrumbs.js', 'src/raygun.loader.js'],
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js'],
           'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.utilities.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.breadcrumbs.js', 'src/raygun.loader.js'],
           'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.breadcrumbs.js', 'src/raygun.loader.js', 'src/umd.outro.js']
         }

@@ -6,11 +6,12 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
 
-var raygunFactory = function (window, $, undefined) {
+var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
     var Raygun = {};
     Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+    Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
 
     // Constants
     var ProviderStates = {
@@ -48,7 +49,7 @@ var raygunFactory = function (window, $, undefined) {
         _excludedUserAgents = null,
         _filterScope = 'customData',
         _rum = null,
-        _breadcrumbs = null,
+        _breadcrumbs = new Raygun.Breadcrumbs(),
         _pulseMaxVirtualPageDuration = null,
         _pulseIgnoreUrlCasing = true,
         _providerState = ProviderStates.LOADING,
@@ -57,8 +58,10 @@ var raygunFactory = function (window, $, undefined) {
         _trackEventQueue = [],
         $document;
 
+   var rand = Math.random();
     var _publicRaygunFunctions =
-    {
+      {
+         Rand: rand,
         Options: { },
 
         noConflict: function () {
@@ -71,9 +74,8 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
-        constructNewRaygun: function () {
-            var rgInstance = window.raygunFactory(window, window.jQuery);
-            window.raygunJsUrlFactory(window, rgInstance);
+        constructNewRaygun: function (forBreadcrumbs) {
+            var rgInstance = window.raygunFactory(window, window.jQuery, forBreadcrumbs);
 
             return rgInstance;
         },
@@ -128,6 +130,10 @@ var raygunFactory = function (window, $, undefined) {
                     _loadedFrom = options.from;
                 }
             }
+
+           if (!forBreadcrumbs) {
+               _breadcrumbs.setCrashReportingInstance(this.constructNewRaygun(true));
+           }
 
             ensureUser();
 
@@ -917,7 +923,7 @@ var raygunFactory = function (window, $, undefined) {
         xhr.send(data);
     }
 
-    if (!window.__raygunNoConflict) {
+    if (!window.__raygunNoConflict && !forBreadcrumbs) {
       window.Raygun = Raygun;
     }
     TraceKit.setRaygun(Raygun);

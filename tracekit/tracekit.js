@@ -36,7 +36,9 @@ function _isUndefined(what) {
  * This is required to use the Utilities module
  */
 TraceKit.setRaygun = function setRaygun(rg) {
-    Raygun = rg;
+    if (!Raygun) {
+        Raygun = rg;
+    }
 };
 
 /**
