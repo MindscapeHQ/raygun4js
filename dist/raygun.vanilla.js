@@ -2433,7 +2433,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '{{VERSION}}'
+                    'Version': '2.6.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
