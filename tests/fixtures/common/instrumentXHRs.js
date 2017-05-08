@@ -25,7 +25,7 @@
   XMLHttpRequest.prototype.send = function() {
     if (arguments[0]) {
       var json = JSON.parse(arguments[0]);
-      if (json)
+      if (json && json.foo == undefined)
         window.__requestPayloads.push(json);
     }
 

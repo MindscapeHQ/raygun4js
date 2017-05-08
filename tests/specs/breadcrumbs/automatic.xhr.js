@@ -27,4 +27,18 @@ describe("XHR tracking", function() {
     expect(breadcrumbs[3].type).toBe("request");
     expect(breadcrumbs[3].message).toContain("Finished request");
   });
+
+  it("does not log bodies when logXhrContents is false", function() {
+    var breadcrumbs = common.getBreadcrumbs();
+
+    expect(breadcrumbs[0].CustomData.requestText).toBe(undefined);
+    expect(breadcrumbs[1].CustomData.responseText).toBe("Disabled");
+  });
+
+  it("does log bodies when logXhrContents is true", function() {
+    var breadcrumbs = common.getBreadcrumbs();
+
+    expect(breadcrumbs[2].CustomData.requestText).toContain('foo');
+    expect(breadcrumbs[3].CustomData.responseText).toContain("N/A");
+  });
 });

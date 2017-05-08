@@ -173,6 +173,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'setAutoBreadcrumbsXHRIgnoredHosts':
           rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
           break;
+        case 'logContentsOfXhrCalls':
+          rg.setBreadcrumbOption('logXhrContents', pair[1]);
+          break;
       }
     }
   };
