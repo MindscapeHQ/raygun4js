@@ -128,7 +128,6 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                     _raygunApiUrl = options.apiEndpoint;
                 }
 
-                    _rum = new Raygun.RealUserMonitoring(_raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, pulseCustomLoadTimeEnabled);
                 if (options.from) {
                     _loadedFrom = options.from;
                 }
@@ -414,7 +413,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled);
                 _rum.attach();
             };
 
