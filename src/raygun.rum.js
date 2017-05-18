@@ -148,8 +148,14 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (typeof customTimings === 'object' && (
               typeof customTimings.custom1 === 'number' ||
               typeof customTimings.custom2 === 'number' ||
-              typeof customTimings.custom3 === 'number')) {
-
+              typeof customTimings.custom3 === 'number' ||
+              typeof customTimings.custom4 === 'number' ||
+              typeof customTimings.custom5 === 'number' ||
+              typeof customTimings.custom6 === 'number' ||
+              typeof customTimings.custom7 === 'number' ||
+              typeof customTimings.custom8 === 'number' ||
+              typeof customTimings.custom9 === 'number' ||
+              typeof customTimings.custom10 === 'number')) {
                   if (self.pendingPerformancePayload) {
                     var payloadObject = JSON.parse(self.pendingPerformancePayload);
                     var resourceObjects = JSON.parse(payloadObject.eventData[0].data);
