@@ -26,10 +26,11 @@
 
       setTimeout(function() {
         $.get('automatic.xhr.html').always(function() {
+          rg4js('logContentsOfXhrCalls', true);
           var request = new XMLHttpRequest();
-          request.open('GET', 'automatic.xhr.html');
+          request.open('POST', 'automatic.xhr.html');
           request.responseType = 'document';
-          request.send();
+          request.send('{"foo": 1}', false);
         });
 
         setTimeout(function() {

@@ -280,6 +280,8 @@ All of the above have an inverse `enableAutoBreadcrumbs<type>` which is the defa
 
 `setBreadcrumbLevel` - Set the minimum level of breadcrumb to record. This works the same as log levels, you may set it to debug, info, warning and error and it will only keep breadcrumbs with a level equal or above what this is set to. Defaults to info.
 
+`logContentsOfXhrCalls` - If set to true will include the body contents of XHR request and responses in Breadcrumb metadata, defaults to false
+
 #### Logging a breadcrumb
 
 Breadcrumbs can be manually logged via `rg4js('recordBreadcrumb', ...)`
