@@ -254,6 +254,10 @@ $scope.$on('$routeChangeSuccess', function () {
 });
 ```
 
+#### Tracking custom timings
+
+You can override the time when Raygun4JS considers your page to be loaded at, as well as send up to 10 custom timings of your choosing, with the Custom Timings capability. For documentation on this, see https://raygun.com/docs/pulse/customtimings.
+
 ### Breadcrumbs API
 
 #### Configuration options
