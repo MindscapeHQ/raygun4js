@@ -132,6 +132,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'trackEvent':
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
+          } else if (value.type && value.timings) {
+            rg.trackEvent(value.type, { timings: value.timings });
           }
           break;
         case 'recordBreadcrumb':

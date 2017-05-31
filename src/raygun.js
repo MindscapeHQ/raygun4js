@@ -56,6 +56,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _loadedFrom,
         _processExceptionQueue = [],
         _trackEventQueue = [],
+        _pulseCustomLoadTimeEnabled = null,
         $document;
 
    var rand = Math.random();
@@ -104,6 +105,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 _excludedUserAgents = options.excludedUserAgents || false;
                 _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
                 _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
+                _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -147,6 +149,11 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         withTags: function (tags) {
             _tags = tags;
+
+            if (_rum !== undefined && _rum !== null) {
+              _rum.withTags(tags);
+            }
+
             return Raygun;
         },
 
@@ -328,6 +335,8 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
+                } else if (type === 'customTimings' && options.timings) {
+                    _rum.sendCustomTimings(options.timings);
                 }
             }
         },
@@ -404,7 +413,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled);
                 _rum.attach();
             };
 

@@ -1,3 +1,12 @@
+* v2.6.3
+  - Adds support for tracking custom timings in Real User Monitoring
+
+* v2.6.2
+  - Fixes corner case bugs with XHRs as recorded by breadcrumbs
+
+* v2.6.1
+  - Adds breadcrumbs feature
+
 * v2.6.0
   - Initial beta support for React Native in Release (production) mode
   - Fixed indexOf bug for IE8 compatability	

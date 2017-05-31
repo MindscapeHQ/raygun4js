@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.2 - 2017-05-09
+/*! Raygun4js - v2.6.3 - 2017-05-31
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1723,6 +1723,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _loadedFrom,
         _processExceptionQueue = [],
         _trackEventQueue = [],
+        _pulseCustomLoadTimeEnabled = null,
         $document;
 
    var rand = Math.random();
@@ -1771,6 +1772,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 _excludedUserAgents = options.excludedUserAgents || false;
                 _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
                 _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
+                _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
 
                 if (options.apiUrl) {
                     _raygunApiUrl = options.apiUrl;
@@ -1814,6 +1816,11 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         withTags: function (tags) {
             _tags = tags;
+
+            if (_rum !== undefined && _rum !== null) {
+              _rum.withTags(tags);
+            }
+
             return Raygun;
         },
 
@@ -1995,6 +2002,8 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             if (Raygun.RealUserMonitoring !== undefined && _rum) {
                 if (type === 'pageView' && options.path) {
                     _rum.virtualPageLoaded(options.path);
+                } else if (type === 'customTimings' && options.timings) {
+                    _rum.sendCustomTimings(options.timings);
                 }
             }
         },
@@ -2071,7 +2080,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled);
                 _rum.attach();
             };
 
@@ -2433,7 +2442,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.2'
+                    'Version': '2.6.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2601,7 +2610,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
 window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customTimingsEnabled) {
         var self = this;
         var _private = {};
 
@@ -2613,6 +2622,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.excludedUserAgents = excludedUserAgents;
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
+        this.customTimingsEnabled = customTimingsEnabled;
+        this.pendingPerformancePayload = null;
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -2652,12 +2663,13 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.virtualPage = null;
         this.user = user;
         this.version = version;
+        this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
-                self.pageLoaded(isNewSession);
+              self.pageLoaded(isNewSession);
             });
 
             var clickHandler = function () {
@@ -2682,6 +2694,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                             user: self.user,
                             version: self.version || 'Not supplied',
                             device: navigator.userAgent,
+                            tags: self.tags,
                             data: JSON.stringify(data)
                         }]
                     };
@@ -2716,6 +2729,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                         type: 'session_start',
                         user: self.user,
                         version: self.version || 'Not supplied',
+                        tags: self.tags,
                         device: navigator.userAgent
                     }]
                 };
@@ -2724,6 +2738,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             self.sendPerformance(true, true);
+            
             self.heartBeat();
 
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
@@ -2733,8 +2748,39 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         };
 
+        this.sendCustomTimings = function (customTimings) {
+            if (typeof customTimings === 'object' && (
+              typeof customTimings.custom1 === 'number' ||
+              typeof customTimings.custom2 === 'number' ||
+              typeof customTimings.custom3 === 'number' ||
+              typeof customTimings.custom4 === 'number' ||
+              typeof customTimings.custom5 === 'number' ||
+              typeof customTimings.custom6 === 'number' ||
+              typeof customTimings.custom7 === 'number' ||
+              typeof customTimings.custom8 === 'number' ||
+              typeof customTimings.custom9 === 'number' ||
+              typeof customTimings.custom10 === 'number')) {
+                  if (self.pendingPerformancePayload) {
+                    var payloadObject = JSON.parse(self.pendingPerformancePayload);
+                    var resourceObjects = JSON.parse(payloadObject.eventData[0].data);
+                    
+                    resourceObjects[0].customTiming = customTimings;
+
+                    payloadObject.eventData[0].data = JSON.stringify(resourceObjects);
+
+                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payloadObject));
+
+                    self.pendingPerformancePayload = null;
+                  }
+              }
+        };
+
         this.setUser = function (user) {
             self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
         };
 
         this.endSession = function () {
@@ -2769,6 +2815,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                                 user: self.user,
                                 version: self.version || 'Not supplied',
                                 device: navigator.userAgent,
+                                tags: self.tags,
                                 data: dataJson
                             }]
                         };
@@ -2826,11 +2873,17 @@ var raygunRumFactory = function (window, $, Raygun) {
                     user: self.user,
                     version: self.version || 'Not supplied',
                     device: navigator.userAgent,
+                    tags: self.tags,
                     data: JSON.stringify(performanceData)
                 }]
             };
 
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+            if (!self.customTimingsEnabled) {
+              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+            } else {
+              // Queue the WRT until the custom timings are provided
+              self.pendingPerformancePayload = JSON.stringify(payload);
+            }
         };
 
         function stringToByteLength(str) {
@@ -2861,7 +2914,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var sessionCookie = readCookie(self.cookieName);
                 var id = readSessionCookieElement(sessionCookie, 'id');
 
-                if (id === 'undefined') {
+                if (id === 'undefined' || id === 'null') {
                     self.sessionId = randomKey(32);
                     createCookie(self.cookieName, self.sessionId);
                     callback(true);
@@ -3759,6 +3812,8 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'trackEvent':
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
+          } else if (value.type && value.timings) {
+            rg.trackEvent(value.type, { timings: value.timings });
           }
           break;
         case 'recordBreadcrumb':
