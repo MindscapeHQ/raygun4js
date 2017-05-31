@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.3-SNAPSHOT - 2017-05-18
+/*! Raygun4js - v2.6.3 - 2017-05-31
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -741,7 +741,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         var stacktrace = ex.stacktrace;
 
         var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
-            lines = stacktrace !== null ? stacktrace.split('\n') : stacktrace,
+            lines = stacktrace ? stacktrace.split('\n') : [],
             stack = [],
             parts;
 
@@ -2442,7 +2442,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.3-SNAPSHOT'
+                    'Version': '2.6.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3303,6 +3303,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
 
         this.breadcrumbLevel = 'info';
+        this.logXhrContents = false;
         this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
         this.breadcrumbs = [];
         this.raygunInstance = {send: function() {}};
@@ -3390,8 +3391,10 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     Breadcrumbs.prototype.setOption = function(option, value) {
         if (option === 'breadcrumbsLevel') {
             this.setBreadcrumbLevel(value);
-        } else {
+        } else if (option === 'xhrIgnoredHosts') {
             this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+        } else if (option === 'logXhrContents') {
+            this.logXhrContents = value;
         }
     };
 
@@ -3579,13 +3582,13 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', self.wrapWithHandler(function() {
             var initTime = new Date().getTime();
-            var url = arguments[1];
+            var url = arguments[1] || "Unknown";
             var method = arguments[0];
 
             for (var i = 0;i < self.xhrIgnoredHosts.length;i ++) {
                 var host = self.xhrIgnoredHosts[i];
 
-                if (typeof host === 'string' && url.indexOf(host) > -1) {
+                if (typeof host === 'string' && url && url.indexOf(host) > -1) {
                     return;
                 } else if (typeof host === 'object' && host.exec(url)) {
                     return;
@@ -3597,7 +3600,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     method: method
                 };
 
-                if (arguments[0] && typeof(arguments[0]) === 'string') {
+                if (arguments[0] && typeof(arguments[0]) === 'string' && self.logXhrContents) {
                     metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
                 }
 
@@ -3616,6 +3619,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                 if (this.responseType === '' || this.responseType === 'text') {
                     responseText = Raygun.Utilities.truncate(this.responseText, 500);
                 }
+
                 self.recordBreadcrumb({
                     type: 'request',
                     message: 'Finished request to ' + url,
@@ -3623,7 +3627,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     metadata: {
                         status: this.status,
                         responseURL: this.responseURL,
-                        responseText: responseText,
+                        responseText: self.logXhrContents ? responseText : 'Disabled',
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
@@ -3850,6 +3854,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'setAutoBreadcrumbsXHRIgnoredHosts':
           rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
+          break;
+        case 'logContentsOfXhrCalls':
+          rg.setBreadcrumbOption('logXhrContents', pair[1]);
           break;
       }
     }
