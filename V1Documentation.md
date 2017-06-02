@@ -1,26 +1,22 @@
-# Raygun4js
+# Raygun4js V1 Documentation
 
-[Raygun.io][raygunio] provider for client-side JavaScript
+The following documentation is for Raygun4js V1 only. Raygun4js V1 should only be used by legacy customers or for applications that block scripts.
 
-[raygunio]: https://raygun.io
+Go to [V2 documentation][v2docs].
+
+[v2docs]: https://github.com/MindscapeHQ/raygun4js/blob/master/README.md
 
 ## Getting Started
 
 **Step 1**
 
-Add this snippet to your markup, before the closing `</head>` tag:
+Download the Raygun4js script here. You can also download a version without the jQuery hooks if you are not using jQuery or you wish to provide your own hooks.
 
-```javascript
-<script type="text/javascript">
-    !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
-    (a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
-    f.async=1,f.src=d,g.parentNode.insertBefore(f,g),h=a.onerror,a.onerror=function(b,c,d,f,g){
-    h&&h(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],a[e].q.push({
-    e:g})}}(window,document,"script","//cdn.raygun.io/raygun4js/raygun.min.js","rg4js");
-</script>
+Then include the script like any other library:
+
 ```
-
-This will fetch the raygun4js script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
+<script src="path/to/raygun.min.js" type="text/javascript"></script>
+```
 
 **Step 2**
 
@@ -28,8 +24,8 @@ Add the following lines to your JS site code and paste in your API key (from you
 
 ```javascript
 <script type="text/javascript">
-    rg4js('apiKey', 'paste_your_api_key_here');
-    rg4js('enableCrashReporting', true);
+  Raygun.init('yourApiKey', { // Other setup options here});
+  Raygun.attach();
 </script>
 ```
 
@@ -37,17 +33,13 @@ This will configure the provider to send to your Raygun app, and to automaticall
 
 That's it for the basic setup! See **Usage** below for more info on how to send errors.
 
-## Alternative setup options
+For mutating the provider after initial setup, you can interact with the global Raygun object after page load. By example with plain jQuery:
 
-Note: This library can now be interacted with in two ways, the V1 API and the V2 API. The V1 API is available as 'public' functions on the global Raygun object, and is intended to be used to control the provider during runtime. Legacy setup methods remain on this API for backwards compatibility with 1.x releases. The V2 API is made available when using the snippet (above), and is used to asynchronously configure the provider during onLoad. This is the recommended approach for new setups.
-
-If you are installing the provider locally using a package manager or manually, you can either use the V2 API by adding the snippet and replace the second-last parameter with the URL of your hosted version of the script, or use the V1 API. The snippet/V2 approach does not support the script being bundled with other vendor scripts, but the V1 API does.
-
-**Snippet without page load error handler**
-
-If you do not want errors to be caught while the page is loading, [use this snippet here][nohandler].
-
-[nohandler]: https://raw.github.com/MindscapeHQ/raygun4js/master/src/snippet/minified.nohandler.js
+```javascript
+$(window).load(function () {
+  Raygun.withTags(["Loaded"]);
+});
+```
 
 ### Synchronous methods
 
@@ -59,15 +51,27 @@ Run `bower install raygun4js`
 
 #### With NPM
 
-```javascript
-npm install raygun4js --save
-```
+`npm install raygun4js --save`
 
 This lets you require the library with tools such as Webpack or Browserify.
 
 #### From NuGet
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
+
+#### CDN
+
+Raygun4JS can also be loaded directly from our content delivery network:
+
+```javascript
+<script type="text/javascript" src="//cdn.raygun.io/raygun4js/raygun.min.js"></script>
+```
+
+It is available using HTTP or HTTPS.
+
+The most current release is always available in /raygun4js/, while previous releases are available as subdirectories, for instance /raygun4js/1.14.0/raygun.js. The vanilla versions are also available as below.
+
+Note that the CDN's current unversioned release (/raygun4js/raygun.js) may lag behind the package managers by around a week, to ensure stability. When a new version is released, this will be available immediately from its versioned folder as above.
 
 #### Manual download
 
@@ -85,8 +89,10 @@ the jQuery hooks if you are not using jQuery or you wish to provide your own hoo
 To send errors manually:
 
 ```javascript
+Raygun.init("apikey");
+
 try {
-  throw new Error('oops');
+  throw new Error("Description of the error");
 }
 catch(e) {
   Raygun.send(e);
@@ -100,10 +106,6 @@ You also need to throw errors with ```throw new Error('foo')``` instead of ```th
 To automatically catch and send unhandled errors, you can attach the automatic window.onerror handler callback:
 
 ```javascript
-// V2
-rg4js('enableCrashReporting', true);
-
-// V1
 Raygun.attach();
 ```
 
@@ -115,38 +117,10 @@ Raygun.detach();
 
 **IE8**
 
-If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will
-need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider
-will only submit over HTTPS which IE8 will not allow while being served over HTTP.
+If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider will only submit over HTTPS which IE8 will not allow while being served over HTTP.
 
 ```javascript
-// V2
-rg4js('options', {
-  allowInsecureSubmissions: true
-});
-
-// V1
 Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
-```
-
-## Documentation
-
-### Differences between Raygun4JS V1 and V2
-
-This provider supports two APIs for interacting with the provider, V1 and V2.
-
-V1 remains unchanged from previous versions, and all current code is backwards compatible. This API is of the form where functions can be called on the global `Raygun` object, for instance `Raygun.init('your_apikey').attach()`.
-
-V2 supports a new API for interacting with the script as it is loaded using the asynchronous snippet. A new global function is made available, `rg4js()` (configurable), which accepts parameters that are applied to the provider once it is download asynchronously. This API is of the form `rg4js('init', 'your_apikey')`.
-
-For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `rg4js(functionName, value)` and vice versa (with the exception of `send()`).
-
-For mutating the provider after initial setup, you can interact with the global Raygun object after page load. By example with plain jQuery:
-
-```javascript
-$(window).load(function () {
-  Raygun.withTags(["Loaded"]);
-});
 ```
 
 ### Initialization Options
@@ -154,12 +128,6 @@ $(window).load(function () {
 To configure the provider, call this and pass in an options object:
 
 ```javascript
-// V2
-rg4js('options', {
-  // Add some or all of the options below
-});
-
-//V1
 Raygun.init('your_apikey', {
   // Add some or all of the options below
 });
@@ -199,20 +167,20 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 An example:
 
 ```javascript
-rg4js('options', {
+Raygun.init('apikey', {
   allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
   ignoreAjaxError: true,
   debugMode: true,
   ignore3rdPartyErrors: false,
   wrapAsynchronousCallbacks: true,
-  excludedHostnames: ['\.local'],
-  excludedUserAgents: ['Mosaic'],
-  disableCrashReporting: false,
+  excludedHostnames: ['localhost', '\.dev'],
+  excludedUserAgents: ['PhantomJS', 'MSIE'],
+  disableErrorTracking: false,
   disablePulse: false,
-  pulseMaxVirtualPageDuration: 1800000,
+  pulseMaxVirtualPageDuration: 1800000
   pulseIgnoreUrlCasing: false
-});
+}).attach();
 ```
 
 ### Pulse API
@@ -268,17 +236,7 @@ Only one Raygun object can be attached as the window.onerror handler at one time
 If you already have an variable called Raygun attached to `window`, you can prevent the provider from overwriting this by enabling NoConflict mode:
 
 ```javascript
-// V2
-rg4js('noConflict', true);
-
-// V1
 Raygun.noConflict();
-```
-
-To then get an instance of the Raygun object when using V2, call this once the page is loaded:
-
-```javascript
-var raygun = rg4js('getRaygunInstance');
 ```
 
 ### Callback Events
@@ -286,12 +244,6 @@ var raygun = rg4js('getRaygunInstance');
 #### onBeforeSend
 
 ```javascript
-// V2
-rg4js('onBeforeSend', function (payload) {
-  return payload;
-});
-
-// V1
 Raygun.onBeforeSend(function (payload) {
   return payload;
 });
@@ -319,12 +271,6 @@ Raygun.onBeforeSend(myBeforeSend);
 #### onAfterSend
 
 ```javascript
-// V2
-rg4js('onAfterSend', function (xhrResponse) {
-  // Inspect the XHR response here
-});
-
-// V1
 Raygun.onAfterSend(function (xhrResponse) {
   // Inspect the XHR response here
 });
@@ -335,13 +281,9 @@ Call this function and pass in a function which takes one parameter (see the exa
 #### onBeforeXHR
 
 ```javascript
-// V2
-rg4js('onBeforeXHR', function (xhr) {
+Raygun.onBeforeXHR(function (xhr) {
   // Mutate the xhr parameter as per your needs
 });
-
-// V1
-Raygun.onBeforeXHR(function (xhr) { });
 ```
 
 Call this function when you want control over the XmlHttpRequest object that is used to send error payloads to the API. Pass in a callback that receives one parameter (which is the XHR object). Your callback will be called after the XHR object is `open`ed, immediately before it is sent.
@@ -359,24 +301,20 @@ var groupingKeyCallback = function (payload, stackTrace, options) {
   return payload.Details.Error.Message; // Naive message-based grouping only
 };
 
-// V2
-rg4js('groupingKey', groupingKeyCallback);
-
-// V1
 Raygun.groupingKey(groupingKeyCallback);
 ```
 
 ### Sending custom data
+
+The Raygun object has a withCustomData() function where you can pass in JavaScript objects that will be sent with each error that occurs. This allows you to provide any useful data that is global or in scope.
+
+There are two ways to do this:
 
 #### On initialization:
 
 Custom data variables (objects, arrays etc) can be added by calling the withCustomData function on the Raygun object:
 
 ```javascript
-// V2
-rg4js('withCustomData', { foo: 'bar' });
-
-// V2
 Raygun.withCustomData({ foo: 'bar' });
 ```
 
@@ -402,6 +340,8 @@ function getMyData() {
 Raygun.withCustomData(getMyData);
 ```
 
+When an error is thrown, the custom data will contain a 'num' key with a value of 2.
+
 `getMyData` will be called when Raygun4JS is about to send an error, which will construct the custom data. This will be merged with any custom data provided on a Raygun.send() call.
 
 ### Adding tags
@@ -411,10 +351,12 @@ The Raygun dashboard can also display tags for errors. These are arrays of strin
 **On initialization:**
 
 ```javascript
-// V2
-rg4js('withTags', ['tag1', 'tag2']);
+Raygun.init('apikey').withTags(array)
+```
 
-// V1
+Or
+
+```javascript
 Raygun.withTags(['tag1', 'tag2']);
 ```
 
@@ -441,10 +383,6 @@ Raygun.resetAnonymousUser();
 #### Disabling anonymous user tracking
 
 ```javascript
-// V2
-rg4js('options', { disableAnonymousUserTracking: true });
-
-// V1
 Raygun.init('apikey', { disableAnonymousUserTracking: true });
 ```
 
@@ -453,17 +391,6 @@ Raygun.init('apikey', { disableAnonymousUserTracking: true });
 You can provide additional information about the currently logged in user to Raygun by calling:
 
 ```javascript
-// V2
-rg4js('setUser', {
-  identifier: 'user_email_address@localhost.local',
-  isAnonymous: false,
-  email: 'emailaddress@localhost.local',
-  firstName: 'Foo',
-  fullName: 'Foo Bar',
-  uuid: 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
-});
-
-// V1
 Raygun.setUser('user_email_address@localhost.local', false, 'user_email_address@localhost.local', 'Foo Bar', 'Foo', 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55');
 ```
 
@@ -487,19 +414,15 @@ setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 
 This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no user tracking will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
-#### Resetting the user
+**Resetting the user**
 
-You can now pass in empty strings (or false to `isAnonymous`) to reset the current user for login/logout scenarios.
+You can now pass in empty strings (or false to isAnonymous) to reset the current user for login/logout scenarios.
 
 ### Version filtering
 
 You can set a version for your app by calling:
 
 ```javascript
-// V2
-rg4js('setVersion', '1.0.0.0');
-
-// V1
 Raygun.setVersion('1.0.0.0');
 ```
 
@@ -510,10 +433,6 @@ This will allow you to filter the errors in the dashboard by that version. You c
 You can blacklist keys to prevent their values from being sent it the payload by providing an array of key names:
 
 ```javascript
-// V2
-rg4js('filterSensitiveData', ['password', 'credit_card']);
-
-// V1
 Raygun.filterSensitiveData(['password', 'credit_card']);
 ```
 
@@ -524,10 +443,6 @@ You can also pass RegExp objects in the array to `filterSensitiveData`, for cont
 ```javascript
 var creditCardDataRegex = /credit\D*/; // Remove any keys that begin with 'credit'
 
-// V2
-rg4js('filterSensitiveData', [creditCardDataRegex]);
-
-// V1
 Raygun.filterSensitiveData([creditCardDataRegex]);
 ```
 
@@ -536,11 +451,6 @@ Raygun.filterSensitiveData([creditCardDataRegex]);
 By default this is applied to the UserCustomData object only (legacy behavior). To apply this to any key-value pair, you can change the filtering scope:
 
 ```javascript
-// V2
-rg4js('setFilterScope', 'all'); // Filter any key in the payload
-rg4js('setFilterScope', 'customData'); // Just filter the custom data (default)
-
-// V1
 Raygun.setFilterScope('all');
 ```
 
@@ -557,10 +467,6 @@ The provider has a feature where if errors are caught when there is no network a
 Offline saving is **disabled by default.** To change it:
 
 ```javascript
-// V2
-rg4js('saveIfOffline', true);
-
-// V1
 Raygun.saveIfOffline(true);
 ```
 
@@ -573,23 +479,14 @@ Limited support is available for IE 8 and 9 - errors will only be saved if the r
 Browsers have varying behavior for errors that occur in scripts located on domains that are not the origin. Many of these will be listed in Raygun as 'Script Error', or will contain junk stack traces. You can filter out these errors by settings this:
 
 ```javascript
-// V2
-rg4js('options', { ignore3rdPartyErrors: true });
-
-// V1
 Raygun.init('apikey', { ignore3rdPartyErrors: true });
 ```
 
-#### Whitelisting domains
+##### Whitelisting domains
 
 There is also an option to whitelist domains which you **do** want to allow transmission of errors to Raygun, which accepts the domains as an array of strings:
 
 ```javascript
-// V2
-rg4js('options', { ignore3rdPartyErrors: true });
-rg4js('whitelistCrossOriginDomains', ['code.jquery.com']);
-
-// V1
 Raygun.init('apikey', { ignore3rdPartyErrors: true }).whitelistCrossOriginDomains(['code.jquery.com']);
 ```
 
@@ -608,6 +505,55 @@ To get full stack traces from cross-origin domains or subdomains, these requirem
 In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent.
 
 Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provider will cancel the send if no data is available.
+
+##### Browser behaviour
+
+Depending on what browser your users are running, the above properties may or may not have an effect. This sums up the situation as of writing:
+
+* Chrome 30+
+* Firefox 13+
+* Opera 12.50+
+* Safari (at least 6+)
+
+In these browsers, if the script attribute is present, the HTTP header will need to be also present, otherwise the script will be blocked.
+
+Firefox has additional behavior for RuntimeErrors. These will be provided to window.onerror regardless of the two properties, as these aren’t considered a security risk. SyntaxErrors, however, will be blocked in both Gecko and WebKit browsers, if crossorigin is present but the associated cross-origin domain lacks the header.
+
+* Internet Explorer <= 10
+
+Errors will be reported with all available data in IE 10 and below.
+
+* Internet Explorer 11+
+
+#### Limitations of stack trace data
+
+Due to browser API and security limitations, in cases where the message is 'Script error', only one stack trace frame may be present. In this scenario, the line number may not reflect the actual position where the original error was thrown.
+
+For more information, check out this blog post on [CORS requirements for Script Errors].
+
+[CORS requirements for Script Errors]: https://raygun.io/blog/2015/05/fix-script-error-and-get-the-most-data-possible-from-cross-domain-js-errors/
+
+## AngularJS
+
+You can hook failed Ajax requests with $http in AngularJS by providing an Interceptor that sends to Raygun on error. One possible simple implementation:
+
+```javascript
+$httpProvider.interceptors.push(function($q, dependency1, dependency2) {
+  return {
+   'requestError': function(rejection) {
+       Raygun.send(new Error('Failed $http request', rejection));
+    },
+
+    'responseError': function(rejection) {
+       Raygun.send(new Error('Failed $http response', rejection));
+    }
+  };
+});
+```
+
+For more information, see the official docs under [Interceptors].
+
+[Interceptors]: https://docs.angularjs.org/api/ng/service/$http
 
 ## Release History
 
