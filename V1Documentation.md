@@ -10,7 +10,14 @@ Go to [V2 documentation][v2docs].
 
 **Step 1**
 
-Download the Raygun4js script here. You can also download a version without the jQuery hooks if you are not using jQuery or you wish to provide your own hooks.
+Download the [production version][min] or the [development version][max]. 
+
+You can also download a version without the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a [production version][min.vanilla] or [development version][max.vanilla].
+
+[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
+[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
+[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
+[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
 
 Then include the script like any other library:
 
@@ -72,17 +79,6 @@ It is available using HTTP or HTTPS.
 The most current release is always available in /raygun4js/, while previous releases are available as subdirectories, for instance /raygun4js/1.14.0/raygun.js. The vanilla versions are also available as below.
 
 Note that the CDN's current unversioned release (/raygun4js/raygun.js) may lag behind the package managers by around a week, to ensure stability. When a new version is released, this will be available immediately from its versioned folder as above.
-
-#### Manual download
-
-Download the [production version][min] or the [development version][max]. You can also download a version without
-the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a
-[production version][min.vanilla] or [development version][max.vanilla].
-
-[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
-[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
-[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
-[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
 
 ## Usage
 

@@ -609,15 +609,17 @@ $httpProvider.interceptors.push(function($q, dependency1, dependency2) {
   return {
    'requestError': function(rejection) {
        rg4js('send', {
-       error: 'Failed $http request', 
-       customData: [{ rejection: rejection}] 
-    });
+          error: 'Failed $http request', 
+          customData: [{ rejection: rejection}] 
+       });
+    },
 
     'responseError': function(rejection) {
        rg4js('send', {
-       error: 'Failed $http response', 
-       customData: [{ rejection: rejection}] 
-    });
+          error: 'Failed $http response', 
+          customData: [{ rejection: rejection}] 
+       });
+    }
   };
 });
 ```
