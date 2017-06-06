@@ -125,7 +125,7 @@ Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 
 ### Differences between Raygun4JS V1 and V2
 
-This provider supports two APIs for interacting with the provider, V1 and V2. For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `rg4js(functionName, value)` and vice versa (with the exception of `send()`).
+This provider supports two APIs for interacting with the provider, V1 and V2. For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `Raygun.functionName(value)` or `rg4js(functionName, value)` (with the exception of `send()`).
 
 **V1**
 V1 remains unchanged from previous versions, and all current code is backwards compatible. This API is of the form where functions can be called on the global Raygun object, for instance `Raygun.init('your_apikey').attach()`.
