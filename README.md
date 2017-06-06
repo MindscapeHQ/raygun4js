@@ -1,8 +1,8 @@
 # Raygun4js
 
-[Raygun.io][raygunio] provider for client-side JavaScript
+[Raygun.com][rayguncom] provider for client-side JavaScript
 
-[raygunio]: https://raygun.io
+[rayguncom]: https://raygun.com
 
 [![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js)
 
@@ -22,7 +22,7 @@ Add this snippet to your markup, before the closing `</head>` tag:
 </script>
 ```
 
-This will fetch the raygun4js script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
+This will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
 **Step 2**
 
@@ -603,6 +603,34 @@ To get full stack traces from cross-origin domains or subdomains, these requirem
 In Chrome, if the origin script tag and remote domain do not meet these requirements the cross-origin error will not be sent.
 
 Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provider will cancel the send if no data is available.
+
+## AngularJS
+
+You can hook failed Ajax requests with $http in AngularJS by providing an Interceptor that sends to Raygun on error. One possible simple implementation using custom data:
+
+```javascript
+$httpProvider.interceptors.push(function($q, dependency1, dependency2) {
+  return {
+   'requestError': function(rejection) {
+       rg4js('send', {
+          error: 'Failed $http request', 
+          customData: { rejection: rejection }
+       });
+    },
+
+    'responseError': function(rejection) {
+       rg4js('send', {
+          error: 'Failed $http response', 
+          customData: { rejection: rejection}
+       });
+    }
+  };
+});
+```
+
+For more information, see the official docs under [Interceptors].
+
+[Interceptors]: https://docs.angularjs.org/api/ng/service/$http
 
 ## Release History
 
