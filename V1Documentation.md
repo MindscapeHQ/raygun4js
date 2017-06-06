@@ -193,10 +193,10 @@ Raygun.init('apikey', {
   ignore3rdPartyErrors: false,
   wrapAsynchronousCallbacks: true,
   excludedHostnames: ['\.local'],
-  excludedUserAgents: ['PhantomJS', 'MSIE'],
+  excludedUserAgents: ['Mosaic'],
   disableErrorTracking: false,
   disablePulse: false,
-  pulseMaxVirtualPageDuration: 1800000
+  pulseMaxVirtualPageDuration: 1800000,
   pulseIgnoreUrlCasing: false
 })
 .attach(); // This enables Crash Reporting by attaching the automatic window.onerror handler callback
