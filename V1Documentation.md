@@ -1,6 +1,6 @@
 # Raygun4js V1 Documentation
 
-The following documentation is for Raygun4js V1 only. Raygun4js V1 should only be used by legacy customers or for applications that block scripts.
+The following documentation is for Raygun4js V1 only. Raygun4js V1 should only be used by legacy customers or for applications that can't use asynchronous loading, such as mobile apps in webviews (Cordova etc).
 
 Go to [V2 documentation][v2docs].
 
@@ -10,20 +10,17 @@ Go to [V2 documentation][v2docs].
 
 **Step 1**
 
-Download the [production version][min] or the [development version][max]. 
+Load Raygun4JS directly from Raygun's content delivery network:
 
-You can also download a version without the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a [production version][min.vanilla] or [development version][max.vanilla].
-
-[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
-[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
-[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
-[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
-
-Then include the script like any other library:
-
+```javascript
+<script type="text/javascript" src="//cdn.raygun.io/raygun4js/raygun.min.js"></script>
 ```
-<script src="path/to/raygun.min.js" type="text/javascript"></script>
-```
+
+It is available using HTTP or HTTPS.
+
+The most current release is always available in `/raygun4js/`, while previous releases are available as subdirectories, for instance `/raygun4js/1.14.0/raygun.js`. The vanilla versions are also available as below.
+
+Note that the CDN's current unversioned release (`/raygun4js/raygun.js`) may lag behind the package managers by around a week, to ensure stability. When a new version is released, this will be available immediately from its versioned folder as above.
 
 **Step 2**
 
@@ -31,7 +28,9 @@ Add the following lines to your JS site code and paste in your API key (from you
 
 ```javascript
 <script type="text/javascript">
-  Raygun.init('yourApiKey', { // Other setup options here});
+  Raygun.init('yourApiKey', { 
+    // Setup options here - see Initialization Options below
+  });
   Raygun.attach();
 </script>
 ```
@@ -47,6 +46,14 @@ $(window).load(function () {
   Raygun.withTags(["Loaded"]);
 });
 ```
+
+## Alternative setup options
+
+The Raygun4JS library can be interacted with in two ways - the V1 API and the V2 API. The V1 API is available as 'public' functions on the global Raygun object, and is intended to be used to control the provider during runtime. Legacy setup methods remain on the V1 API for backwards compatibility with 1.x releases. The V2 API is made available when using a [snippet], and is used to asynchronously configure the provider during onLoad. This is the recommended approach for new setups.
+
+[snippet]: https://github.com/MindscapeHQ/raygun4js
+
+If you are installing the provider locally using a package manager or manually, you can either use the V2 API by adding the snippet and replace the second-last parameter with the URL of your hosted version of the script, or use the V1 API. The snippet/V2 approach does not support the script being bundled with other vendor scripts, but the V1 API does.
 
 ### Synchronous methods
 
@@ -66,19 +73,14 @@ This lets you require the library with tools such as Webpack or Browserify.
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
 
-#### CDN
+#### Manual download
 
-Raygun4JS can also be loaded directly from our content delivery network:
+Download the [production version][min] or the [development version][max]. You can also download a version without the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a [production version][min.vanilla] or [development version][max.vanilla].
 
-```javascript
-<script type="text/javascript" src="//cdn.raygun.io/raygun4js/raygun.min.js"></script>
-```
-
-It is available using HTTP or HTTPS.
-
-The most current release is always available in /raygun4js/, while previous releases are available as subdirectories, for instance /raygun4js/1.14.0/raygun.js. The vanilla versions are also available as below.
-
-Note that the CDN's current unversioned release (/raygun4js/raygun.js) may lag behind the package managers by around a week, to ensure stability. When a new version is released, this will be available immediately from its versioned folder as above.
+[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
+[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
+[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
+[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
 
 ## Usage
 
@@ -118,6 +120,26 @@ If you are serving your site over HTTP and want IE8 to be able to submit JavaScr
 ```javascript
 Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 ```
+
+## Documentation
+
+### Differences between Raygun4JS V1 and V2
+
+This provider supports two APIs for interacting with the provider, V1 and V2. For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `rg4js(functionName, value)` and vice versa (with the exception of `send()`).
+
+**V1**
+V1 remains unchanged from previous versions, and all current code is backwards compatible. This API is of the form where functions can be called on the global Raygun object, for instance `Raygun.init('your_apikey').attach()`.
+
+The V1 API is available as 'public' functions on the global Raygun object, and is intended to be used to control the provider during runtime.
+
+V1 supports the script being bundled with other vendor scripts, and V2 does not.
+
+**V2**
+V2 lets you asynchronously configure the provider during onLoad. A new global function is made available, `rg4js() (configurable)`, which accepts parameters that are applied to the provider once it is download asynchronously. This API is of the form `rg4js('init', 'your_apikey')`. This is the recommended approach for new setups.
+
+Using the snippet to fetch the script from the CDN, along with the V2 API, is superior as errors that occur while the page is loading but Raygun4JS hasn't been downloaded will now be caught. With any of the synchronous methods these will not be sent to Raygun, and the script load will block the page load. Thus, you should use the snippet, the CDN and the V2 API for the best experience for your users.
+
+If you are installing the provider locally using a package manager or manually, you can either use the V2 API by adding the snippet and replace the second-last parameter with the URL of your hosted version of the script.
 
 ### Initialization Options
 
@@ -170,13 +192,14 @@ Raygun.init('apikey', {
   debugMode: true,
   ignore3rdPartyErrors: false,
   wrapAsynchronousCallbacks: true,
-  excludedHostnames: ['localhost', '\.dev'],
+  excludedHostnames: ['\.local'],
   excludedUserAgents: ['PhantomJS', 'MSIE'],
   disableErrorTracking: false,
   disablePulse: false,
   pulseMaxVirtualPageDuration: 1800000
   pulseIgnoreUrlCasing: false
-}).attach();
+})
+.attach(); // This enables Crash Reporting by attaching the automatic window.onerror handler callback
 ```
 
 ### Pulse API
@@ -387,7 +410,14 @@ Raygun.init('apikey', { disableAnonymousUserTracking: true });
 You can provide additional information about the currently logged in user to Raygun by calling:
 
 ```javascript
-Raygun.setUser('user_email_address@localhost.local', false, 'user_email_address@localhost.local', 'Foo Bar', 'Foo', 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55');
+Raygun.setUser(
+   'user_email_address@localhost.local', // identifier
+   false,  // isAnonymous
+   'user_email_address@localhost.local', // email
+   'Foo Bar', // fullName
+   'Foo', // firstName
+   'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55' //uuid
+);
 ```
 
 Only `identifier` or the first parameter is required. This method takes additional parameters that are used when reporting over the affected users. the full method signature is:
@@ -447,7 +477,8 @@ Raygun.filterSensitiveData([creditCardDataRegex]);
 By default this is applied to the UserCustomData object only (legacy behavior). To apply this to any key-value pair, you can change the filtering scope:
 
 ```javascript
-Raygun.setFilterScope('all');
+Raygun.setFilterScope('all'); // Filter any key in the payload
+Raygun.setFilterScope('customData'); // Just filter the custom data (default)
 ```
 
 ### Source maps support
@@ -537,11 +568,11 @@ You can hook failed Ajax requests with $http in AngularJS by providing an Interc
 $httpProvider.interceptors.push(function($q, dependency1, dependency2) {
   return {
    'requestError': function(rejection) {
-       Raygun.send(new Error('Failed $http request', rejection));
+       Raygun.send(new Error('Failed $http request'), { rejection : rejection });
     },
 
     'responseError': function(rejection) {
-       Raygun.send(new Error('Failed $http response', rejection));
+       Raygun.send(new Error('Failed $http response'), { rejection : rejection });
     }
   };
 });

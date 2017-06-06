@@ -610,14 +610,14 @@ $httpProvider.interceptors.push(function($q, dependency1, dependency2) {
    'requestError': function(rejection) {
        rg4js('send', {
           error: 'Failed $http request', 
-          customData: [{ rejection: rejection}] 
+          customData: { rejection: rejection }
        });
     },
 
     'responseError': function(rejection) {
        rg4js('send', {
           error: 'Failed $http response', 
-          customData: [{ rejection: rejection}] 
+          customData: { rejection: rejection}
        });
     }
   };
