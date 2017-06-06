@@ -128,6 +128,7 @@ Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
 This provider supports two APIs for interacting with the provider, V1 and V2. For initial setup, all functions are interchangeable and available using either method. The public functions available on the global Raygun object can be accessed by calling `Raygun.functionName(value)` or `rg4js(functionName, value)` (with the exception of `send()`).
 
 **V1**
+
 V1 remains unchanged from previous versions, and all current code is backwards compatible. This API is of the form where functions can be called on the global Raygun object, for instance `Raygun.init('your_apikey').attach()`.
 
 The V1 API is available as 'public' functions on the global Raygun object, and is intended to be used to control the provider during runtime.
@@ -135,6 +136,7 @@ The V1 API is available as 'public' functions on the global Raygun object, and i
 V1 supports the script being bundled with other vendor scripts, and V2 does not.
 
 **V2**
+
 V2 lets you asynchronously configure the provider during onLoad. A new global function is made available, `rg4js() (configurable)`, which accepts parameters that are applied to the provider once it is download asynchronously. This API is of the form `rg4js('init', 'your_apikey')`. This is the recommended approach for new setups.
 
 Using the snippet to fetch the script from the CDN, along with the V2 API, is superior as errors that occur while the page is loading but Raygun4JS hasn't been downloaded will now be caught. With any of the synchronous methods these will not be sent to Raygun, and the script load will block the page load. Thus, you should use the snippet, the CDN and the V2 API for the best experience for your users.
