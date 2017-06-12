@@ -1,3 +1,9 @@
+* v2.6.5
+  - React Native: bugfix for 'windw is not defined' error upon import
+
+* v2.6.4
+  - Fix a bug in vanilla and UMD builds introduced when using breadcrumbs
+
 * v2.6.3
   - Adds support for tracking custom timings in Real User Monitoring
 
