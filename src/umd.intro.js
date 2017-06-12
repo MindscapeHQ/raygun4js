@@ -17,7 +17,7 @@
     }
 }(this, function () {
 
-  var windw = this;
+  var windw = this || window || global;
 
   // Similar approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
   // script is executed, and later overwritten by the loader once it's finished
