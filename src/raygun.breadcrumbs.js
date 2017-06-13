@@ -293,6 +293,11 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
         var self = this;
 
+        if (!window.XMLHttpRequest.prototype.addEventListener) {
+            this.disableXHRLogging = function() {};
+            return;
+        }
+
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', self.wrapWithHandler(function() {
             var initTime = new Date().getTime();
             var url = arguments[1] || "Unknown";
