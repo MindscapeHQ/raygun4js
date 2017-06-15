@@ -260,31 +260,31 @@ You can override the time when Raygun4JS considers your page to be loaded at, as
 
 ### Breadcrumbs API
 
-#### Configuration options
+#### Breadcrumbs initialization commands
 
-These can be controlled via the v2 API
+These should be called if needed during your page's lifecycle:
 
 ```javascript
 rg4js('one-of-the-below-options')
 ```
 
-`disableAutoBreadcrumbs` - Disable all the automatic breadcrumb integrations (clicks, requests, console logs and navigation events). This has an inverse `enableAutoBreadcrumbs` which is the default
+`rg4js('disableAutoBreadcrumbs')` - Disable all the automatic breadcrumb integrations (clicks, requests, console logs and navigation events). This has an inverse `enableAutoBreadcrumbs` which is the default
 
-`disableAutoBreadcrumbsConsole` - Disable just automatic breadcrumb creation from console messages
+`rg4js('disableAutoBreadcrumbsConsole')` - Disable just automatic breadcrumb creation from console messages
 
-`disableAutoBreadcrumbsNavigation` - Disable just automatic breadcrumb creation from navigation events
+`rg4js('disableAutoBreadcrumbsNavigation')` - Disable just automatic breadcrumb creation from navigation events
 
-`disableAutoBreadcrumbsClicks` - Disable just automatic breadcrumb creation from element clicks
+`rg4js('disableAutoBreadcrumbsClicks')` - Disable just automatic breadcrumb creation from element clicks
 
-`disableAutoBreadcrumbsXHR` - Disable just automatic breadcrumb creation XMLHttpRequests
+`rg4js('disableAutoBreadcrumbsXHR')` - Disable just automatic breadcrumb creation XMLHttpRequests
 
 All of the above have an inverse `enableAutoBreadcrumbs<type>` which is the default
 
-`setAutoBreadcrumbsXHRIgnoredHosts` - This can be set to an array of hosts to not create a breadcrumb for requests/responses to. It can either be a string that an indexOf check against the host is made, or a regex which is matched against the host.
+`rg4js('setAutoBreadcrumbsXHRIgnoredHosts', [])` - This can be set to an array of hostnames to not create a breadcrumb for requests/responses to. The values inside the array can either be strings that an indexOf check against the host is made, or regexes which is matched against the host.
 
-`setBreadcrumbLevel` - Set the minimum level of breadcrumb to record. This works the same as log levels, you may set it to debug, info, warning and error and it will only keep breadcrumbs with a level equal or above what this is set to. Defaults to info.
+`rg4js('setBreadcrumbLevel', 'warning')` - Set the minimum level of breadcrumb to record. This works the same as log levels, you may set it to debug, info, warning and error and it will only keep breadcrumbs with a level equal or above what this is set to. Valid values are one of `['debug', 'info', 'warning', 'error']`. Defaults to info.
 
-`logContentsOfXhrCalls` - If set to true will include the body contents of XHR request and responses in Breadcrumb metadata, defaults to false
+`rg4js('logContentsOfXhrCalls', true)` - If set to true will include the body contents of XHR request and responses in Breadcrumb metadata, defaults to false
 
 #### Logging a breadcrumb
 

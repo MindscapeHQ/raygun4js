@@ -76,7 +76,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         },
 
         constructNewRaygun: function (forBreadcrumbs) {
-            var rgInstance = window.raygunFactory(window, window.jQuery, forBreadcrumbs);
+            var rgInstance = raygunFactory(window, window.jQuery, forBreadcrumbs);
 
             return rgInstance;
         },
