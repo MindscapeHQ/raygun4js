@@ -260,7 +260,7 @@ You can override the time when Raygun4JS considers your page to be loaded at, as
 
 ### Breadcrumbs API
 
-#### commands
+#### Breadcrumbs initialization commands
 
 These should be called if needed during your page's lifecycle:
 
