@@ -1,3 +1,6 @@
+* v2.6.6
+  - Fixes a runtime bug on init when using the UMD module (installed via NPM) introduced in 2.6.2
+
 * v2.6.5
   - React Native: bugfix for 'windw is not defined' error upon import
 
