@@ -637,7 +637,7 @@ For more information, see the official docs under [Interceptors].
 You can use the Vue.js error handler to send errors directly to Raygun.
 
 ```javascript
-Vue.config.errorHandler = function (err, vm, info) {
+Vue.config.errorHandler = function(err, vm, info) {
   rg4js('send', {
     error: err, 
     customData: [{ info: info }]
