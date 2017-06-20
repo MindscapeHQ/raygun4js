@@ -632,6 +632,19 @@ For more information, see the official docs under [Interceptors].
 
 [Interceptors]: https://docs.angularjs.org/api/ng/service/$http
 
+## Vue.js
+
+You can use the Vue.js error handler to send errors directly to Raygun.
+
+```javascript
+Vue.config.errorHandler = function(err, vm, info) {
+  rg4js('send', {
+    error: err, 
+    customData: [{ info: info }]
+  });
+};
+```
+
 ## Release History
 
 [View the changelog here](CHANGELOG.md)
