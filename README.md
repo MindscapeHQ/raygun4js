@@ -642,7 +642,7 @@ Vue.config.errorHandler = function(err, vm, info) {
     error: err, 
     customData: [{ info: info }]
   });
-}
+};
 ```
 
 ## Release History
