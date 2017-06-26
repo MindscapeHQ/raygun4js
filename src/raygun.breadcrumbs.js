@@ -139,10 +139,21 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         }
 
         var logConsoleCall = function logConsoleCall(severity, args) {
+            var stringifiedArgs = [];
+
+            for (var i = 0;i < args.length;i++) {
+                var arg = args[i];
+                if (arg === Object(arg)) {
+                    stringifiedArgs.push(JSON.stringify(arg));
+                } else {
+                    stringifiedArgs.push(arg.toString());
+                }
+            }
+
             this.recordBreadcrumb({
                 type: 'console',
                 level: severity,
-                message: Array.prototype.slice.call(args).join(", ")
+                message: Array.prototype.slice.call(stringifiedArgs).join(", ")
             });
         }.bind(this);
 
