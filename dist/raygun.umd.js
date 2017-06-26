@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.6 - 2017-06-27
+/*! Raygun4js - v2.6.7 - 2017-06-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1910,10 +1910,21 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         }
 
         var logConsoleCall = function logConsoleCall(severity, args) {
+            var stringifiedArgs = [];
+
+            for (var i = 0;i < args.length;i++) {
+                var arg = args[i];
+                if (arg === Object(arg)) {
+                    stringifiedArgs.push(JSON.stringify(arg));
+                } else {
+                    stringifiedArgs.push(arg.toString());
+                }
+            }
+
             this.recordBreadcrumb({
                 type: 'console',
                 level: severity,
-                message: Array.prototype.slice.call(args).join(", ")
+                message: Array.prototype.slice.call(stringifiedArgs).join(", ")
             });
         }.bind(this);
 
@@ -2063,6 +2074,11 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
         var self = this;
+
+        if (!window.XMLHttpRequest.prototype.addEventListener) {
+            this.disableXHRLogging = function() {};
+            return;
+        }
 
         this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', self.wrapWithHandler(function() {
             var initTime = new Date().getTime();
@@ -2931,7 +2947,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.6'
+                    'Version': '2.6.7'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
