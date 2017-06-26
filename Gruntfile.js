@@ -47,8 +47,8 @@ module.exports = function(grunt) {
           maxLineLen: 60
         },
         files:{
-          'src/snippet/minified.js':['src/snippet/unminified.js'],
-          'src/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js']
+          'dist/snippet/minified.js':['src/snippet/unminified.js'],
+          'dist/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js']
         }
       }
     },
@@ -134,5 +134,5 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
 
-  grunt.registerTask('default', ['build', 'test']);
+  grunt.registerTask('default', ['compile', 'test']);
 };
