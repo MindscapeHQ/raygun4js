@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.5 - 2017-06-13
+/*! Raygun4js - v2.6.5 - 2017-06-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2564,7 +2564,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _processExceptionQueue = [];
 
         for (i = 0; i < _trackEventQueue.length; i++) {
-            _rum.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+            _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
         }
 
         _trackEventQueue = [];
