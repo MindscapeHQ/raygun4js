@@ -443,7 +443,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         _processExceptionQueue = [];
 
         for (i = 0; i < _trackEventQueue.length; i++) {
-            _rum.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+            _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
         }
 
         _trackEventQueue = [];
