@@ -147,11 +147,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     continue;
                 }
 
-                if (arg === Object(arg)) {
-                    stringifiedArgs.push(JSON.stringify(arg));
-                } else {
-                    stringifiedArgs.push(arg.toString());
-                }
+                stringifiedArgs.push(arg.toString());
             }
 
             this.recordBreadcrumb({
