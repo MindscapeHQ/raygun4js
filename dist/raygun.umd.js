@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.7 - 2017-06-27
+/*! Raygun4js - v2.6.7 - 2017-06-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1914,6 +1914,10 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
             for (var i = 0;i < args.length;i++) {
                 var arg = args[i];
+                if (arg === null || arg === undefined) {
+                    continue;
+                }
+
                 if (arg === Object(arg)) {
                     stringifiedArgs.push(JSON.stringify(arg));
                 } else {
