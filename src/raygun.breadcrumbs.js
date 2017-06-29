@@ -133,6 +133,16 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.disableAutoBreadcrumbsNavigation();
     };
 
+    Breadcrumbs.prototype.removeCrumbsOfType = function(type) {
+        var crumbs = this.breadcrumbs;
+
+        var filteredCrumbs = crumbs.filter(function(crumb) {
+            return crumb.type !== type;
+        });
+
+        this.breadcrumbs = filteredCrumbs;
+    };
+
     Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
         if (typeof window.console === "undefined") {
             return;
@@ -170,6 +180,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
         this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
+        this.removeCrumbsOfType('console');
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
@@ -268,6 +279,8 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
         this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
         this.disableNavigationFunctions = [];
+
+        this.removeCrumbsOfType('navigation');
     };
 
 
@@ -299,6 +312,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
         this.disableClicksTracking();
+        this.removeCrumbsOfType('click-event');
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
@@ -388,6 +402,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
         this.disableXHRLogging();
+        this.removeCrumbsOfType('request');
     };
 
 
