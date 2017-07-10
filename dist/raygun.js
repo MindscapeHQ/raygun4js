@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.7 - 2017-06-28
+/*! Raygun4js - v2.6.8 - 2017-07-11
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2081,7 +2081,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             this.addEventListener('load', self.wrapWithHandler(function() {
                 var responseText = 'N/A for non text responses';
 
-                if (this.responseType === '' || this.responseType === 'text') {
+                if ((this.responseType === '' || this.responseType === 'text') && self.logXhrContents) {
                     responseText = Raygun.Utilities.truncate(this.responseText, 500);
                 }
 
@@ -2912,7 +2912,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.7'
+                    'Version': '2.6.8'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
