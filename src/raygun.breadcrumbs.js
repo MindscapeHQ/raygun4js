@@ -345,7 +345,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             this.addEventListener('load', self.wrapWithHandler(function() {
                 var responseText = 'N/A for non text responses';
 
-                if (this.responseType === '' || this.responseType === 'text') {
+                if ((this.responseType === '' || this.responseType === 'text') && self.logXhrContents) {
                     responseText = Raygun.Utilities.truncate(this.responseText, 500);
                 }
 
