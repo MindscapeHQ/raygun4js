@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.7.0 - 2017-06-30
+/*! Raygun4js - v2.7.1 - 2017-07-21
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -677,8 +677,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return { "tracekitResult": "nostack" };
         }
 
-        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>|\/).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -718,12 +718,12 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     'column': parts[4] ? +parts[4] : null
                 };
             } else if ((parts = winjs.exec(lines[i]))) {
-            element = {
-                'url': parts[2],
-                'func': parts[1] || UNKNOWN_FUNCTION,
-                'line': +parts[3],
-                'column': parts[4] ? +parts[4] : null
-            };
+                element = {
+                    'url': parts[2],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'line': +parts[3],
+                    'column': parts[4] ? +parts[4] : null
+                };
             } else {
                 continue;
             }
@@ -2159,7 +2159,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             this.addEventListener('load', self.wrapWithHandler(function() {
                 var responseText = 'N/A for non text responses';
 
-                if (this.responseType === '' || this.responseType === 'text') {
+                if ((this.responseType === '' || this.responseType === 'text') && self.logXhrContents) {
                     responseText = Raygun.Utilities.truncate(this.responseText, 500);
                 }
 
@@ -2994,7 +2994,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.7.0'
+                    'Version': '2.7.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
