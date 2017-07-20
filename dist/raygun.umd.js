@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.7 - 2017-06-28
+/*! Raygun4js - v2.6.8-SNAPSHOT.1 - 2017-07-20
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -677,16 +677,17 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return { "tracekitResult": "nostack" };
         }
 
-        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>|\/).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+            rnAndroid = /^(\w+)@([\w\.]+):([0-9]+):([0-9]+)$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
             element,
             reference = /^(.*) is undefined$/.exec(ex.message);
 
-        if (Raygun.Utilities.isReactNative()) {
+        if (true) {
             var reactNativeDevicePathStripRegex = /^(.*@)?.*\/[^\.]+(\.app|CodePush)\/?(.*)/;
             var sourcemapPrefix = 'file://reactnative.local/';
 
@@ -724,6 +725,13 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 'line': +parts[3],
                 'column': parts[4] ? +parts[4] : null
             };
+            } else if ((parts = rnAndroid.exec(lines[i]))) {
+                element = {
+                    'url': parts[2],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'line': +parts[3],
+                    'column': parts[4] ? +parts[4] : null
+                };
             } else {
                 continue;
             }
@@ -2947,7 +2955,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.7'
+                    'Version': '2.6.8-SNAPSHOT.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
