@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.6.7 - 2017-06-28
+/*! Raygun4js - v2.7.0 - 2017-06-30
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1676,6 +1676,20 @@ window.raygunUtilityFactory = function (window, Raygun) {
 /* globals console */
 
 window.raygunBreadcrumbsFactory = function(window, Raygun) {
+    function urlMatchesIgnoredHosts(url, ignoredHosts) {
+        for (var i = 0;i < ignoredHosts.length;i ++) {
+            var host = ignoredHosts[i];
+
+            if (typeof host === 'string' && url && url.indexOf(host) > -1) {
+                return true;
+            } else if (typeof host === 'object' && host.exec(url)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     var Breadcrumbs = function() {
         this.MAX_BREADCRUMBS = 32;
         this.MAX_MESSAGE_SIZE = 1024;
@@ -1774,6 +1788,15 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             this.setBreadcrumbLevel(value);
         } else if (option === 'xhrIgnoredHosts') {
             this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+
+            var self = this;
+            this.removeBreadcrumbsWithPredicate(function(crumb) {
+                if (crumb.type !== 'request') {
+                    return false;
+                }
+
+                return urlMatchesIgnoredHosts(crumb.metadata.requestURL || crumb.metadata.responseURL, self.xhrIgnoredHosts);
+            });
         } else if (option === 'logXhrContents') {
             this.logXhrContents = value;
         }
@@ -1799,6 +1822,27 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.disableAutoBreadcrumbsClicks();
         this.disableAutoBreadcrumbsConsole();
         this.disableAutoBreadcrumbsNavigation();
+    };
+
+    Breadcrumbs.prototype.removeBreadcrumbsWithPredicate = function(predicate) {
+        var crumbs = this.breadcrumbs;
+        var filteredCrumbs = [];
+
+        for (var i = 0;i < crumbs.length;i++) {
+            var crumb = crumbs[i];
+
+            if (!predicate(crumb)) {
+                filteredCrumbs.push(crumb);
+            }
+        }
+
+        this.breadcrumbs = filteredCrumbs;
+    };
+
+    Breadcrumbs.prototype.removeCrumbsOfType = function(type) {
+        this.removeBreadcrumbsWithPredicate(function(crumb) {
+            return crumb.type === type;
+        });
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
@@ -1838,6 +1882,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
         this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
+        this.removeCrumbsOfType('console');
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
@@ -1936,6 +1981,8 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
         this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
         this.disableNavigationFunctions = [];
+
+        this.removeCrumbsOfType('navigation');
     };
 
 
@@ -1967,6 +2014,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
         this.disableClicksTracking();
+        this.removeCrumbsOfType('click-event');
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
@@ -1982,19 +2030,14 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             var url = arguments[1] || "Unknown";
             var method = arguments[0];
 
-            for (var i = 0;i < self.xhrIgnoredHosts.length;i ++) {
-                var host = self.xhrIgnoredHosts[i];
-
-                if (typeof host === 'string' && url && url.indexOf(host) > -1) {
-                    return;
-                } else if (typeof host === 'object' && host.exec(url)) {
-                    return;
-                }
+            if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
+                return;
             }
 
             Raygun.Utilities.enhance(this, 'send', self.wrapWithHandler(function() {
                 var metadata = {
-                    method: method
+                    method: method,
+                    requestURL: url,
                 };
 
                 if (arguments[0] && typeof(arguments[0]) === 'string' && self.logXhrContents) {
@@ -2023,6 +2066,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     level: 'info',
                     metadata: {
                         status: this.status,
+                        requestURL: url,
                         responseURL: this.responseURL,
                         responseText: self.logXhrContents ? responseText : 'Disabled',
                         duration: new Date().getTime() - initTime + "ms"
@@ -2036,6 +2080,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     level: 'info',
                     metadata: {
                         status: this.status,
+                        requestURL: url,
                         responseURL: this.responseURL,
                         duration: new Date().getTime() - initTime + "ms"
                     }
@@ -2047,6 +2092,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     message: 'Request to ' + url + 'aborted',
                     level: 'info',
                     metadata: {
+                        requestURL: url,
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
@@ -2056,6 +2102,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
     Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
         this.disableXHRLogging();
+        this.removeCrumbsOfType('request');
     };
 
 
@@ -2844,7 +2891,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.6.7'
+                    'Version': '2.7.0'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
