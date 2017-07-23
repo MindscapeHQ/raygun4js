@@ -24,12 +24,7 @@ module.exports = {
       return window.__requestPayloads[0].Details.Breadcrumbs;
     }).value;
 
-    if (!this.isOldIE()) {
-      return _.tail(crumbs);
-    }
-    else {
-      return crumbs;
-    }
+    return crumbs;
   },
   firstBreadcrumb: function() {
     return this.getBreadcrumbs()[0];
