@@ -567,7 +567,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             return;
         }
 
-        var scriptError = 'Script error';
+        var scriptError = 'The Tracekit stackTrace is empty, could be a Script Error';
 
         var stack = [],
             qs = {};
