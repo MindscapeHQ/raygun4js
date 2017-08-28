@@ -1,3 +1,12 @@
+* v2.7.1
+  - Don't read response text in breadcrumb XHR logging if logXhrContents is false
+  - Improve breadcrumb disabling to handle network calls that match xhrIgnoredHosts but were triggered before the xhrIgnoredHosts configuration option was set
+  - Update TraceKit regexes to handle stacktraces in RN android release builds
+  
+* v2.6.7
+  - Fix a rare initialization issue with Pulse and recording events before the provider has finished loading
+  - Small bugfixes to some of the Breadcrumbs operations
+
 * v2.6.6
   - Fixes a runtime bug on init when using the UMD module (installed via NPM) introduced in 2.6.2
 
