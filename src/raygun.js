@@ -8,7 +8,7 @@
 
 /*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
 
-var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
+var raygunFactory = function (window, $, undefined) {
     var Raygun = {};
     Raygun.Utilities = raygunUtilityFactory(window, Raygun);
     Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
@@ -75,8 +75,8 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             return Raygun;
         },
 
-        constructNewRaygun: function (forBreadcrumbs) {
-            var rgInstance = raygunFactory(window, window.jQuery, forBreadcrumbs);
+        constructNewRaygun: function () {
+            var rgInstance = raygunFactory(window, window.jQuery);
 
             return rgInstance;
         },
@@ -132,10 +132,6 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                     _loadedFrom = options.from;
                 }
             }
-
-           if (!forBreadcrumbs) {
-               _breadcrumbs.setCrashReportingInstance(this.constructNewRaygun(true));
-           }
 
             ensureUser();
 
@@ -932,7 +928,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         xhr.send(data);
     }
 
-    if (!window.__raygunNoConflict && !forBreadcrumbs) {
+    if (!window.__raygunNoConflict) {
       window.Raygun = Raygun;
     }
     TraceKit.setRaygun(Raygun);

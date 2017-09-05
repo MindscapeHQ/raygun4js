@@ -33,14 +33,12 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.logXhrContents = false;
         this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
         this.breadcrumbs = [];
-        this.raygunInstance = {send: function() {}};
-        var self = this;
         this.wrapWithHandler = function(method) {
             return function() {
                 try {
                     return method.apply(this, arguments);
                 } catch (ex) {
-                    self.raygunInstance.send(ex);
+                    Raygun.Utilities.log(ex);
                 }
             };
         };
@@ -51,6 +49,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.disableClicksTracking = function() {};
 
         this.enableAutoBreadcrumbs();
+        this.wrapPrototypeWithHandlers();
     };
 
     Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -438,10 +437,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     };
 
 
-    Breadcrumbs.prototype.setCrashReportingInstance = function(raygunInstance) {
-        raygunInstance.init('D8pC4YA3glwX5g4N/krb6Q==');
-        this.raygunInstance = raygunInstance;
-
+    Breadcrumbs.prototype.wrapPrototypeWithHandlers = function() {
         var name, method;
         for(name in Breadcrumbs.prototype) {
             method = Breadcrumbs.prototype[name];

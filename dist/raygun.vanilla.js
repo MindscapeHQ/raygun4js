@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.7.1 - 2017-07-21
+/*! Raygun4js - v2.7.2 - 2017-08-15
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1600,7 +1600,7 @@ window.raygunUtilityFactory = function (window, Raygun) {
           }
         };
 
-        return function unhenance() {
+        return function unenhance() {
           object[property] = existingFunction;
         };
       },
@@ -1701,14 +1701,12 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.logXhrContents = false;
         this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
         this.breadcrumbs = [];
-        this.raygunInstance = {send: function() {}};
-        var self = this;
         this.wrapWithHandler = function(method) {
             return function() {
                 try {
                     return method.apply(this, arguments);
                 } catch (ex) {
-                    self.raygunInstance.send(ex);
+                    Raygun.Utilities.log(ex);
                 }
             };
         };
@@ -1719,6 +1717,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         this.disableClicksTracking = function() {};
 
         this.enableAutoBreadcrumbs();
+        this.wrapPrototypeWithHandlers();
     };
 
     Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
@@ -2106,10 +2105,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     };
 
 
-    Breadcrumbs.prototype.setCrashReportingInstance = function(raygunInstance) {
-        raygunInstance.init('D8pC4YA3glwX5g4N/krb6Q==');
-        this.raygunInstance = raygunInstance;
-
+    Breadcrumbs.prototype.wrapPrototypeWithHandlers = function() {
         var name, method;
         for(name in Breadcrumbs.prototype) {
             method = Breadcrumbs.prototype[name];
@@ -2124,7 +2120,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
 
 /*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
 
-var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
+var raygunFactory = function (window, $, undefined) {
     var Raygun = {};
     Raygun.Utilities = raygunUtilityFactory(window, Raygun);
     Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
@@ -2191,8 +2187,8 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
             return Raygun;
         },
 
-        constructNewRaygun: function (forBreadcrumbs) {
-            var rgInstance = raygunFactory(window, window.jQuery, forBreadcrumbs);
+        constructNewRaygun: function () {
+            var rgInstance = raygunFactory(window, window.jQuery);
 
             return rgInstance;
         },
@@ -2248,10 +2244,6 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                     _loadedFrom = options.from;
                 }
             }
-
-           if (!forBreadcrumbs) {
-               _breadcrumbs.setCrashReportingInstance(this.constructNewRaygun(true));
-           }
 
             ensureUser();
 
@@ -2891,7 +2883,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.7.1'
+                    'Version': '2.7.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3048,7 +3040,7 @@ var raygunFactory = function (window, $, forBreadcrumbs, undefined) {
         xhr.send(data);
     }
 
-    if (!window.__raygunNoConflict && !forBreadcrumbs) {
+    if (!window.__raygunNoConflict) {
       window.Raygun = Raygun;
     }
     TraceKit.setRaygun(Raygun);

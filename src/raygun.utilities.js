@@ -284,7 +284,7 @@ window.raygunUtilityFactory = function (window, Raygun) {
           }
         };
 
-        return function unhenance() {
+        return function unenhance() {
           object[property] = existingFunction;
         };
       },
