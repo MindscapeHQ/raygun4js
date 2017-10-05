@@ -41,6 +41,7 @@ var raygunFactory = function (window, $, undefined) {
         _filteredKeys,
         _whitelistedScriptDomains = [],
         _beforeSendCallback,
+        _beforeSendRumCallback,
         _groupingKeyCallback,
         _beforeXHRCallback,
         _afterSendCallback,
@@ -299,6 +300,11 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        onBeforeSendRum: function (callback) {
+            _beforeSendRumCallback = callback;
+           return Raygun;
+        },
+
         groupingKey: function (callback) {
             _groupingKeyCallback = callback;
             return Raygun;
@@ -409,7 +415,7 @@ var raygunFactory = function (window, $, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled, _beforeSendRumCallback);
                 _rum.attach();
             };
 
