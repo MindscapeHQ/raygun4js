@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.7.2 - 2017-08-15
+/*! Raygun4js - v2.8.1 - 2017-10-09
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2951,7 +2951,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.7.2'
+                    'Version': '2.8.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3659,6 +3659,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         function getVirtualPrimaryTimingData(virtualPage, previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
             if (self.ignoreUrlCasing) {
                 virtualPage = virtualPage.toLowerCase();
+            }
+
+            if (virtualPage.indexOf('?') !== -1) {
+                virtualPage = virtualPage.split('?')[0];
             }
 
             var url = window.location.protocol + '//' + window.location.host + virtualPage;
