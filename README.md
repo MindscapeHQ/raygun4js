@@ -366,7 +366,7 @@ rg4js('onBeforeSend', myBeforeSend);
 #### onBeforeSendRUM
 
 ```javascript
-rg4js('onBeforeRUM', function (payload) {
+rg4js('onBeforeSendRUM', function (payload) {
   return payload;
 });
 ```
