@@ -2256,6 +2256,7 @@ var raygunFactory = function (window, $, undefined) {
         _filteredKeys,
         _whitelistedScriptDomains = [],
         _beforeSendCallback,
+        _beforeSendRumCallback,
         _groupingKeyCallback,
         _beforeXHRCallback,
         _afterSendCallback,
@@ -2514,6 +2515,11 @@ var raygunFactory = function (window, $, undefined) {
             return Raygun;
         },
 
+        onBeforeSendRum: function (callback) {
+            _beforeSendRumCallback = callback;
+           return Raygun;
+        },
+
         groupingKey: function (callback) {
             _groupingKeyCallback = callback;
             return Raygun;
@@ -2624,7 +2630,7 @@ var raygunFactory = function (window, $, undefined) {
 
         if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
             var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled);
+                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled, _beforeSendRumCallback);
                 _rum.attach();
             };
 
@@ -3154,7 +3160,7 @@ var raygunFactory = function (window, $, undefined) {
 window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 
 var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customTimingsEnabled) {
+    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customTimingsEnabled, beforeSendCb) {
         var self = this;
         var _private = {};
 
@@ -3168,6 +3174,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.ignoreUrlCasing = ignoreUrlCasing;
         this.customTimingsEnabled = customTimingsEnabled;
         this.pendingPerformancePayload = null;
+        this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
@@ -3196,12 +3203,28 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
-            {
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
                 return;
             }
 
-            makePostCorsRequest(url, data);
+            var payload = self.beforeSend(data);
+            if (!payload) {
+                if (self.debugMode) {
+                    log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+                }
+
+                return;
+            }
+
+            if (!!payload.eventData) {
+                for (var i = 0;i < payload.eventData.length;i++) {
+                    if (!!payload.eventData[i].data) {
+                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+                    }
+                }
+            }
+
+            makePostCorsRequest(url, JSON.stringify(payload));
         };
         this.sessionId = null;
         this.virtualPage = null;
@@ -3239,11 +3262,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                             version: self.version || 'Not supplied',
                             device: navigator.userAgent,
                             tags: self.tags,
-                            data: JSON.stringify(data)
+                            data: data
                         }]
                     };
 
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
                 }
             };
 
@@ -3278,7 +3301,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                     }]
                 };
 
-                self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+                self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
             }
 
             self.sendPerformance(true, true);
@@ -3310,9 +3333,9 @@ var raygunRumFactory = function (window, $, Raygun) {
                     
                     resourceObjects[0].customTiming = customTimings;
 
-                    payloadObject.eventData[0].data = JSON.stringify(resourceObjects);
+                    payloadObject.eventData[0].data = resourceObjects;
 
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payloadObject));
+                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payloadObject);
 
                     self.pendingPerformancePayload = null;
                   }
@@ -3337,7 +3360,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }]
             };
 
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
         };
 
         this.heartBeat = function () {
@@ -3348,8 +3371,8 @@ var raygunRumFactory = function (window, $, Raygun) {
                 extractChildData(data, self.virtualPage);
 
                 if (data.length > 0) {
-                    var dataJson = JSON.stringify(data);
 
+                    var dataJson = JSON.stringify(data);
                     if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
                         payload = {
                             eventData: [{
@@ -3360,14 +3383,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                                 version: self.version || 'Not supplied',
                                 device: navigator.userAgent,
                                 tags: self.tags,
-                                data: dataJson
+                                data: data
                             }]
                         };
                     }
                 }
 
                 if (payload !== undefined) {
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
                 }
             }, 30 * 1000); // 30 seconds between heartbeats
         };
@@ -3418,15 +3441,15 @@ var raygunRumFactory = function (window, $, Raygun) {
                     version: self.version || 'Not supplied',
                     device: navigator.userAgent,
                     tags: self.tags,
-                    data: JSON.stringify(performanceData)
+                    data: performanceData
                 }]
             };
 
             if (!self.customTimingsEnabled) {
-              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), JSON.stringify(payload));
+              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
             } else {
               // Queue the WRT until the custom timings are provided
-              self.pendingPerformancePayload = JSON.stringify(payload);
+              self.pendingPerformancePayload = payload;
             }
         };
 
@@ -3920,6 +3943,9 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
           break;
         case 'onBeforeSend':
           rg.onBeforeSend(value);
+          break;
+        case 'onBeforeSendRUM':
+          rg.onBeforeSendRum(value);
           break;
         case 'onBeforeXHR':
           rg.onBeforeXHR(value);
