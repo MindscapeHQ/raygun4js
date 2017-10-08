@@ -363,6 +363,33 @@ var myBeforeSend = function (payload) {
 rg4js('onBeforeSend', myBeforeSend);
 ```
 
+#### onBeforeSendRUM
+
+```javascript
+rg4js('onBeforeRUM', function (payload) {
+  return payload;
+});
+```
+
+Call this function and pass in a function which takes one parameter (see the example below). This callback function will be called immediately before any Real User Monitoring events are sent. The one parameter it gets will be the payload that is about to be sent. Thus from your function you can inspect the payload and decide whether or not to send it.
+
+From the supplied function, you should return either the payload (intact or mutated as per your needs), or `false`.
+
+If your function returns a truthy object, Raygun4JS will attempt to send it as supplied. Thus, you can mutate it as per your needs. You can also of course return it as supplied.
+
+If, after inspecting the payload, you wish to discard it and abort the send to Raygun, simply return `false`.
+
+By example:
+
+```javascript
+var myBeforeSend = function (payload) {
+  console.log(payload); // Modify the payload here if necessary
+  return payload; // Return false here to abort the send
+}
+
+rg4js('onBeforeSendRUM', myBeforeSend);
+```
+
 #### onAfterSend
 
 ```javascript
