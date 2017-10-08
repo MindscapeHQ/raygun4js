@@ -548,6 +548,10 @@ var raygunRumFactory = function (window, $, Raygun) {
                 virtualPage = virtualPage.toLowerCase();
             }
 
+            if (virtualPage.indexOf('?') !== -1) {
+                virtualPage = virtualPage.split('?')[0];
+            }
+
             var url = window.location.protocol + '//' + window.location.host + virtualPage;
 
             if (url.length > 800) {
