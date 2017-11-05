@@ -174,8 +174,8 @@ var raygunRumFactory = function (window, $, Raygun) {
               typeof customTimings.custom9 === 'number' ||
               typeof customTimings.custom10 === 'number')) {
                   if (self.pendingPerformancePayload) {
-                    var payloadObject = JSON.parse(self.pendingPerformancePayload);
-                    var resourceObjects = JSON.parse(payloadObject.eventData[0].data);
+                    var payloadObject = self.pendingPerformancePayload;
+                    var resourceObjects = payloadObject.eventData[0].data;
                     
                     resourceObjects[0].customTiming = customTimings;
 

@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.1 - 2017-10-09
+/*! Raygun4js - v2.8.2 - 2017-11-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2889,7 +2889,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.1'
+                    'Version': '2.8.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3225,8 +3225,8 @@ var raygunRumFactory = function (window, $, Raygun) {
               typeof customTimings.custom9 === 'number' ||
               typeof customTimings.custom10 === 'number')) {
                   if (self.pendingPerformancePayload) {
-                    var payloadObject = JSON.parse(self.pendingPerformancePayload);
-                    var resourceObjects = JSON.parse(payloadObject.eventData[0].data);
+                    var payloadObject = self.pendingPerformancePayload;
+                    var resourceObjects = payloadObject.eventData[0].data;
                     
                     resourceObjects[0].customTiming = customTimings;
 
