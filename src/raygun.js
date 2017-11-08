@@ -690,6 +690,8 @@ var raygunFactory = function (window, $, undefined) {
         if (Raygun.Utilities.isEmpty(options.tags)) {
             if (typeof _tags === 'function') {
                 options.tags = _tags();
+            } else if (typeof _tags === 'string') {
+               options.tags = [_tags];
             } else {
                 options.tags = _tags;
             }

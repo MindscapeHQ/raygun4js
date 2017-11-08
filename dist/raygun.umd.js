@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.2 - 2017-11-06
+/*! Raygun4js - v2.8.3 - 2017-11-09
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2017 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -2905,6 +2905,8 @@ var raygunFactory = function (window, $, undefined) {
         if (Raygun.Utilities.isEmpty(options.tags)) {
             if (typeof _tags === 'function') {
                 options.tags = _tags();
+            } else if (typeof _tags === 'string') {
+               options.tags = [_tags];
             } else {
                 options.tags = _tags;
             }
@@ -2992,7 +2994,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.2'
+                    'Version': '2.8.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
