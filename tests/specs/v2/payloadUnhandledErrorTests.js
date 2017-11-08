@@ -206,4 +206,24 @@ describe("Payload functional validation tests for v2 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
+  it("has existing tags and an UnhandleException tag for crash vs. error support when using a function for withTags", function () {
+    var pageUrl = 'http://localhost:4567/fixtures/v2/unhandledErrorTagWithString.html';
+
+    browser.url(pageUrl);
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return _.any(payload.Details.Tags, function (tag) {
+        return tag === 'UnhandledException';
+      });
+    });
+
+    expect(passes).toBe(true);
+  });
+
 });
