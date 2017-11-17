@@ -286,7 +286,7 @@ interface RaygunV2UserDetails {
     /**
      * Indicates whether the user is anonymous or has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
      */
-    isAnonymous?: string;
+    isAnonymous?: boolean;
 
     /**
      * The user's email address.
