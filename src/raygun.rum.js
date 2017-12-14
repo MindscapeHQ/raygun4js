@@ -135,23 +135,11 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.pageLoaded = function (isNewSession) {
             // Only create a session if we don't have one.
             if (isNewSession) {
-                var payload = {
-                    eventData: [{
-                        sessionId: self.sessionId,
-                        timestamp: new Date().toISOString(),
-                        type: 'session_start',
-                        user: self.user,
-                        version: self.version || 'Not supplied',
-                        tags: self.tags,
-                        device: navigator.userAgent
-                    }]
-                };
-
-                self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+                this.sendNewSessionStart();
             }
 
             self.sendPerformance(true, true);
-            
+
             self.heartBeat();
 
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
@@ -159,6 +147,22 @@ var raygunRumFactory = function (window, $, Raygun) {
             } else {
                 self.initalStaticPageLoadTimestamp = 0;
             }
+        };
+
+        this.sendNewSessionStart = function() {
+          var payload = {
+              eventData: [{
+                  sessionId: self.sessionId,
+                  timestamp: new Date().toISOString(),
+                  type: 'session_start',
+                  user: self.user,
+                  version: self.version || 'Not supplied',
+                  tags: self.tags,
+                  device: navigator.userAgent
+              }]
+          };
+
+          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
         };
 
         this.sendCustomTimings = function (customTimings) {
@@ -176,7 +180,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                   if (self.pendingPerformancePayload) {
                     var payloadObject = self.pendingPerformancePayload;
                     var resourceObjects = payloadObject.eventData[0].data;
-                    
+
                     resourceObjects[0].customTiming = customTimings;
 
                     payloadObject.eventData[0].data = resourceObjects;
@@ -401,7 +405,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             createCookie(self.cookieName, self.sessionId);
 
             if (expiredCookie) {
-                self.pageLoaded(true);
+                self.sendNewSessionStart();
             }
         }
 
