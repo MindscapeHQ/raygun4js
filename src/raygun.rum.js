@@ -92,11 +92,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             self.heartBeat();
 
-            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                self.initalStaticPageLoadTimestamp = window.performance.now();
-            } else {
-                self.initalStaticPageLoadTimestamp = 0;
-            }
+            self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
         };
 
         this.sendNewSessionStart = function() {
@@ -223,11 +219,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if (typeof path === 'string') {
-                if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                    this.previousVirtualPageLoadTimestamp = window.performance.now();
-                } else {
-                    this.previousVirtualPageLoadTimestamp = 0;
-                }
+              this.previousVirtualPageLoadTimestamp = getPerformanceNow(0);
             }
         };
 
@@ -414,12 +406,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
-            var now;
-            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                now = window.performance.now();
-            } else {
-                now = 0;
-            }
+            var now = getPerformanceNow(0);
 
             return {
                 t: 'v',
@@ -596,7 +583,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function extractChildData(collection, fromVirtualPage) {
-            if (window.performance === undefined || !window.performance.getEntries) {
+            if (!performanceEntryExists(getEntries, 'function')) {
                 return;
             }
 
@@ -641,8 +628,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPerformanceData(virtualPage, flush, firstLoad) {
-            if (window.performance === undefined || window.performance.timing === undefined ||
-                window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+            if (!performanceEntryExists(timing, 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
@@ -700,6 +686,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function randomKey(length) {
             return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+        }
+
+        function performanceEntryExists(entry, entryType) {
+          return (typeof window.performance === "object" && (!entry || entry && typeof window.performance[entry] === entryType);
+        }
+
+        function getPerformanceNow(default) {
+          if(performanceEntryExists('now', 'function')) {
+            return window.performance.now();
+          } else {
+            return default;
+          }
         }
 
         function log(message, data) {
