@@ -86,17 +86,18 @@ var raygunRumFactory = function (window, $, Raygun) {
             });
 
             var clickHandler = function () {
-                this.updateCookieTimestamp();
+              this.updateCookieTimestamp();
             }.bind(_private);
 
             var unloadHandler = function () {
                 var data = [];
+
                 extractChildData(data);
 
                 if (self.pendingVirtualPage) {
-                    data.push(self.pendingVirtualPage);
-                    extractChildData(data, true);
-                }
+                  data.push(self.pendingVirtualPage);
+                  extractChildData(data, true);
+                } 
 
                 if (data.length > 0) {
                     var payload = {
@@ -120,7 +121,6 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (document.visibilityState === 'visible') {
                     this.updateCookieTimestamp();
                 }
-
             }.bind(_private);
 
             if (window.addEventListener) {
@@ -214,35 +214,41 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.heartBeat = function () {
-            self.heartBeatInterval = setInterval(function () {
-                var data = [];
-                var payload;
 
-                extractChildData(data, self.virtualPage);
+          if(self.heartBeatInterval !== null) {
+            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+            return;
+          }
 
-                if (data.length > 0) {
+          self.heartBeatInterval = setInterval(function () {
+              var data = [];
+              var payload;
 
-                    var dataJson = JSON.stringify(data);
-                    if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
-                        payload = {
-                            eventData: [{
-                                sessionId: self.sessionId,
-                                timestamp: new Date().toISOString(),
-                                type: 'web_request_timing',
-                                user: self.user,
-                                version: self.version || 'Not supplied',
-                                device: navigator.userAgent,
-                                tags: self.tags,
-                                data: data
-                            }]
-                        };
-                    }
-                }
+              extractChildData(data, self.virtualPage);
 
-                if (payload !== undefined) {
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-                }
-            }, 30 * 1000); // 30 seconds between heartbeats
+              if (data.length > 0) {
+
+                  var dataJson = JSON.stringify(data);
+                  if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
+                      payload = {
+                          eventData: [{
+                              sessionId: self.sessionId,
+                              timestamp: new Date().toISOString(),
+                              type: 'web_request_timing',
+                              user: self.user,
+                              version: self.version || 'Not supplied',
+                              device: navigator.userAgent,
+                              tags: self.tags,
+                              data: data
+                          }]
+                      };
+                  }
+              }
+
+              if (payload !== undefined) {
+                  self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+              }
+          }, 30 * 1000); // 30 seconds between heartbeats
         };
 
         this.virtualPageLoaded = function (path) {
@@ -302,11 +308,6 @@ var raygunRumFactory = function (window, $, Raygun) {
               self.pendingPerformancePayload = payload;
             }
         };
-
-        function stringToByteLength(str) {
-            var m = encodeURIComponent(str).match(/%[89ABab]/g);
-            return str.length + (m ? m.length : 0);
-        }
 
         function getSessionId(callback) {
             var existingCookie = readCookie(self.cookieName);
@@ -411,16 +412,6 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function maxFiveMinutes(milliseconds) {
             return Math.min(milliseconds, 300000);
-        }
-
-        function sanitizeNaNs(data) {
-            for (var i in data) {
-                if (isNaN(data[i]) && typeof data[i] !== 'string') {
-                    data[i] = 0;
-                }
-            }
-
-            return data;
         }
 
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
@@ -691,6 +682,21 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             return data;
+        }
+
+        function sanitizeNaNs(data) {
+            for (var i in data) {
+                if (isNaN(data[i]) && typeof data[i] !== 'string') {
+                    data[i] = 0;
+                }
+            }
+
+            return data;
+        }
+
+        function stringToByteLength(str) {
+            var m = encodeURIComponent(str).match(/%[89ABab]/g);
+            return str.length + (m ? m.length : 0);
         }
 
         function randomKey(length) {
