@@ -22,7 +22,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
-        this.pendingPayloadData = false;
+        this.pendingPayloadData = customTimingsEnabled || false;
         this.queuedPerformanceTimings = [];
 
         this.sessionId = null;
@@ -126,18 +126,12 @@ var raygunRumFactory = function (window, $, Raygun) {
               typeof customTimings.custom8 === 'number' ||
               typeof customTimings.custom9 === 'number' ||
               typeof customTimings.custom10 === 'number')) {
-                  if (self.pendingPerformancePayload) {
-                    var payloadObject = self.pendingPerformancePayload;
-                    var resourceObjects = payloadObject.eventData[0].data;
-
-                    resourceObjects[0].customTiming = customTimings;
-
-                    payloadObject.eventData[0].data = resourceObjects;
-
-                    self.postPayload(payloadObject);
-
-                    self.pendingPerformancePayload = null;
-                  }
+                if( self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
+                  // Append custom timings to first queued item, which should be a page view
+                  self.pendingPayloadData = false;
+                  self.queuedPerformanceTimings[0].customTiming = customTimings;
+                  self.sendQueuedPerformancePayloads();
+                }
               }
         };
 
@@ -152,10 +146,9 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.endSession = function () {
             var payload = {
                 eventData: [{
-                    sessionId: self.sessionId,
-                    timestamp: new Date().toISOString(),
-                    type: 'session_end'
-
+                  sessionId: self.sessionId,
+                  timestamp: new Date().toISOString(),
+                  type: 'session_end'
                 }]
             };
 
@@ -224,16 +217,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 return;
             }
 
-            var payload = {
-                eventData: createTimingPayload(performanceData)
-            };
-
-            if (!self.customTimingsEnabled) {
-              self.postPayload(payload);
-            } else {
-              // Queue the WRT until the custom timings are provided
-              self.pendingPerformancePayload = payload;
-            }
+            addPerformanceTimingsToQueue(performanceData);
         };
 
         this.postPayload = function(payload) {
@@ -285,7 +269,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, JSON.stringify(payload));
         };
 
-        function addPerformanceTimings(performanceData) {
+        function addPerformanceTimingsToQueue(performanceData) {
           self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
           sendQueuedPerformancePayloads();
         }
