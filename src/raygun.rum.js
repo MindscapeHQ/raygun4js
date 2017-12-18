@@ -30,6 +30,14 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.heartBeatInterval = null;
         this.offset = 0;
 
+        var Timings = {
+          Page: 'p',
+          VirtualPage: 'v',
+          XHR: 'x',
+          CachedChildAsset: 'e',
+          ChildAsset: 'c'
+        };
+
         this.attach = function () {
             getSessionId(function (isNewSession) {
               self.pageLoaded(isNewSession);
@@ -409,7 +417,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var now = getPerformanceNow(0);
 
             return {
-                t: 'v',
+                t: Timings.VirtualPage,
                 du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
                 o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
             };
@@ -418,7 +426,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         function getEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration,
-                t: 'p'
+                t: Timings.Page
             };
 
             data.a = offset + timing.fetchStart;
@@ -480,10 +488,20 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
+        function getSecondaryTimingType(timing) {
+          if(timing.initiatorType === 'xmlhttprequest') {
+            return Timings.XHR;
+          } else if(timing.duration === 0) {
+            return Timings.CachedChildAsset;
+          } else {
+            return Timings.ChildAsset;
+          }
+        }
+
         function getSecondaryEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration.toFixed(2),
-                t: timing.initiatorType === 'xmlhttprequest' ? 'x' : timing.duration === 0.0 ? 'e' : 'c',
+                t: getSecondaryTimingType(timing),
                 a: (offset + timing.fetchStart).toFixed(2)
             };
 
@@ -582,6 +600,32 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
+        function shouldIgnoreResource(name) {
+          if (name.indexOf(self.apiUrl) === 0) {
+              return true;
+          }
+          // Other ignored calls
+          if (name.indexOf('favicon.ico') > 0) {
+              return true;
+          }
+          if (name.indexOf('about:blank') === 0) {
+              return true;
+          }
+          if (name[0] === 'j' && segment.indexOf('avascript:') === 1) {
+              return true;
+          }
+          if (name.indexOf('chrome-extension://') === 0) {
+              return true;
+          }
+          if (name.indexOf('res://') === 0) {
+              return true;
+          }
+          if (name.indexOf('file://') === 0) {
+              return true;
+          }
+          return false;
+        }
+
         function extractChildData(collection, fromVirtualPage) {
             if (!performanceEntryExists(getEntries, 'function')) {
                 return;
@@ -592,33 +636,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 for (var i = self.offset; i < resources.length; i++) {
                     var segment = resources[i].name.split('?')[0];
-
-                    // swallow any calls to Raygun itself
-                    if (segment.indexOf(self.apiUrl) === 0) {
-                        continue;
+                    if( !shouldIgnoreResource(segment) ) {
+                      collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                     }
-
-                    // Other ignored calls
-                    if (segment.indexOf('favicon.ico') > 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('about:blank') === 0) {
-                        continue;
-                    }
-                    if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) {
-                        continue;
-                    }
-                    if (segment.indexOf('chrome-extension://') === 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('res://') === 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('file://') === 0) {
-                        continue;
-                    }
-
-                    collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                 }
 
                 self.offset = resources.length;
