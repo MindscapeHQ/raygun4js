@@ -22,6 +22,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
+
         this.sessionId = null;
         this.virtualPage = null;
         this.user = user;
@@ -59,16 +60,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 if (data.length > 0) {
                     var payload = {
-                        eventData: [{
-                            sessionId: self.sessionId,
-                            timestamp: new Date().toISOString(),
-                            type: 'web_request_timing',
-                            user: self.user,
-                            version: self.version || 'Not supplied',
-                            device: navigator.userAgent,
-                            tags: self.tags,
-                            data: data
-                        }]
+                        eventData: createTimingPayload(data)
                     };
 
                     self.postPayload(payload);
@@ -185,16 +177,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                   var dataJson = JSON.stringify(data);
                   if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
                       payload = {
-                          eventData: [{
-                              sessionId: self.sessionId,
-                              timestamp: new Date().toISOString(),
-                              type: 'web_request_timing',
-                              user: self.user,
-                              version: self.version || 'Not supplied',
-                              device: navigator.userAgent,
-                              tags: self.tags,
-                              data: data
-                          }]
+                        eventData: createTimingPayload(data)
                       };
                   }
               }
@@ -239,16 +222,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             var payload = {
-                eventData: [{
-                    sessionId: self.sessionId,
-                    timestamp: new Date().toISOString(),
-                    type: 'web_request_timing',
-                    user: self.user,
-                    version: self.version || 'Not supplied',
-                    device: navigator.userAgent,
-                    tags: self.tags,
-                    data: performanceData
-                }]
+                eventData: createTimingPayload(performanceData)
             };
 
             if (!self.customTimingsEnabled) {
@@ -314,6 +288,18 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, JSON.stringify(payload));
         };
 
+        function createTimingPayload(data) {
+            return {
+              sessionId: self.sessionId,
+              timestamp: new Date().toISOString(),
+              type: 'web_request_timing',
+              user: self.user,
+              version: self.version || 'Not supplied',
+              device: navigator.userAgent,
+              tags: self.tags,
+              data: data
+            };
+        }
 
         function getSessionId(callback) {
             var existingCookie = readCookie(self.cookieName);
