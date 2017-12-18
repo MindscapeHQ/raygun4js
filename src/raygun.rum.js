@@ -71,7 +71,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                         }]
                     };
 
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+                    self.postPayload(payload);
                 }
             };
 
@@ -116,7 +116,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               }]
           };
 
-          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+          self.postPayload(payload);
         };
 
         this.sendCustomTimings = function (customTimings) {
@@ -139,7 +139,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                     payloadObject.eventData[0].data = resourceObjects;
 
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payloadObject);
+                    self.postPayload(payloadObject);
 
                     self.pendingPerformancePayload = null;
                   }
@@ -164,7 +164,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }]
             };
 
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+            self.postPayload(payload);
         };
 
         this.heartBeat = function () {
@@ -200,7 +200,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               }
 
               if (payload !== undefined) {
-                  self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+                  self.postPayload(payload);
               }
           }, 30 * 1000); // 30 seconds between heartbeats
         };
@@ -252,13 +252,16 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
 
             if (!self.customTimingsEnabled) {
-              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+              self.postPayload(payload);
             } else {
               // Queue the WRT until the custom timings are provided
               self.pendingPerformancePayload = payload;
             }
         };
 
+        this.postPayload = function(payload) {
+          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+        };
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
