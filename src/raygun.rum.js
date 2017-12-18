@@ -22,56 +22,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
-        this.makePostCorsRequest = function (url, data) {
-            if (self.excludedUserAgents instanceof Array) {
-                for (var userAgentIndex in self.excludedUserAgents) {
-                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-                            if (self.debugMode) {
-                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-                            }
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if (self.excludedHostNames instanceof Array) {
-                for (var hostIndex in self.excludedHostNames) {
-                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
-                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
-                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
-                return;
-            }
-
-            var payload = self.beforeSend(data);
-            if (!payload) {
-                if (self.debugMode) {
-                    log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-                }
-
-                return;
-            }
-
-            if (!!payload.eventData) {
-                for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data) {
-                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
-                    }
-                }
-            }
-
-            makePostCorsRequest(url, JSON.stringify(payload));
-        };
         this.sessionId = null;
         this.virtualPage = null;
         this.user = user;
@@ -97,7 +47,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (self.pendingVirtualPage) {
                   data.push(self.pendingVirtualPage);
                   extractChildData(data, true);
-                } 
+                }
 
                 if (data.length > 0) {
                     var payload = {
@@ -309,6 +259,59 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         };
 
+
+        this.makePostCorsRequest = function (url, data) {
+            if (self.excludedUserAgents instanceof Array) {
+                for (var userAgentIndex in self.excludedUserAgents) {
+                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+                            if (self.debugMode) {
+                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                            }
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (self.excludedHostNames instanceof Array) {
+                for (var hostIndex in self.excludedHostNames) {
+                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
+                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
+                return;
+            }
+
+            var payload = self.beforeSend(data);
+            if (!payload) {
+                if (self.debugMode) {
+                    log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+                }
+
+                return;
+            }
+
+            if (!!payload.eventData) {
+                for (var i = 0;i < payload.eventData.length;i++) {
+                    if (!!payload.eventData[i].data) {
+                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+                    }
+                }
+            }
+
+            makePostCorsRequest(url, JSON.stringify(payload));
+        };
+
+
         function getSessionId(callback) {
             var existingCookie = readCookie(self.cookieName);
 
@@ -410,10 +413,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function maxFiveMinutes(milliseconds) {
-            return Math.min(milliseconds, 300000);
-        }
-
         function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
             var now;
             if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
@@ -474,7 +473,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if (timing.domComplete && timing.domComplete > 0) {
-                data.k = maxFiveMinutes((offset + timing.domComplete) - data.a);
+                data.k = (offset + timing.domComplete) - data.a;
             }
 
             if (timing.loadEventStart && timing.loadEventStart > 0) {
@@ -496,7 +495,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function getSecondaryEncodedTimingData(timing, offset) {
             var data = {
-                du: maxFiveMinutes(timing.duration).toFixed(2),
+                du: timing.duration.toFixed(2),
                 t: timing.initiatorType === 'xmlhttprequest' ? 'x' : timing.duration === 0.0 ? 'e' : 'c',
                 a: (offset + timing.fetchStart).toFixed(2)
             };
