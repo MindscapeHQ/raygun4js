@@ -245,10 +245,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 for (var userAgentIndex in self.excludedUserAgents) {
                     if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
                         if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-                            if (self.debugMode) {
-                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-                            }
-
+                            log('Raygun4JS: cancelling send as error originates from an excluded user agent');
                             return;
                         }
                     }
@@ -273,10 +270,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var payload = self.beforeSend(data);
             if (!payload) {
-                if (self.debugMode) {
-                    log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-                }
-
+                log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
                 return;
             }
 
@@ -763,7 +757,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function log(message, data) {
-            if (window.console && window.console.log && self.debugMode) {
+            if (self.debugMode && window.console && window.console.log) {
                 window.console.log(message);
 
                 if (data) {
