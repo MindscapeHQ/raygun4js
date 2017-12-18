@@ -22,6 +22,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
+        this.pendingPayloadData = false;
+        this.queuedPerformanceTimings = [];
 
         this.sessionId = null;
         this.virtualPage = null;
@@ -38,6 +40,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           CachedChildAsset: 'e',
           ChildAsset: 'c'
         };
+        var MaxPayloadSize = 128000;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
@@ -287,6 +290,56 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             makePostCorsRequest(url, JSON.stringify(payload));
         };
+
+        function addPerformanceTimings(performanceData) {
+          self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+          sendQueuedPerformancePayloads();
+        }
+
+        function sendQueuedPerformancePayloads() {
+          if(self.pendingPayloadData) {
+            return;
+          }
+
+          var currentPayloadTimingData = [];
+          var payloadIncludesPageTiming = false;
+          var timing, i;
+          var timingPayloadSize;
+
+          var sendCurrentTimingData = function() {
+            self.postPayload({
+              eventData: [
+                createTimingPayload(currentPayloadTimingData)
+              ]
+            }));
+            currentPayloadTimingData = [];
+            payloadIncludesPageTiming = false;
+          }
+
+          for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
+            timing = self.queuedPerformanceTimings[i];
+
+            if(payloadIncludesPageTiming && (timing.t === Timings.Page || timing.t === Timings.VirtualPage)) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
+              sendCurrentTimingData();
+            }
+
+            currentPayloadTimingData.push(timing);
+            timingPayloadSize = stringToByteLength(JSON.stringify(createTimingPayload(currentPayloadTimingData)));
+
+            if(tempTimingPayload > MaxPayloadSize) {
+              currentPayloadTimingData.pop();
+              sendCurrentTimingData();
+              currentPayloadTimingData.push( timing );
+            }
+
+            payloadIncludesPageTiming = payloadIncludesPageTiming || (timing.t === Timings.Page || timing.t === Timings.VirtualPage);
+          }
+
+          if(currentPayloadTimingData.length > 0) {
+            sendCurrentTimingData();
+          }
+        }
 
         function createTimingPayload(data) {
             return {
