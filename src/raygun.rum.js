@@ -246,7 +246,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           var currentPayloadTimingData = [];
           var payloadIncludesPageTiming = false;
-          var timing, i;
+          var data, i;
           var timingPayloadSize;
 
           var sendCurrentTimingData = function() {
