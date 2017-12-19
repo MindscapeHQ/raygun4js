@@ -61,13 +61,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                   extractChildData(data, true);
                 }
 
-                if (data.length > 0) {
-                    var payload = {
-                        eventData: createTimingPayload(data)
-                    };
-
-                    self.postPayload(payload);
-                }
+                addPerformanceTimingsToQueue(data, true);
             };
 
             var visibilityChangeHandler = function () {
@@ -175,6 +169,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
+                    // I believe this should add the '/' to the start of the path and not the end?
                     path = path + '/';
                 }
 
@@ -251,13 +246,13 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, JSON.stringify(payload));
         };
 
-        function addPerformanceTimingsToQueue(performanceData) {
+        function addPerformanceTimingsToQueue(performanceData, forceSend) {
           self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
-          sendQueuedPerformancePayloads();
+          sendQueuedPerformancePayloads(forceSend);
         }
 
-        function sendQueuedPerformancePayloads() {
-          if(self.pendingPayloadData) {
+        function sendQueuedPerformancePayloads(forceSend) {
+          if(self.pendingPayloadData && !forceSend) {
             return;
           }
 
