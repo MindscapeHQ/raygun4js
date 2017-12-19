@@ -488,7 +488,8 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if (timing.domComplete && timing.domComplete > 0) {
-                data.k = (offset + timing.domComplete) - data.a;
+                // Unsure as to why we cap the duration. Kept to maintain backwards compatibility in V2
+                data.k = maxFiveMinutes(offset + timing.domComplete) - data.a;
             }
 
             if (timing.loadEventStart && timing.loadEventStart > 0) {
@@ -520,7 +521,8 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function getSecondaryEncodedTimingData(timing, offset) {
             var data = {
-                du: timing.duration.toFixed(2),
+                // Unsure as to why we cap the duration. Kept to maintain backwards compatibility in V2
+                du: maxFiveMinutes(timing.duration).toFixed(2),
                 t: getSecondaryTimingType(timing),
                 a: (offset + timing.fetchStart).toFixed(2)
             };
@@ -738,6 +740,10 @@ var raygunRumFactory = function (window, $, Raygun) {
           } else {
             return default;
           }
+        }
+
+        function maxFiveMinutes(milliseconds) {
+            return Math.min(milliseconds, 300000);
         }
 
         function log(message, data) {
