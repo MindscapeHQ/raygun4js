@@ -164,23 +164,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           self.heartBeatInterval = setInterval(function () {
               var data = [];
-              var payload;
-
               extractChildData(data, self.virtualPage);
 
-              if (data.length > 0) {
-
-                  var dataJson = JSON.stringify(data);
-                  if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
-                      payload = {
-                        eventData: createTimingPayload(data)
-                      };
-                  }
-              }
-
-              if (payload !== undefined) {
-                  self.postPayload(payload);
-              }
+              self.addPerformanceTimingsToQueue(data);
           }, 30 * 1000); // 30 seconds between heartbeats
         };
 
@@ -199,11 +185,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.virtualPage = path;
             }
 
-            if (firstVirtualLoad) {
-                this.sendPerformance(true, false);
-            } else {
-                this.sendPerformance(false, false);
-            }
+            this.sendPerformance(!!firstVirtualLoad, false);
 
             if (typeof path === 'string') {
               this.previousVirtualPageLoadTimestamp = getPerformanceNow(0);
@@ -289,10 +271,10 @@ var raygunRumFactory = function (window, $, Raygun) {
               eventData: [
                 createTimingPayload(currentPayloadTimingData)
               ]
-            }));
+            });
             currentPayloadTimingData = [];
             payloadIncludesPageTiming = false;
-          }
+          };
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
             timing = self.queuedPerformanceTimings[i];
@@ -305,7 +287,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             currentPayloadTimingData.push(timing);
             timingPayloadSize = stringToByteLength(JSON.stringify(createTimingPayload(currentPayloadTimingData)));
 
-            if(tempTimingPayload > MaxPayloadSize) {
+            if(timingPayloadSize > MaxPayloadSize) {
               currentPayloadTimingData.pop();
               sendCurrentTimingData();
               currentPayloadTimingData.push( timing );
@@ -633,7 +615,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           if (name.indexOf('about:blank') === 0) {
               return true;
           }
-          if (name[0] === 'j' && segment.indexOf('avascript:') === 1) {
+          if (name[0] === 'j' && name.indexOf('avascript:') === 1) {
               return true;
           }
           if (name.indexOf('chrome-extension://') === 0) {
@@ -649,7 +631,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function extractChildData(collection, fromVirtualPage) {
-            if (!performanceEntryExists(getEntries, 'function')) {
+            if (!performanceEntryExists('getEntries', 'function')) {
                 return;
             }
 
@@ -670,7 +652,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPerformanceData(virtualPage, flush, firstLoad) {
-            if (!performanceEntryExists(timing, 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+            if (!performanceEntryExists('timing', 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
@@ -731,14 +713,14 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function performanceEntryExists(entry, entryType) {
-          return (typeof window.performance === "object" && (!entry || entry && typeof window.performance[entry] === entryType);
+          return (typeof window.performance === "object" && (!entry || entry && typeof window.performance[entry] === entryType));
         }
 
-        function getPerformanceNow(default) {
+        function getPerformanceNow(fallbackValue) {
           if(performanceEntryExists('now', 'function')) {
             return window.performance.now();
           } else {
-            return default;
+            return fallbackValue;
           }
         }
 
