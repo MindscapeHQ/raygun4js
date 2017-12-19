@@ -52,7 +52,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }.bind(_private);
 
             var unloadHandler = function () {
-              self.sendPerformance(false, false, true);
+              self.sendChildAssets(true);
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
@@ -148,7 +148,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           }
 
           self.heartBeatInterval = setInterval(function () {
-              self.sendPerformance(false, false);
+              self.sendChildAssets();
           }, 30 * 1000); // 30 seconds between heartbeats
         };
 
@@ -183,6 +183,12 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             addPerformanceTimingsToQueue(performanceData, forceSend);
+        };
+
+        this.sendChildAssets = function(forceSend) {
+          var data = [];
+          extractChildData(data);
+          addPerformanceTimingsToQueue(data, forceSend);
         };
 
         this.postPayload = function(payload) {
@@ -661,8 +667,6 @@ var raygunRumFactory = function (window, $, Raygun) {
                     self.initalStaticPageLoadTimestamp
                 ));
                 extractChildData(data, true);
-            } else if(!flush) {
-                extractChildData(data);
             }
 
             return data;
