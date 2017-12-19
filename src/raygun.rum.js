@@ -494,7 +494,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var data = {
                 du: maxFiveMinutes(timing.duration).toFixed(2),
                 t: getSecondaryTimingType(timing),
-                a: (offset + timing.fetchStart).toFixed(2)
+                a: offset + timing.fetchStart
             };
 
             if (timing.domainLookupStart && timing.domainLookupStart > 0) {
@@ -525,6 +525,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
             }
 
+            data.a = data.a.toFixed(2);
             data = sanitizeNaNs(data);
 
             return data;
