@@ -52,17 +52,8 @@ var raygunRumFactory = function (window, $, Raygun) {
             }.bind(_private);
 
             var unloadHandler = function () {
-                var data = [];
-
-                if (self.pendingVirtualPage) {
-                  data.push(self.pendingVirtualPage);
-                  extractChildData(data, true);
-                } else {
-                  extractChildData(data);
-                }
-
-                addPerformanceTimingsToQueue(data, true);
-            };
+              self.sendPerformance(false, false, true);
+            }.bind(_private);
 
             var visibilityChangeHandler = function () {
                 if (document.visibilityState === 'visible') {
@@ -157,10 +148,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           }
 
           self.heartBeatInterval = setInterval(function () {
-              var data = [];
-              // Replace with addition to queue
-              extractChildData(data, self.virtualPage);
-              self.addPerformanceTimingsToQueue(data);
+              self.sendPerformance(false, false);
           }, 30 * 1000); // 30 seconds between heartbeats
         };
 
@@ -187,14 +175,14 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         };
 
-        this.sendPerformance = function (flush, firstLoad) {
+        this.sendPerformance = function (flush, firstLoad, forceSend) {
             var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
 
             if (performanceData === null || performanceData.length < 0) {
                 return;
             }
 
-            addPerformanceTimingsToQueue(performanceData);
+            addPerformanceTimingsToQueue(performanceData, forceSend);
         };
 
         this.postPayload = function(payload) {
@@ -653,37 +641,26 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var data = [];
 
-            if (flush) {
-                // Called by the static onLoad event being fired, persist itself
-                if (firstLoad) {
-                    data.push(getPrimaryTimingData());
-                }
+            if (firstLoad) {
+              // Called by the static onLoad event being fired, persist itself
+              data.push(getPrimaryTimingData());
+            }
 
-                // Called during both the static load event and the first virtual load call
-                // Associates all data loaded up to this point with the previous page
-                extractChildData(data);
+            if (flush) {
+              // Called during both the static load event and the first virtual load call
+              // Associates all data loaded up to this point with the previous page
+              extractChildData(data);
             }
 
             if (virtualPage) {
-                // A previous virtual load was stored, persist it and its children up until now
-                if (self.pendingVirtualPage) {
-                    data.push(self.pendingVirtualPage);
-                    extractChildData(data, true);
-                }
-
-                var firstVirtualLoad = self.pendingVirtualPage == null;
-
-                // Store the current virtual load so it can be sent upon the next one
-                self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                data.push(getVirtualPrimaryTimingData(
                     virtualPage,
                     self.previousVirtualPageLoadTimestamp,
                     self.initalStaticPageLoadTimestamp
-                );
-
-                // Prevent sending an empty payload for the first virtual load as we don't know when it will end
-                if (!firstVirtualLoad && data.length > 0) {
-                    return data;
-                }
+                ));
+                extractChildData(data, true);
+            } else if(!flush) {
+                extractChildData(data);
             }
 
             return data;
