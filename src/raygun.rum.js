@@ -115,7 +115,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                   // Append custom timings to first queued item, which should be a page view
                   self.pendingPayloadData = false;
                   self.queuedPerformanceTimings[0].customTiming = customTimings;
-                  self.sendQueuedPerformancePayloads();
+                  sendQueuedPerformancePayloads();
                 }
               }
         };
@@ -260,28 +260,30 @@ var raygunRumFactory = function (window, $, Raygun) {
           };
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
-            timing = self.queuedPerformanceTimings[i];
+            data = self.queuedPerformanceTimings[i];
 
-            if(payloadIncludesPageTiming && (timing.t === Timings.Page || timing.t === Timings.VirtualPage)) {
+            if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
               // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
               sendCurrentTimingData();
             }
 
-            currentPayloadTimingData.push(timing);
+            currentPayloadTimingData.push(data);
             timingPayloadSize = stringToByteLength(JSON.stringify(createTimingPayload(currentPayloadTimingData)));
 
             if(timingPayloadSize > MaxPayloadSize) {
               currentPayloadTimingData.pop();
               sendCurrentTimingData();
-              currentPayloadTimingData.push( timing );
+              currentPayloadTimingData.push(data);
             }
 
-            payloadIncludesPageTiming = payloadIncludesPageTiming || (timing.t === Timings.Page || timing.t === Timings.VirtualPage);
+            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
           }
 
           if(currentPayloadTimingData.length > 0) {
             sendCurrentTimingData();
           }
+
+          self.queuedPerformanceTimings = [];
         }
 
         function createTimingPayload(data) {
