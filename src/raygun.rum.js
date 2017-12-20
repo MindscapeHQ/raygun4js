@@ -19,7 +19,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
         this.customTimingsEnabled = customTimingsEnabled;
-        this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.pendingPayloadData = customTimingsEnabled || false;
@@ -273,14 +272,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             currentPayloadTimingData.push(data);
-            timingPayloadSize = stringToByteLength(JSON.stringify(createTimingPayload(currentPayloadTimingData)));
-
-            if(timingPayloadSize > MaxPayloadSize) {
-              currentPayloadTimingData.pop();
-              sendCurrentTimingData();
-              currentPayloadTimingData.push(data);
-            }
-
             payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
           }
 
