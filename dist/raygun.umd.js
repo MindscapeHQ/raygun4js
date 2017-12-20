@@ -2994,7 +2994,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '{{VERSION}}'
+                    'Version': '2.8.4'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3313,7 +3313,6 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
-                    // I believe this should add the '/' to the start of the path and not the end?
                     path = path + '/';
                 }
 
@@ -3617,8 +3616,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if (timing.domComplete && timing.domComplete > 0) {
-                // Unsure as to why we cap the duration. Kept to maintain backwards compatibility in V2
-                data.k = maxFiveMinutes(offset + timing.domComplete) - data.a;
+                data.k = maxFiveMinutes((offset + timing.domComplete) - data.a);
             }
 
             if (timing.loadEventStart && timing.loadEventStart > 0) {
@@ -3650,10 +3648,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function getSecondaryEncodedTimingData(timing, offset) {
             var data = {
-                // Unsure as to why we cap the duration. Kept to maintain backwards compatibility in V2
                 du: maxFiveMinutes(timing.duration).toFixed(2),
                 t: getSecondaryTimingType(timing),
-                a: (offset + timing.fetchStart).toFixed(2)
+                a: offset + timing.fetchStart
             };
 
             if (timing.domainLookupStart && timing.domainLookupStart > 0) {
@@ -3684,6 +3681,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
             }
 
+            data.a = data.a.toFixed(2);
             data = sanitizeNaNs(data);
 
             return data;
