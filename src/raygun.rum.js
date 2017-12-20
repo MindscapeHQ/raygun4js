@@ -75,7 +75,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.sendNewSessionStart();
             }
 
-            self.sendPerformance(true, true);
+            self.sendPerformance(true);
 
             self.heartBeat();
 
@@ -152,8 +152,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.virtualPageLoaded = function (path) {
-            var firstVirtualLoad = this.virtualPage == null;
-
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
                     path = path + '/';
@@ -166,15 +164,15 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.virtualPage = path;
             }
 
-            this.sendPerformance(!!firstVirtualLoad, false);
+            this.sendPerformance(false);
 
             if (typeof path === 'string') {
               this.previousVirtualPageLoadTimestamp = getPerformanceNow(0);
             }
         };
 
-        this.sendPerformance = function (flush, firstLoad, forceSend) {
-            var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
+        this.sendPerformance = function (firstLoad, forceSend) {
+            var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
             if (performanceData === null || performanceData.length < 0) {
                 return;
@@ -631,7 +629,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData(virtualPage, flush, firstLoad) {
+        function getPerformanceData(virtualPage, firstLoad) {
             if (!performanceEntryExists('timing', 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
@@ -643,11 +641,10 @@ var raygunRumFactory = function (window, $, Raygun) {
               data.push(getPrimaryTimingData());
             }
 
-            if (flush) {
-              // Called during both the static load event and the first virtual load call
-              // Associates all data loaded up to this point with the previous page
-              extractChildData(data);
-            }
+            // Called during both the static load event and the virtual load calls
+            // Associates all data loaded up to this point with the previous page
+            // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+            extractChildData(data);
 
             if (virtualPage) {
                 data.push(getVirtualPrimaryTimingData(
