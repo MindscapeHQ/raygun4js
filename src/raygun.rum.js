@@ -460,7 +460,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if (timing.domComplete && timing.domComplete > 0) {
-                data.k = maxFiveMinutes(offset + timing.domComplete) - data.a;
+                data.k = maxFiveMinutes((offset + timing.domComplete) - data.a);
             }
 
             if (timing.loadEventStart && timing.loadEventStart > 0) {
