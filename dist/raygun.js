@@ -1,6 +1,6 @@
-/*! Raygun4js - v2.8.4 - 2017-12-20
+/*! Raygun4js - v2.8.4 - 2018-01-09
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2017 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -3140,7 +3140,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
         this.customTimingsEnabled = customTimingsEnabled;
-        this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.pendingPayloadData = customTimingsEnabled || false;
@@ -3161,7 +3160,6 @@ var raygunRumFactory = function (window, $, Raygun) {
           CachedChildAsset: 'e',
           ChildAsset: 'c'
         };
-        var MaxPayloadSize = 128000;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
@@ -3197,7 +3195,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.sendNewSessionStart();
             }
 
-            self.sendPerformance(true, true);
+            self.sendPerformance(true);
 
             self.heartBeat();
 
@@ -3274,8 +3272,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.virtualPageLoaded = function (path) {
-            var firstVirtualLoad = this.virtualPage == null;
-
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
                     path = path + '/';
@@ -3288,15 +3284,15 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.virtualPage = path;
             }
 
-            this.sendPerformance(!!firstVirtualLoad, false);
+            this.sendPerformance(false);
 
             if (typeof path === 'string') {
               this.previousVirtualPageLoadTimestamp = getPerformanceNow(0);
             }
         };
 
-        this.sendPerformance = function (flush, firstLoad, forceSend) {
-            var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
+        this.sendPerformance = function (firstLoad, forceSend) {
+            var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
             if (performanceData === null || performanceData.length < 0) {
                 return;
@@ -3371,18 +3367,28 @@ var raygunRumFactory = function (window, $, Raygun) {
           }
 
           var currentPayloadTimingData = [];
+          var payloadTimings = [];
           var payloadIncludesPageTiming = false;
           var data, i;
-          var timingPayloadSize;
 
-          var sendCurrentTimingData = function() {
-            self.postPayload({
-              eventData: [
-                createTimingPayload(currentPayloadTimingData)
-              ]
-            });
+          var addCurrentPayloadEvents = function() {
+            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
             currentPayloadTimingData = [];
             payloadIncludesPageTiming = false;
+          };
+
+          var sendTimingData = function() {
+            if(currentPayloadTimingData.length > 0) {
+              addCurrentPayloadEvents();
+            }
+
+            if( payloadTimings.length > 0 ) {
+              self.postPayload({
+                eventData: payloadTimings
+              });
+              currentPayloadTimingData = [];
+              payloadIncludesPageTiming = false;
+            }
           };
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
@@ -3390,25 +3396,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
               // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
-              sendCurrentTimingData();
+              addCurrentPayloadEvents();
+            }
+
+            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+              addCurrentPayloadEvents();
             }
 
             currentPayloadTimingData.push(data);
-            timingPayloadSize = stringToByteLength(JSON.stringify(createTimingPayload(currentPayloadTimingData)));
-
-            if(timingPayloadSize > MaxPayloadSize) {
-              currentPayloadTimingData.pop();
-              sendCurrentTimingData();
-              currentPayloadTimingData.push(data);
-            }
-
             payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
           }
 
-          if(currentPayloadTimingData.length > 0) {
-            sendCurrentTimingData();
-          }
-
+          sendTimingData();
           self.queuedPerformanceTimings = [];
         }
 
@@ -3761,7 +3760,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData(virtualPage, flush, firstLoad) {
+        function getPerformanceData(virtualPage, firstLoad) {
             if (!performanceEntryExists('timing', 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
@@ -3773,11 +3772,10 @@ var raygunRumFactory = function (window, $, Raygun) {
               data.push(getPrimaryTimingData());
             }
 
-            if (flush) {
-              // Called during both the static load event and the first virtual load call
-              // Associates all data loaded up to this point with the previous page
-              extractChildData(data);
-            }
+            // Called during both the static load event and the virtual load calls
+            // Associates all data loaded up to this point with the previous page
+            // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+            extractChildData(data);
 
             if (virtualPage) {
                 data.push(getVirtualPrimaryTimingData(
@@ -3799,11 +3797,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             return data;
-        }
-
-        function stringToByteLength(str) {
-            var m = encodeURIComponent(str).match(/%[89ABab]/g);
-            return str.length + (m ? m.length : 0);
         }
 
         function randomKey(length) {

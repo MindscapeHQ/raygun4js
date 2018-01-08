@@ -39,7 +39,6 @@ var raygunRumFactory = function (window, $, Raygun) {
           CachedChildAsset: 'e',
           ChildAsset: 'c'
         };
-        var MaxPayloadSize = 128000;
 
         this.attach = function () {
             getSessionId(function (isNewSession) {
@@ -247,18 +246,28 @@ var raygunRumFactory = function (window, $, Raygun) {
           }
 
           var currentPayloadTimingData = [];
+          var payloadTimings = [];
           var payloadIncludesPageTiming = false;
           var data, i;
-          var timingPayloadSize;
 
-          var sendCurrentTimingData = function() {
-            self.postPayload({
-              eventData: [
-                createTimingPayload(currentPayloadTimingData)
-              ]
-            });
+          var addCurrentPayloadEvents = function() {
+            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
             currentPayloadTimingData = [];
             payloadIncludesPageTiming = false;
+          };
+
+          var sendTimingData = function() {
+            if(currentPayloadTimingData.length > 0) {
+              addCurrentPayloadEvents();
+            }
+
+            if( payloadTimings.length > 0 ) {
+              self.postPayload({
+                eventData: payloadTimings
+              });
+              currentPayloadTimingData = [];
+              payloadIncludesPageTiming = false;
+            }
           };
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
@@ -266,17 +275,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
               // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
-              sendCurrentTimingData();
+              addCurrentPayloadEvents();
+            }
+
+            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+              addCurrentPayloadEvents();
             }
 
             currentPayloadTimingData.push(data);
             payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
           }
 
-          if(currentPayloadTimingData.length > 0) {
-            sendCurrentTimingData();
-          }
-
+          sendTimingData();
           self.queuedPerformanceTimings = [];
         }
 
@@ -666,11 +676,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             return data;
-        }
-
-        function stringToByteLength(str) {
-            var m = encodeURIComponent(str).match(/%[89ABab]/g);
-            return str.length + (m ? m.length : 0);
         }
 
         function randomKey(length) {
