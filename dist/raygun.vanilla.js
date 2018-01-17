@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.4 - 2018-01-09
+/*! Raygun4js - v2.8.4 - 2018-01-18
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2891,7 +2891,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.4'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3076,6 +3076,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.pendingPayloadData = customTimingsEnabled || false;
         this.queuedPerformanceTimings = [];
+        this.pendingVirtualPage = null;
 
         this.sessionId = null;
         this.virtualPage = null;
@@ -3216,24 +3217,24 @@ var raygunRumFactory = function (window, $, Raygun) {
                 this.virtualPage = path;
             }
 
+            processVirtualPageTimingsInQueue();
             this.sendPerformance(false);
-
-            if (typeof path === 'string') {
-              this.previousVirtualPageLoadTimestamp = getPerformanceNow(0);
-            }
         };
 
-        this.sendPerformance = function (firstLoad, forceSend) {
+        this.sendPerformance = function (firstLoad) {
             var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
             if (performanceData === null || performanceData.length < 0) {
                 return;
             }
 
-            addPerformanceTimingsToQueue(performanceData, forceSend);
+            addPerformanceTimingsToQueue(performanceData, false);
         };
 
         this.sendChildAssets = function(forceSend) {
+          if(forceSend) {
+            processVirtualPageTimingsInQueue();
+          }
           var data = [];
           extractChildData(data);
           addPerformanceTimingsToQueue(data, forceSend);
@@ -3332,7 +3333,15 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
               addCurrentPayloadEvents();
+            }
+
+            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              // Pending virtual page, wait until the virtual page timings have been calculated
+              sendTimingData();
+              self.queuedPerformanceTimings.splice(0, i);
+              return;
             }
 
             currentPayloadTimingData.push(data);
@@ -3457,14 +3466,33 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
-            var now = getPerformanceNow(0);
-
+        function prepareVirtualEncodedTimingData(virtualPageStartTime) {
             return {
                 t: Timings.VirtualPage,
-                du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
-                o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
+                startTime: virtualPageStartTime,
+                staticLoad: self.initalStaticPageLoadTimestamp,
+                pending: true
             };
+        }
+
+        function processVirtualPageTimingsInQueue() {
+          var i = 0, data;
+          for(i; i < self.queuedPerformanceTimings.length; i++) {
+            data = self.queuedPerformanceTimings[i];
+            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              data.timing = generateVirtualEncodedTimingData(data.timing);
+            }
+          }
+        }
+
+        function generateVirtualEncodedTimingData(timingData) {
+          var now = getPerformanceNow(0);
+
+          return {
+            t: timingData.t,
+            du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
+            o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad)
+          };
         }
 
         function getEncodedTimingData(timing, offset) {
@@ -3604,7 +3632,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
-        function getVirtualPrimaryTimingData(virtualPage, previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+        function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
             if (self.ignoreUrlCasing) {
                 virtualPage = virtualPage.toLowerCase();
             }
@@ -3622,7 +3650,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             return {
                 url: url,
                 userAgent: navigator.userAgent,
-                timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
+                timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
                 size: 0
             };
         }
@@ -3712,8 +3740,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (virtualPage) {
                 data.push(getVirtualPrimaryTimingData(
                     virtualPage,
-                    self.previousVirtualPageLoadTimestamp,
-                    self.initalStaticPageLoadTimestamp
+                    getPerformanceNow(0)
                 ));
                 extractChildData(data, true);
             }
