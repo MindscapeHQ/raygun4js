@@ -1,6 +1,6 @@
-/*! Raygun4js - v2.8.4 - 2017-11-20
+/*! Raygun4js - v2.8.5 - 2018-01-18
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2017 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -2891,7 +2891,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.4'
+                    'Version': '2.8.5'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3072,18 +3072,184 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
         this.ignoreUrlCasing = ignoreUrlCasing;
         this.customTimingsEnabled = customTimingsEnabled;
-        this.pendingPerformancePayload = null;
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
+
+        this.pendingPayloadData = customTimingsEnabled || false;
+        this.queuedPerformanceTimings = [];
+        this.pendingVirtualPage = null;
+
+        this.sessionId = null;
+        this.virtualPage = null;
+        this.user = user;
+        this.version = version;
+        this.tags = tags;
+        this.heartBeatInterval = null;
+        this.offset = 0;
+
+        var Timings = {
+          Page: 'p',
+          VirtualPage: 'v',
+          XHR: 'x',
+          CachedChildAsset: 'e',
+          ChildAsset: 'c'
+        };
+
+        this.attach = function () {
+            getSessionId(function (isNewSession) {
+              self.pageLoaded(isNewSession);
+            });
+
+            var clickHandler = function () {
+              this.updateCookieTimestamp();
+            }.bind(_private);
+
+            var unloadHandler = function () {
+              self.sendChildAssets(true);
+            }.bind(_private);
+
+            var visibilityChangeHandler = function () {
+                if (document.visibilityState === 'visible') {
+                    this.updateCookieTimestamp();
+                }
+            }.bind(_private);
+
+            if (window.addEventListener) {
+                window.addEventListener('click', clickHandler);
+                document.addEventListener('visibilitychange', visibilityChangeHandler);
+                window.addEventListener('beforeunload', unloadHandler);
+            } else if (window.attachEvent) {
+                document.attachEvent('onclick', clickHandler);
+            }
+        };
+
+        this.pageLoaded = function (isNewSession) {
+            // Only create a session if we don't have one.
+            if (isNewSession) {
+                this.sendNewSessionStart();
+            }
+
+            self.sendPerformance(true);
+
+            self.heartBeat();
+
+            self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
+        };
+
+        this.sendNewSessionStart = function() {
+          var payload = {
+              eventData: [{
+                  sessionId: self.sessionId,
+                  timestamp: new Date().toISOString(),
+                  type: 'session_start',
+                  user: self.user,
+                  version: self.version || 'Not supplied',
+                  tags: self.tags,
+                  device: navigator.userAgent
+              }]
+          };
+
+          self.postPayload(payload);
+        };
+
+        this.sendCustomTimings = function (customTimings) {
+            if (typeof customTimings === 'object' && (
+              typeof customTimings.custom1 === 'number' ||
+              typeof customTimings.custom2 === 'number' ||
+              typeof customTimings.custom3 === 'number' ||
+              typeof customTimings.custom4 === 'number' ||
+              typeof customTimings.custom5 === 'number' ||
+              typeof customTimings.custom6 === 'number' ||
+              typeof customTimings.custom7 === 'number' ||
+              typeof customTimings.custom8 === 'number' ||
+              typeof customTimings.custom9 === 'number' ||
+              typeof customTimings.custom10 === 'number')) {
+                if( self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
+                  // Append custom timings to first queued item, which should be a page view
+                  self.pendingPayloadData = false;
+                  self.queuedPerformanceTimings[0].customTiming = customTimings;
+                  sendQueuedPerformancePayloads();
+                }
+              }
+        };
+
+        this.setUser = function (user) {
+            self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
+        };
+
+        this.endSession = function () {
+            var payload = {
+                eventData: [{
+                  sessionId: self.sessionId,
+                  timestamp: new Date().toISOString(),
+                  type: 'session_end'
+                }]
+            };
+
+            self.postPayload(payload);
+        };
+
+        this.heartBeat = function () {
+
+          if(self.heartBeatInterval !== null) {
+            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+            return;
+          }
+
+          self.heartBeatInterval = setInterval(function () {
+              self.sendChildAssets();
+          }, 30 * 1000); // 30 seconds between heartbeats
+        };
+
+        this.virtualPageLoaded = function (path) {
+            if (typeof path === 'string') {
+                if (path.length > 0 && path[0] !== '/') {
+                    path = path + '/';
+                }
+
+                if (path.length > 800) {
+                    path = path.substring(0, 800);
+                }
+
+                this.virtualPage = path;
+            }
+
+            processVirtualPageTimingsInQueue();
+            this.sendPerformance(false);
+        };
+
+        this.sendPerformance = function (firstLoad) {
+            var performanceData = getPerformanceData(this.virtualPage, firstLoad);
+
+            if (performanceData === null || performanceData.length < 0) {
+                return;
+            }
+
+            addPerformanceTimingsToQueue(performanceData, false);
+        };
+
+        this.sendChildAssets = function(forceSend) {
+          if(forceSend) {
+            processVirtualPageTimingsInQueue();
+          }
+          var data = [];
+          extractChildData(data);
+          addPerformanceTimingsToQueue(data, forceSend);
+        };
+
+        this.postPayload = function(payload) {
+          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+        };
 
         this.makePostCorsRequest = function (url, data) {
             if (self.excludedUserAgents instanceof Array) {
                 for (var userAgentIndex in self.excludedUserAgents) {
                     if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
                         if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-                            if (self.debugMode) {
-                                log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-                            }
-
+                            log('Raygun4JS: cancelling send as error originates from an excluded user agent');
                             return;
                         }
                     }
@@ -3108,10 +3274,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var payload = self.beforeSend(data);
             if (!payload) {
-                if (self.debugMode) {
-                    log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-                }
-
+                log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
                 return;
             }
 
@@ -3125,236 +3288,81 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             makePostCorsRequest(url, JSON.stringify(payload));
         };
-        this.sessionId = null;
-        this.virtualPage = null;
-        this.user = user;
-        this.version = version;
-        this.tags = tags;
-        this.heartBeatInterval = null;
-        this.offset = 0;
 
-        this.attach = function () {
-            getSessionId(function (isNewSession) {
-              self.pageLoaded(isNewSession);
-            });
+        function addPerformanceTimingsToQueue(performanceData, forceSend) {
+          self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+          sendQueuedPerformancePayloads(forceSend);
+        }
 
-            var clickHandler = function () {
-                this.updateCookieTimestamp();
-            }.bind(_private);
+        function sendQueuedPerformancePayloads(forceSend) {
+          if(self.pendingPayloadData && !forceSend) {
+            return;
+          }
 
-            var unloadHandler = function () {
-                var data = [];
-                extractChildData(data);
+          var currentPayloadTimingData = [];
+          var payloadTimings = [];
+          var payloadIncludesPageTiming = false;
+          var data, i;
 
-                if (self.pendingVirtualPage) {
-                    data.push(self.pendingVirtualPage);
-                    extractChildData(data, true);
-                }
+          var addCurrentPayloadEvents = function() {
+            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
+            currentPayloadTimingData = [];
+            payloadIncludesPageTiming = false;
+          };
 
-                if (data.length > 0) {
-                    var payload = {
-                        eventData: [{
-                            sessionId: self.sessionId,
-                            timestamp: new Date().toISOString(),
-                            type: 'web_request_timing',
-                            user: self.user,
-                            version: self.version || 'Not supplied',
-                            device: navigator.userAgent,
-                            tags: self.tags,
-                            data: data
-                        }]
-                    };
+          var sendTimingData = function() {
+            if(currentPayloadTimingData.length > 0) {
+              addCurrentPayloadEvents();
+            }
 
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-                }
+            if( payloadTimings.length > 0 ) {
+              self.postPayload({
+                eventData: payloadTimings
+              });
+              currentPayloadTimingData = [];
+              payloadIncludesPageTiming = false;
+            }
+          };
+
+          for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
+            data = self.queuedPerformanceTimings[i];
+
+            if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
+              addCurrentPayloadEvents();
+            }
+
+            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
+              addCurrentPayloadEvents();
+            }
+
+            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              // Pending virtual page, wait until the virtual page timings have been calculated
+              sendTimingData();
+              self.queuedPerformanceTimings.splice(0, i);
+              return;
+            }
+
+            currentPayloadTimingData.push(data);
+            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
+          }
+
+          sendTimingData();
+          self.queuedPerformanceTimings = [];
+        }
+
+        function createTimingPayload(data) {
+            return {
+              sessionId: self.sessionId,
+              timestamp: new Date().toISOString(),
+              type: 'web_request_timing',
+              user: self.user,
+              version: self.version || 'Not supplied',
+              device: navigator.userAgent,
+              tags: self.tags,
+              data: data
             };
-
-            var visibilityChangeHandler = function () {
-                if (document.visibilityState === 'visible') {
-                    this.updateCookieTimestamp();
-                }
-
-            }.bind(_private);
-
-            if (window.addEventListener) {
-                window.addEventListener('click', clickHandler);
-                document.addEventListener('visibilitychange', visibilityChangeHandler);
-                window.addEventListener('beforeunload', unloadHandler);
-            } else if (window.attachEvent) {
-                document.attachEvent('onclick', clickHandler);
-            }
-        };
-
-        this.pageLoaded = function (isNewSession) {
-            // Only create a session if we don't have one.
-            if (isNewSession) {
-                var payload = {
-                    eventData: [{
-                        sessionId: self.sessionId,
-                        timestamp: new Date().toISOString(),
-                        type: 'session_start',
-                        user: self.user,
-                        version: self.version || 'Not supplied',
-                        tags: self.tags,
-                        device: navigator.userAgent
-                    }]
-                };
-
-                self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-            }
-
-            self.sendPerformance(true, true);
-            
-            self.heartBeat();
-
-            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                self.initalStaticPageLoadTimestamp = window.performance.now();
-            } else {
-                self.initalStaticPageLoadTimestamp = 0;
-            }
-        };
-
-        this.sendCustomTimings = function (customTimings) {
-            if (typeof customTimings === 'object' && (
-              typeof customTimings.custom1 === 'number' ||
-              typeof customTimings.custom2 === 'number' ||
-              typeof customTimings.custom3 === 'number' ||
-              typeof customTimings.custom4 === 'number' ||
-              typeof customTimings.custom5 === 'number' ||
-              typeof customTimings.custom6 === 'number' ||
-              typeof customTimings.custom7 === 'number' ||
-              typeof customTimings.custom8 === 'number' ||
-              typeof customTimings.custom9 === 'number' ||
-              typeof customTimings.custom10 === 'number')) {
-                  if (self.pendingPerformancePayload) {
-                    var payloadObject = self.pendingPerformancePayload;
-                    var resourceObjects = payloadObject.eventData[0].data;
-                    
-                    resourceObjects[0].customTiming = customTimings;
-
-                    payloadObject.eventData[0].data = resourceObjects;
-
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payloadObject);
-
-                    self.pendingPerformancePayload = null;
-                  }
-              }
-        };
-
-        this.setUser = function (user) {
-            self.user = user;
-        };
-
-        this.withTags = function (tags) {
-            self.tags = tags;
-        };
-
-        this.endSession = function () {
-            var payload = {
-                eventData: [{
-                    sessionId: self.sessionId,
-                    timestamp: new Date().toISOString(),
-                    type: 'session_end'
-
-                }]
-            };
-
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-        };
-
-        this.heartBeat = function () {
-            self.heartBeatInterval = setInterval(function () {
-                var data = [];
-                var payload;
-
-                extractChildData(data, self.virtualPage);
-
-                if (data.length > 0) {
-
-                    var dataJson = JSON.stringify(data);
-                    if (stringToByteLength(dataJson) < 128000) { // 128kB payload size
-                        payload = {
-                            eventData: [{
-                                sessionId: self.sessionId,
-                                timestamp: new Date().toISOString(),
-                                type: 'web_request_timing',
-                                user: self.user,
-                                version: self.version || 'Not supplied',
-                                device: navigator.userAgent,
-                                tags: self.tags,
-                                data: data
-                            }]
-                        };
-                    }
-                }
-
-                if (payload !== undefined) {
-                    self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-                }
-            }, 30 * 1000); // 30 seconds between heartbeats
-        };
-
-        this.virtualPageLoaded = function (path) {
-            var firstVirtualLoad = this.virtualPage == null;
-
-            if (typeof path === 'string') {
-                if (path.length > 0 && path[0] !== '/') {
-                    path = path + '/';
-                }
-
-                if (path.length > 800) {
-                    path = path.substring(0, 800);
-                }
-
-                this.virtualPage = path;
-            }
-
-            if (firstVirtualLoad) {
-                this.sendPerformance(true, false);
-            } else {
-                this.sendPerformance(false, false);
-            }
-
-            if (typeof path === 'string') {
-                if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                    this.previousVirtualPageLoadTimestamp = window.performance.now();
-                } else {
-                    this.previousVirtualPageLoadTimestamp = 0;
-                }
-            }
-        };
-
-        this.sendPerformance = function (flush, firstLoad) {
-            var performanceData = getPerformanceData(this.virtualPage, flush, firstLoad);
-
-            if (performanceData === null) {
-                return;
-            }
-
-            var payload = {
-                eventData: [{
-                    sessionId: self.sessionId,
-                    timestamp: new Date().toISOString(),
-                    type: 'web_request_timing',
-                    user: self.user,
-                    version: self.version || 'Not supplied',
-                    device: navigator.userAgent,
-                    tags: self.tags,
-                    data: performanceData
-                }]
-            };
-
-            if (!self.customTimingsEnabled) {
-              self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
-            } else {
-              // Queue the WRT until the custom timings are provided
-              self.pendingPerformancePayload = payload;
-            }
-        };
-
-        function stringToByteLength(str) {
-            var m = encodeURIComponent(str).match(/%[89ABab]/g);
-            return str.length + (m ? m.length : 0);
         }
 
         function getSessionId(callback) {
@@ -3454,43 +3462,43 @@ var raygunRumFactory = function (window, $, Raygun) {
             createCookie(self.cookieName, self.sessionId);
 
             if (expiredCookie) {
-                self.pageLoaded(true);
+                self.sendNewSessionStart();
             }
         }
 
-        function maxFiveMinutes(milliseconds) {
-            return Math.min(milliseconds, 300000);
-        }
-
-        function sanitizeNaNs(data) {
-            for (var i in data) {
-                if (isNaN(data[i]) && typeof data[i] !== 'string') {
-                    data[i] = 0;
-                }
-            }
-
-            return data;
-        }
-
-        function generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
-            var now;
-            if (typeof window.performance === 'object' && typeof window.performance.now === 'function') {
-                now = window.performance.now();
-            } else {
-                now = 0;
-            }
-
+        function prepareVirtualEncodedTimingData(virtualPageStartTime) {
             return {
-                t: 'v',
-                du: Math.min(self.maxVirtualPageDuration, now - (previousVirtualPageLoadTimestamp || initalStaticPageLoadTimestamp)),
-                o: Math.min(self.maxVirtualPageDuration, now - initalStaticPageLoadTimestamp)
+                t: Timings.VirtualPage,
+                startTime: virtualPageStartTime,
+                staticLoad: self.initalStaticPageLoadTimestamp,
+                pending: true
             };
+        }
+
+        function processVirtualPageTimingsInQueue() {
+          var i = 0, data;
+          for(i; i < self.queuedPerformanceTimings.length; i++) {
+            data = self.queuedPerformanceTimings[i];
+            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              data.timing = generateVirtualEncodedTimingData(data.timing);
+            }
+          }
+        }
+
+        function generateVirtualEncodedTimingData(timingData) {
+          var now = getPerformanceNow(0);
+
+          return {
+            t: timingData.t,
+            du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
+            o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad)
+          };
         }
 
         function getEncodedTimingData(timing, offset) {
             var data = {
                 du: timing.duration,
-                t: 'p'
+                t: Timings.Page
             };
 
             data.a = offset + timing.fetchStart;
@@ -3552,11 +3560,21 @@ var raygunRumFactory = function (window, $, Raygun) {
             return data;
         }
 
+        function getSecondaryTimingType(timing) {
+          if(timing.initiatorType === 'xmlhttprequest') {
+            return Timings.XHR;
+          } else if(timing.duration === 0) {
+            return Timings.CachedChildAsset;
+          } else {
+            return Timings.ChildAsset;
+          }
+        }
+
         function getSecondaryEncodedTimingData(timing, offset) {
             var data = {
                 du: maxFiveMinutes(timing.duration).toFixed(2),
-                t: timing.initiatorType === 'xmlhttprequest' ? 'x' : timing.duration === 0.0 ? 'e' : 'c',
-                a: (offset + timing.fetchStart).toFixed(2)
+                t: getSecondaryTimingType(timing),
+                a: offset + timing.fetchStart
             };
 
             if (timing.domainLookupStart && timing.domainLookupStart > 0) {
@@ -3587,6 +3605,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
             }
 
+            data.a = data.a.toFixed(2);
             data = sanitizeNaNs(data);
 
             return data;
@@ -3613,7 +3632,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
-        function getVirtualPrimaryTimingData(virtualPage, previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp) {
+        function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
             if (self.ignoreUrlCasing) {
                 virtualPage = virtualPage.toLowerCase();
             }
@@ -3631,7 +3650,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             return {
                 url: url,
                 userAgent: navigator.userAgent,
-                timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
+                timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
                 size: 0
             };
         }
@@ -3654,8 +3673,34 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
         }
 
+        function shouldIgnoreResource(name) {
+          if (name.indexOf(self.apiUrl) === 0) {
+              return true;
+          }
+          // Other ignored calls
+          if (name.indexOf('favicon.ico') > 0) {
+              return true;
+          }
+          if (name.indexOf('about:blank') === 0) {
+              return true;
+          }
+          if (name[0] === 'j' && name.indexOf('avascript:') === 1) {
+              return true;
+          }
+          if (name.indexOf('chrome-extension://') === 0) {
+              return true;
+          }
+          if (name.indexOf('res://') === 0) {
+              return true;
+          }
+          if (name.indexOf('file://') === 0) {
+              return true;
+          }
+          return false;
+        }
+
         function extractChildData(collection, fromVirtualPage) {
-            if (window.performance === undefined || !window.performance.getEntries) {
+            if (!performanceEntryExists('getEntries', 'function')) {
                 return;
             }
 
@@ -3664,33 +3709,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 for (var i = self.offset; i < resources.length; i++) {
                     var segment = resources[i].name.split('?')[0];
-
-                    // swallow any calls to Raygun itself
-                    if (segment.indexOf(self.apiUrl) === 0) {
-                        continue;
+                    if( !shouldIgnoreResource(segment) ) {
+                      collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                     }
-
-                    // Other ignored calls
-                    if (segment.indexOf('favicon.ico') > 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('about:blank') === 0) {
-                        continue;
-                    }
-                    if (segment[0] === 'j' && segment.indexOf('avascript:') === 1) {
-                        continue;
-                    }
-                    if (segment.indexOf('chrome-extension://') === 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('res://') === 0) {
-                        continue;
-                    }
-                    if (segment.indexOf('file://') === 0) {
-                        continue;
-                    }
-
-                    collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                 }
 
                 self.offset = resources.length;
@@ -3699,43 +3720,38 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
-        function getPerformanceData(virtualPage, flush, firstLoad) {
-            if (window.performance === undefined || window.performance.timing === undefined ||
-                window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
+        function getPerformanceData(virtualPage, firstLoad) {
+            if (!performanceEntryExists('timing', 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
                 return null;
             }
 
             var data = [];
 
-            if (flush) {
-                // Called by the static onLoad event being fired, persist itself
-                if (firstLoad) {
-                    data.push(getPrimaryTimingData());
-                }
-
-                // Called during both the static load event and the flush on the first virtual load call
-                extractChildData(data);
+            if (firstLoad) {
+              // Called by the static onLoad event being fired, persist itself
+              data.push(getPrimaryTimingData());
             }
 
+            // Called during both the static load event and the virtual load calls
+            // Associates all data loaded up to this point with the previous page
+            // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+            extractChildData(data);
+
             if (virtualPage) {
-                // A previous virtual load was stored, persist it and its children up until now
-                if (self.pendingVirtualPage) {
-                    data.push(self.pendingVirtualPage);
-                    extractChildData(data, true);
-                }
-
-                var firstVirtualLoad = self.pendingVirtualPage == null;
-
-                // Store the current virtual load so it can be sent upon the next one
-                self.pendingVirtualPage = getVirtualPrimaryTimingData(
+                data.push(getVirtualPrimaryTimingData(
                     virtualPage,
-                    self.previousVirtualPageLoadTimestamp,
-                    self.initalStaticPageLoadTimestamp
-                );
+                    getPerformanceNow(0)
+                ));
+                extractChildData(data, true);
+            }
 
-                // Prevent sending an empty payload for the first virtual load as we don't know when it will end
-                if (!firstVirtualLoad && data.length > 0) {
-                    return data;
+            return data;
+        }
+
+        function sanitizeNaNs(data) {
+            for (var i in data) {
+                if (isNaN(data[i]) && typeof data[i] !== 'string') {
+                    data[i] = 0;
                 }
             }
 
@@ -3746,8 +3762,24 @@ var raygunRumFactory = function (window, $, Raygun) {
             return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
         }
 
+        function performanceEntryExists(entry, entryType) {
+          return (typeof window.performance === "object" && (!entry || entry && typeof window.performance[entry] === entryType));
+        }
+
+        function getPerformanceNow(fallbackValue) {
+          if(performanceEntryExists('now', 'function')) {
+            return window.performance.now();
+          } else {
+            return fallbackValue;
+          }
+        }
+
+        function maxFiveMinutes(milliseconds) {
+            return Math.min(milliseconds, 300000);
+        }
+
         function log(message, data) {
-            if (window.console && window.console.log && self.debugMode) {
+            if (self.debugMode && window.console && window.console.log) {
                 window.console.log(message);
 
                 if (data) {

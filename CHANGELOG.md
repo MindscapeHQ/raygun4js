@@ -1,8 +1,33 @@
+* v2.8.5
+  - Navigating to virtual pages before sending custom timings will no longer prevent the page load timings from being sent
+  - Stop multiple heartbeat timers from being created
+  - Prevent 'page' and 'virtual page' timings from being included in the same event data item, fixing 'virtual pages' being counted as 'page views'
+  - Fix child assets being associated with incorrect views
+  - Fix virtual page duration timings 
+
+* v2.8.4
+  - Correct error in Typescript definition requiring isAnonymous to be a string when setting user information
+
+* v2.8.3
+  - Fix crash on unhandled exceptions when withTags option is set to a string instead of an array or function returning an array
+
+* v2.8.2
+  - Fix JSON parsing issue when attempting to use RUM custom timings
+
+* v2.8.1
+  - Strip querystring out of pulse virtual page urls
+
+* v2.8.0
+  - New onBeforeSendRUM callback to modify and cancel sending of RUM payloads
+
+* v2.7.2
+  - Disabling automatic breadcrumb functionality will correctly unenhance the enhanced objects
+
 * v2.7.1
   - Don't read response text in breadcrumb XHR logging if logXhrContents is false
   - Improve breadcrumb disabling to handle network calls that match xhrIgnoredHosts but were triggered before the xhrIgnoredHosts configuration option was set
   - Update TraceKit regexes to handle stacktraces in RN android release builds
-  
+
 * v2.6.7
   - Fix a rare initialization issue with Pulse and recording events before the provider has finished loading
   - Small bugfixes to some of the Breadcrumbs operations
@@ -27,7 +52,7 @@
 
 * v2.6.0
   - Initial beta support for React Native in Release (production) mode
-  - Fixed indexOf bug for IE8 compatability	
+  - Fixed indexOf bug for IE8 compatability
 
 * v2.5.3
   - Fixed offline errors failing to send to Raygun when back online.
@@ -46,7 +71,7 @@
 
 * v2.4.3
   - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
-  - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings) 
+  - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings)
 
 * v2.4.2
   - Fix synchronous XHR warnings in Chrome
