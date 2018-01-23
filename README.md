@@ -480,7 +480,7 @@ Pass tags in using an options object:
 ```javascript
 rg4js('send', {
   error: e,
-  tags: ['tag3'];
+  tags: ['tag3'],
 });
 ```
 
