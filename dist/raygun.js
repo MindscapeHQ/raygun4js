@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.5 - 2018-01-18
+/*! Raygun4js - v2.8.6 - 2018-02-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2959,7 +2959,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.5'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3052,7 +3052,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     // Make the actual CORS request.
-    function makePostCorsRequest(url, data) {
+    function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
         var xhr = createCORSRequest('POST', url, data);
 
         if (typeof _beforeXHRCallback === 'function') {
@@ -3079,6 +3079,10 @@ var raygunFactory = function (window, $, undefined) {
                 Raygun.Utilities.log('posted to Raygun');
 
                 callAfterSend(this);
+
+                if(_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
 
         } else if (window.XDomainRequest) {
@@ -3094,6 +3098,10 @@ var raygunFactory = function (window, $, undefined) {
 
                 sendSavedErrors();
                 callAfterSend(this);
+
+                if(_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
         }
 
@@ -3101,6 +3109,10 @@ var raygunFactory = function (window, $, undefined) {
             Raygun.Utilities.log('failed to post to Raygun');
 
             callAfterSend(this);
+
+            if(_errorCallback && typeof _errorCallback === 'function') {
+                _errorCallback(xhr, url, data);
+            }
         };
 
         if (!xhr) {
@@ -3153,6 +3165,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
+        this.postAttempts = 0;
+        this.maxPostAttempts = 3;
 
         var Timings = {
           Page: 'p',
@@ -3252,6 +3266,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var payload = {
                 eventData: [{
                   sessionId: self.sessionId,
+                  requestId: self.requestId,
                   timestamp: new Date().toISOString(),
                   type: 'session_end'
                 }]
@@ -3354,7 +3369,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
-            makePostCorsRequest(url, JSON.stringify(payload));
+            makePostCorsRequest(url, JSON.stringify(payload), postSuccessCallback, postErrorCallback);
         };
 
         function addPerformanceTimingsToQueue(performanceData, forceSend) {
@@ -3394,15 +3409,21 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
+              var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
 
-            if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
-              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
+            if(payloadIncludesPageTiming && isPageOrVirtualPage) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
               addCurrentPayloadEvents();
             }
 
-            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+            if(currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
               // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
               addCurrentPayloadEvents();
+            }
+
+            if(isPageOrVirtualPage) {
+                // If the next timing data is a page or virtual page, generate a new request ID
+                createRequestId();
             }
 
             if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
@@ -3423,6 +3444,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         function createTimingPayload(data) {
             return {
               sessionId: self.sessionId,
+              requestId: self.requestId,
               timestamp: new Date().toISOString(),
               type: 'web_request_timing',
               user: self.user,
@@ -3465,6 +3487,10 @@ var raygunRumFactory = function (window, $, Raygun) {
                     callback(false);
                 }
             }
+        }
+
+        function createRequestId() {
+            self.requestId = randomKey(16);
         }
 
         function createCookie(name, value, hours) {
@@ -3853,6 +3879,28 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (data) {
                     window.console.log(data);
                 }
+            }
+        }
+        
+        function postSuccessCallback() {
+            self.postAttempts = 0;
+        }
+
+        function postErrorCallback(response, url, payload) {
+            self.postAttempts ++;
+            var tooManyRequests = (response.status && response.status === 429);
+            var exceedsMaximumAttempts = self.postAttempts >= self.maxPostAttempts;
+
+            if(tooManyRequests || exceedsMaximumAttempts) {
+                if(tooManyRequests) {
+                    log('Raygun4JS: Too many requests made to the API');
+                }
+                if(exceedsMaximumAttempts) {
+                    log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
+                }
+            }
+            else {
+                self.makePostCorsRequest(url, payload);
             }
         }
 

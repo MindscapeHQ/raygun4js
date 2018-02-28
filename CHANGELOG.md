@@ -1,3 +1,7 @@
+* v2.8.6
+  - Add a request ID for each page and virtual page to associate it with its child assets
+  - Attempt to re-send the payload up to a set maximum of attempts if the send fails
+
 * v2.8.5
   - Navigating to virtual pages before sending custom timings will no longer prevent the page load timings from being sent
   - Stop multiple heartbeat timers from being created
