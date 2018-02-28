@@ -3012,7 +3012,7 @@ var raygunFactory = function (window, $, undefined) {
 
                 callAfterSend(this);
 
-                if(_successCallback && typeof _successCallback === 'function') {
+                if (_successCallback && typeof _successCallback === 'function') {
                     _successCallback(xhr, url, data);
                 }
             };
@@ -3031,7 +3031,7 @@ var raygunFactory = function (window, $, undefined) {
                 sendSavedErrors();
                 callAfterSend(this);
 
-                if(_successCallback && typeof _successCallback === 'function') {
+                if (_successCallback && typeof _successCallback === 'function') {
                     _successCallback(xhr, url, data);
                 }
             };
@@ -3042,7 +3042,7 @@ var raygunFactory = function (window, $, undefined) {
 
             callAfterSend(this);
 
-            if(_errorCallback && typeof _errorCallback === 'function') {
+            if (_errorCallback && typeof _errorCallback === 'function') {
                 _errorCallback(xhr, url, data);
             }
         };
@@ -3097,7 +3097,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
-        this.postAttempts = 0;
+        this.postAttempts = {};
         this.maxPostAttempts = 3;
 
         var Timings = {
@@ -3177,7 +3177,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               typeof customTimings.custom8 === 'number' ||
               typeof customTimings.custom9 === 'number' ||
               typeof customTimings.custom10 === 'number')) {
-                if( self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
+                if (self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
                   // Append custom timings to first queued item, which should be a page view
                   self.pendingPayloadData = false;
                   self.queuedPerformanceTimings[0].customTiming = customTimings;
@@ -3209,7 +3209,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         this.heartBeat = function () {
 
-          if(self.heartBeatInterval !== null) {
+          if (self.heartBeatInterval !== null) {
             log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
             return;
           }
@@ -3247,7 +3247,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.sendChildAssets = function(forceSend) {
-          if(forceSend) {
+          if (forceSend) {
             processVirtualPageTimingsInQueue();
           }
           var data = [];
@@ -3260,6 +3260,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.makePostCorsRequest = function (url, data) {
+
             if (self.excludedUserAgents instanceof Array) {
                 for (var userAgentIndex in self.excludedUserAgents) {
                     if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
@@ -3310,7 +3311,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function sendQueuedPerformancePayloads(forceSend) {
-          if(self.pendingPayloadData && !forceSend) {
+          if (self.pendingPayloadData && !forceSend) {
             return;
           }
 
@@ -3326,11 +3327,11 @@ var raygunRumFactory = function (window, $, Raygun) {
           };
 
           var sendTimingData = function() {
-            if(currentPayloadTimingData.length > 0) {
+            if (currentPayloadTimingData.length > 0) {
               addCurrentPayloadEvents();
             }
 
-            if( payloadTimings.length > 0 ) {
+            if ( payloadTimings.length > 0 ) {
               self.postPayload({
                 eventData: payloadTimings
               });
@@ -3341,24 +3342,25 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
-              var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
+            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
 
-            if(payloadIncludesPageTiming && isPageOrVirtualPage) {
+            if (payloadIncludesPageTiming && isPageOrVirtualPage) {
               // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
               addCurrentPayloadEvents();
             }
 
-            if(currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
+            if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
               // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
               addCurrentPayloadEvents();
             }
 
-            if(isPageOrVirtualPage) {
-                // If the next timing data is a page or virtual page, generate a new request ID
-                createRequestId();
+            if (isPageOrVirtualPage) {
+              // If the next timing data is a page or virtual page, generate a new request ID
+              createRequestId();
+              self.postAttempts[self.requestId] = 0;
             }
 
-            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
               // Pending virtual page, wait until the virtual page timings have been calculated
               sendTimingData();
               self.queuedPerformanceTimings.splice(0, i);
@@ -3433,8 +3435,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var date = new Date();
                 date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
                 expires = "; expires=" + date.toGMTString();
-            }
-            else {
+            } else {
                 expires = "";
             }
 
@@ -3476,8 +3477,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
                 var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
                 expiredCookie = timestamp < halfHrAgo;
-            }
-            else {
+            } else {
                 expiredCookie = true;
             }
 
@@ -3505,7 +3505,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           var i = 0, data;
           for(i; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
-            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
               data.timing = generateVirtualEncodedTimingData(data.timing);
             }
           }
@@ -3587,9 +3587,9 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getSecondaryTimingType(timing) {
-          if(timing.initiatorType === 'xmlhttprequest') {
+          if (timing.initiatorType === 'xmlhttprequest') {
             return Timings.XHR;
-          } else if(timing.duration === 0) {
+          } else if (timing.duration === 0) {
             return Timings.CachedChildAsset;
           } else {
             return Timings.ChildAsset;
@@ -3735,7 +3735,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 for (var i = self.offset; i < resources.length; i++) {
                     var segment = resources[i].name.split('?')[0];
-                    if( !shouldIgnoreResource(segment) ) {
+                    if ( !shouldIgnoreResource(segment) ) {
                       collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                     }
                 }
@@ -3793,7 +3793,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPerformanceNow(fallbackValue) {
-          if(performanceEntryExists('now', 'function')) {
+          if (performanceEntryExists('now', 'function')) {
             return window.performance.now();
           } else {
             return fallbackValue;
@@ -3813,25 +3813,50 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
         }
+
+        // function getPostCallbacks() {
+        //     var postAttempts = 0;
+
+        //     return {
+        //         success: function() {
+        //             postAttempts = 0;
+        //         },
+        //         error: function(response, url, payload) {
+        //             postAttempts++;
+        //             var tooManyRequests = (response.status && response.status === 429);
+        //             var exceedsMaximumAttempts = postAttempts >= self.maxPostAttempts;
+        
+        //             if (tooManyRequests || exceedsMaximumAttempts) {
+        //                 if (tooManyRequests) {
+        //                     log('Raygun4JS: Too many requests made to the API');
+        //                 }
+        //                 if (exceedsMaximumAttempts) {
+        //                     log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
+        //                 }
+        //             } else {
+        //                 self.makePostCorsRequest(url, payload);
+        //             }
+        //         }
+        //     };
+        // }
         
         function postSuccessCallback() {
-            self.postAttempts = 0;
+            self.postAttempts[self.requestId] = 0;
         }
 
         function postErrorCallback(response, url, payload) {
-            self.postAttempts ++;
+            self.postAttempts[self.requestId]++;
             var tooManyRequests = (response.status && response.status === 429);
-            var exceedsMaximumAttempts = self.postAttempts >= self.maxPostAttempts;
+            var exceedsMaximumAttempts = self.postAttempts[self.requestId] >= self.maxPostAttempts;
 
-            if(tooManyRequests || exceedsMaximumAttempts) {
-                if(tooManyRequests) {
+            if (tooManyRequests || exceedsMaximumAttempts) {
+                if (tooManyRequests) {
                     log('Raygun4JS: Too many requests made to the API');
                 }
-                if(exceedsMaximumAttempts) {
+                if (exceedsMaximumAttempts) {
                     log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
                 }
-            }
-            else {
+            } else {
                 self.makePostCorsRequest(url, payload);
             }
         }
