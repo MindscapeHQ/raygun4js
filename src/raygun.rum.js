@@ -133,6 +133,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             var payload = {
                 eventData: [{
                   sessionId: self.sessionId,
+                  requestId: self.requestId,
                   timestamp: new Date().toISOString(),
                   type: 'session_end'
                 }]
@@ -275,15 +276,21 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
+            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
 
-            if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
-              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
+            if(payloadIncludesPageTiming && isPageOrVirtualPage) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
               addCurrentPayloadEvents();
             }
 
-            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
+            if(currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
               // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
               addCurrentPayloadEvents();
+            }
+
+            if(isPageOrVirtualPage) {
+              // If the next timing data is a page or virtual page, generate a new request ID
+              createRequestId();
             }
 
             if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
@@ -304,6 +311,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         function createTimingPayload(data) {
             return {
               sessionId: self.sessionId,
+              requestId: self.requestId,
               timestamp: new Date().toISOString(),
               type: 'web_request_timing',
               user: self.user,
@@ -346,6 +354,10 @@ var raygunRumFactory = function (window, $, Raygun) {
                     callback(false);
                 }
             }
+        }
+
+        function createRequestId() {
+            self.requestId = randomKey(16);
         }
 
         function createCookie(name, value, hours) {
