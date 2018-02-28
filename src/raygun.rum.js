@@ -32,7 +32,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
-        this.postAttempts = 0;
+        this.postAttempts = {};
         this.maxPostAttempts = 3;
 
         var Timings = {
@@ -291,6 +291,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             if(isPageOrVirtualPage) {
               // If the next timing data is a page or virtual page, generate a new request ID
               createRequestId();
+              self.postAttempts[self.requestId] = 0;
             }
 
             if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
@@ -750,23 +751,22 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
         
         function postSuccessCallback() {
-            self.postAttempts = 0;
+            self.postAttempts[self.requestId] = 0;
         }
 
         function postErrorCallback(response, url, payload) {
-            self.postAttempts ++;
+            self.postAttempts[self.requestId]++;
             var tooManyRequests = (response.status && response.status === 429);
-            var exceedsMaximumAttempts = self.postAttempts >= self.maxPostAttempts;
+            var exceedsMaximumAttempts = self.postAttempts[self.requestId] >= self.maxPostAttempts;
 
-            if(tooManyRequests || exceedsMaximumAttempts) {
-                if(tooManyRequests) {
+            if (tooManyRequests || exceedsMaximumAttempts) {
+                if (tooManyRequests) {
                     log('Raygun4JS: Too many requests made to the API');
                 }
-                if(exceedsMaximumAttempts) {
+                if (exceedsMaximumAttempts) {
                     log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
                 }
-            }
-            else {
+            } else {
                 self.makePostCorsRequest(url, payload);
             }
         }
