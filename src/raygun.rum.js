@@ -2,7 +2,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2015 MindscapeHQ
+ * Copyright (c) 2018 MindscapeHQ
  * Licensed under the MIT license.
  */
 var raygunRumFactory = function (window, $, Raygun) {
@@ -32,6 +32,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.tags = tags;
         this.heartBeatInterval = null;
         this.offset = 0;
+        this.postAttempts = 0;
+        this.maxPostAttempts = 3;
 
         var Timings = {
           Page: 'p',
@@ -233,7 +235,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
-            makePostCorsRequest(url, JSON.stringify(payload));
+            makePostCorsRequest(url, JSON.stringify(payload), postSuccessCallback, postErrorCallback);
         };
 
         function addPerformanceTimingsToQueue(performanceData, forceSend) {
@@ -732,6 +734,28 @@ var raygunRumFactory = function (window, $, Raygun) {
                 if (data) {
                     window.console.log(data);
                 }
+            }
+        }
+        
+        function postSuccessCallback() {
+            self.postAttempts = 0;
+        }
+
+        function postErrorCallback(response, url, payload) {
+            self.postAttempts ++;
+            var tooManyRequests = (response.status && response.status === 429);
+            var exceedsMaximumAttempts = self.postAttempts >= self.maxPostAttempts;
+
+            if(tooManyRequests || exceedsMaximumAttempts) {
+                if(tooManyRequests) {
+                    log('Raygun4JS: Too many requests made to the API');
+                }
+                if(exceedsMaximumAttempts) {
+                    log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
+                }
+            }
+            else {
+                self.makePostCorsRequest(url, payload);
             }
         }
 
