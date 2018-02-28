@@ -900,7 +900,7 @@ var raygunFactory = function (window, $, undefined) {
 
                 callAfterSend(this);
 
-                if(_successCallback && typeof _successCallback === 'function') {
+                if (_successCallback && typeof _successCallback === 'function') {
                     _successCallback(xhr, url, data);
                 }
             };
@@ -919,7 +919,7 @@ var raygunFactory = function (window, $, undefined) {
                 sendSavedErrors();
                 callAfterSend(this);
 
-                if(_successCallback && typeof _successCallback === 'function') {
+                if (_successCallback && typeof _successCallback === 'function') {
                     _successCallback(xhr, url, data);
                 }
             };
@@ -930,7 +930,7 @@ var raygunFactory = function (window, $, undefined) {
 
             callAfterSend(this);
 
-            if(_errorCallback && typeof _errorCallback === 'function') {
+            if (_errorCallback && typeof _errorCallback === 'function') {
                 _errorCallback(xhr, url, data);
             }
         };
