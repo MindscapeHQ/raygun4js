@@ -230,7 +230,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (!!payload.eventData) {
                 for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data) {
+                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
                         payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
                     }
                 }
