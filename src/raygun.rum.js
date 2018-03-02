@@ -748,6 +748,30 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         } 
 
+        function getCompareFunction(property) {
+            return function(a, b) {
+                if(!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
+                    log('Raygun4JS: Property "' + property + '" not found in items in this collection');
+                    return 0;
+                }
+
+                var propA = a[property];
+                var propB = b[property];
+                
+                var comparison = 0;
+                if (propA > propB) {
+                    comparison = 1;
+                } else if (propA < propB) {
+                    comparison = -1;
+                }
+                return comparison;
+            };
+        }
+
+        function sortCollectionByProperty(collection, property) {
+            return collection.sort(getCompareFunction(property));
+        }
+
         _private.updateCookieTimestamp = updateCookieTimestamp;
     };
 };
