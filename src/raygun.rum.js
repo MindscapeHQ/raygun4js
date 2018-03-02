@@ -746,28 +746,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                     window.console.log(data);
                 }
             }
-        }
-        
-        function postSuccessCallback() {
-            self.postAttempts[self.requestId] = 0;
-        }
-
-        function postErrorCallback(response, url, payload) {
-            self.postAttempts[self.requestId]++;
-            var tooManyRequests = (response.status && response.status === 429);
-            var exceedsMaximumAttempts = self.postAttempts[self.requestId] >= self.maxPostAttempts;
-
-            if (tooManyRequests || exceedsMaximumAttempts) {
-                if (tooManyRequests) {
-                    log('Raygun4JS: Too many requests made to the API');
-                }
-                if (exceedsMaximumAttempts) {
-                    log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
-                }
-            } else {
-                self.makePostCorsRequest(url, payload);
-            }
-        }
+        } 
 
         _private.updateCookieTimestamp = updateCookieTimestamp;
     };
