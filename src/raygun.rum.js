@@ -84,20 +84,63 @@ var raygunRumFactory = function (window, $, Raygun) {
             self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
         };
 
-        this.sendNewSessionStart = function() {
-          var payload = {
-              eventData: [{
-                  sessionId: self.sessionId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_start',
-                  user: self.user,
-                  version: self.version || 'Not supplied',
-                  tags: self.tags,
-                  device: navigator.userAgent
-              }]
-          };
+        this.virtualPageLoaded = function (path) {
+            if (typeof path === 'string') {
+                if (path.length > 0 && path[0] !== '/') {
+                    path = path + '/';
+                }
 
-          self.postPayload(payload);
+                if (path.length > 800) {
+                    path = path.substring(0, 800);
+                }
+
+                this.virtualPage = path;
+            }
+
+            processVirtualPageTimingsInQueue();
+            this.sendPerformance(false);
+        };
+
+        this.heartBeat = function () {
+
+          if (self.heartBeatInterval !== null) {
+            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+            return;
+          }
+
+          self.heartBeatInterval = setInterval(function () {
+              self.sendChildAssets();
+              self.sendQueuedItems();
+          }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+        };
+
+        this.setUser = function (user) {
+            self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
+        };
+
+        this.endSession = function () {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                requestId: self.requestId,
+                timestamp: new Date().toISOString(),
+                type: 'session_end'
+            });
+        };
+
+        this.sendNewSessionStart = function() {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                timestamp: new Date().toISOString(),
+                type: 'session_start',
+                user: self.user,
+                version: self.version || 'Not supplied',
+                tags: self.tags,
+                device: navigator.userAgent
+            });
         };
 
         this.sendCustomTimings = function (customTimings) {
@@ -119,56 +162,6 @@ var raygunRumFactory = function (window, $, Raygun) {
                   sendQueuedPerformancePayloads();
                 }
               }
-        };
-
-        this.setUser = function (user) {
-            self.user = user;
-        };
-
-        this.withTags = function (tags) {
-            self.tags = tags;
-        };
-
-        this.endSession = function () {
-            var payload = {
-                eventData: [{
-                  sessionId: self.sessionId,
-                  requestId: self.requestId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_end'
-                }]
-            };
-
-            self.postPayload(payload);
-        };
-
-        this.heartBeat = function () {
-
-          if (self.heartBeatInterval !== null) {
-            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
-            return;
-          }
-
-          self.heartBeatInterval = setInterval(function () {
-              self.sendChildAssets();
-          }, 30 * 1000); // 30 seconds between heartbeats
-        };
-
-        this.virtualPageLoaded = function (path) {
-            if (typeof path === 'string') {
-                if (path.length > 0 && path[0] !== '/') {
-                    path = path + '/';
-                }
-
-                if (path.length > 800) {
-                    path = path.substring(0, 800);
-                }
-
-                this.virtualPage = path;
-            }
-
-            processVirtualPageTimingsInQueue();
-            this.sendPerformance(false);
         };
 
         this.sendPerformance = function (firstLoad) {
@@ -239,11 +232,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             makePostCorsRequest(url, JSON.stringify(payload), postSuccessCallback, postErrorCallback);
         };
 
-        function addPerformanceTimingsToQueue(performanceData, forceSend) {
-          self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
-          sendQueuedPerformancePayloads(forceSend);
-        }
-
         function sendQueuedPerformancePayloads(forceSend) {
           if (self.pendingPayloadData && !forceSend) {
             return;
@@ -274,7 +262,7 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
           };
 
-          for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
+          for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
             var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
 
@@ -291,7 +279,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (isPageOrVirtualPage) {
               // If the next timing data is a page or virtual page, generate a new request ID
               createRequestId();
-              self.postAttempts[self.requestId] = 0;
             }
 
             if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
@@ -307,6 +294,91 @@ var raygunRumFactory = function (window, $, Raygun) {
 
           sendTimingData();
           self.queuedPerformanceTimings = [];
+        }
+
+        this.incrementPostAttempts = function(itemsToSend) {
+            for (var i = 0; i < itemsToSend.length; i++) {
+                var item = itemsToSend[i];
+                // Increment post attempts:
+                if (self.postAttempts.hasOwnProperty(item.requestId)) {
+                    self.postAttempts[item.requestId]++;
+                    // If the item has exceeded the max number of post attempts, delete it from the queue
+                    if (self.postAttempts[item.requestId] > self.maxPostAttempts) {
+                        log('Raygun4JS: Item has exceeded the maximum number of attempts. Request ID: ' + item.requestId);
+                    }
+                } else {
+                    self.postAttempts[item.requestId] = 1;
+                }
+            }
+
+            return itemsToSend;
+        };
+
+        this.requeueItemsToFront = function(itemsToSend) {
+            self.queuedItems = itemsToSend.concat(self.queuedItems);
+        };
+
+        this.postPayload = function(payload, _successCallback, _errorCallback) {
+            if (typeof _successCallback !== 'function') {
+                _successCallback = function() {};
+            }
+
+            if (typeof _errorCallback !== 'function') {
+                _errorCallback = function() {};
+            }
+
+            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload, _successCallback, _errorCallback);
+        };
+
+        this.makePostCorsRequest = function (url, data, successCallback, errorCallback) {
+
+            if (self.excludedUserAgents instanceof Array) {
+                for (var userAgentIndex in self.excludedUserAgents) {
+                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+                            log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (self.excludedHostNames instanceof Array) {
+                for (var hostIndex in self.excludedHostNames) {
+                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
+                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
+                return;
+            }
+
+            var payload = self.beforeSend(data);
+            if (!payload) {
+                log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+                return;
+            }
+
+            if (!!payload.eventData) {
+                for (var i = 0;i < payload.eventData.length;i++) {
+                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
+                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+                    }
+                }
+            }
+
+            makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
+        };
+
+        function addPerformanceTimingsToQueue(performanceData, forceSend) {
+          self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+          sendQueuedPerformancePayloads(forceSend);
         }
 
         function createTimingPayload(data) {
@@ -437,7 +509,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function processVirtualPageTimingsInQueue() {
           var i = 0, data;
-          for(i; i < self.queuedPerformanceTimings.length; i++) {
+          for (i; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
             if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
               data.timing = generateVirtualEncodedTimingData(data.timing);
