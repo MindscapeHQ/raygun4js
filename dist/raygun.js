@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.6 - 2018-02-28
+/*! Raygun4js - v2.8.6 - 2018-03-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3155,7 +3155,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.pendingPayloadData = customTimingsEnabled || false;
-        this.queuedPerformanceTimings = [];
+        this.queuedPerformanceTimings = [];        
         this.pendingVirtualPage = null;
 
         this.sessionId = null;
@@ -3164,9 +3164,13 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.version = version;
         this.tags = tags;
         this.heartBeatInterval = null;
+        this.heartBeatIntervalTime = 30000;
         this.offset = 0;
+
         this.postAttempts = {};
         this.maxPostAttempts = 3;
+        this.queuedItems = [];
+        this.maxQueueItemsSent = 50;
 
         var Timings = {
           Page: 'p',
@@ -3217,20 +3221,63 @@ var raygunRumFactory = function (window, $, Raygun) {
             self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
         };
 
-        this.sendNewSessionStart = function() {
-          var payload = {
-              eventData: [{
-                  sessionId: self.sessionId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_start',
-                  user: self.user,
-                  version: self.version || 'Not supplied',
-                  tags: self.tags,
-                  device: navigator.userAgent
-              }]
-          };
+        this.virtualPageLoaded = function (path) {
+            if (typeof path === 'string') {
+                if (path.length > 0 && path[0] !== '/') {
+                    path = path + '/';
+                }
 
-          self.postPayload(payload);
+                if (path.length > 800) {
+                    path = path.substring(0, 800);
+                }
+
+                this.virtualPage = path;
+            }
+
+            processVirtualPageTimingsInQueue();
+            this.sendPerformance(false);
+        };
+
+        this.heartBeat = function () {
+
+          if (self.heartBeatInterval !== null) {
+            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+            return;
+          }
+
+          self.heartBeatInterval = setInterval(function () {
+              self.sendChildAssets();
+              self.sendQueuedItems();
+          }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+        };
+
+        this.setUser = function (user) {
+            self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
+        };
+
+        this.endSession = function () {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                requestId: self.requestId,
+                timestamp: new Date().toISOString(),
+                type: 'session_end'
+            });
+        };
+
+        this.sendNewSessionStart = function() {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                timestamp: new Date().toISOString(),
+                type: 'session_start',
+                user: self.user,
+                version: self.version || 'Not supplied',
+                tags: self.tags,
+                device: navigator.userAgent
+            });
         };
 
         this.sendCustomTimings = function (customTimings) {
@@ -3254,56 +3301,6 @@ var raygunRumFactory = function (window, $, Raygun) {
               }
         };
 
-        this.setUser = function (user) {
-            self.user = user;
-        };
-
-        this.withTags = function (tags) {
-            self.tags = tags;
-        };
-
-        this.endSession = function () {
-            var payload = {
-                eventData: [{
-                  sessionId: self.sessionId,
-                  requestId: self.requestId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_end'
-                }]
-            };
-
-            self.postPayload(payload);
-        };
-
-        this.heartBeat = function () {
-
-          if (self.heartBeatInterval !== null) {
-            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
-            return;
-          }
-
-          self.heartBeatInterval = setInterval(function () {
-              self.sendChildAssets();
-          }, 30 * 1000); // 30 seconds between heartbeats
-        };
-
-        this.virtualPageLoaded = function (path) {
-            if (typeof path === 'string') {
-                if (path.length > 0 && path[0] !== '/') {
-                    path = path + '/';
-                }
-
-                if (path.length > 800) {
-                    path = path.substring(0, 800);
-                }
-
-                this.virtualPage = path;
-            }
-
-            processVirtualPageTimingsInQueue();
-            this.sendPerformance(false);
-        };
-
         this.sendPerformance = function (firstLoad) {
             var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
@@ -3323,11 +3320,138 @@ var raygunRumFactory = function (window, $, Raygun) {
           addPerformanceTimingsToQueue(data, forceSend);
         };
 
-        this.postPayload = function(payload) {
-          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+        this.sendQueuedItems = function() {
+            if (self.queuedItems.length > 0) {
+                // Dequeue:
+                self.queuedItems = sortCollectionByTimestamp(self.queuedItems);
+                var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
+
+                self.sendItemsImmediately(itemsToSend);
+            }
         };
 
-        this.makePostCorsRequest = function (url, data) {
+        this.sendItemImmediately = function(item) {
+            var itemsToSend = [item];
+            self.sendItemsImmediately(itemsToSend);
+        };
+
+        this.sendItemsImmediately = function(itemsToSend) {
+            var payload = {
+                eventData: itemsToSend
+            };
+
+            var successCallback = function() {
+                log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
+            };
+
+            var errorCallback = function(response) {
+                itemsToSend = self.incrementPostAttempts(itemsToSend);
+                // Requeue:
+                self.requeueItemsToFront(itemsToSend);
+
+                log('Raygun4JS: Items failed to send. Queue length: ' + self.queuedItems.length + ' Response status code: ' + response.status);
+            };
+
+            this.postPayload(payload, successCallback, errorCallback);
+        };
+
+        function sendQueuedPerformancePayloads(forceSend) {
+          if (self.pendingPayloadData && !forceSend) {
+            return;
+          }
+
+          var currentPayloadTimingData = [];
+          var payloadTimings = [];
+          var payloadIncludesPageTiming = false;
+          var data, i;
+
+          var addCurrentPayloadEvents = function() {
+            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
+            currentPayloadTimingData = [];
+            payloadIncludesPageTiming = false;
+          };
+
+          var sendTimingData = function() {
+            if (currentPayloadTimingData.length > 0) {
+              addCurrentPayloadEvents();
+            }
+
+            if ( payloadTimings.length > 0 ) {
+                self.sendItemsImmediately(payloadTimings);
+                currentPayloadTimingData = [];
+                payloadIncludesPageTiming = false;
+            }
+          };
+
+          for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
+            data = self.queuedPerformanceTimings[i];
+            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
+
+            if (payloadIncludesPageTiming && isPageOrVirtualPage) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
+              addCurrentPayloadEvents();
+            }
+
+            if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
+              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
+              addCurrentPayloadEvents();
+            }
+
+            if (isPageOrVirtualPage) {
+              // If the next timing data is a page or virtual page, generate a new request ID
+              createRequestId();
+            }
+
+            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              // Pending virtual page, wait until the virtual page timings have been calculated
+              sendTimingData();
+              self.queuedPerformanceTimings.splice(0, i);
+              return;
+            }
+
+            currentPayloadTimingData.push(data);
+            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
+          }
+
+          sendTimingData();
+          self.queuedPerformanceTimings = [];
+        }
+
+        this.incrementPostAttempts = function(itemsToSend) {
+            for (var i = 0; i < itemsToSend.length; i++) {
+                var item = itemsToSend[i];
+                // Increment post attempts:
+                if (self.postAttempts.hasOwnProperty(item.requestId)) {
+                    self.postAttempts[item.requestId]++;
+                    // If the item has exceeded the max number of post attempts, delete it from the queue
+                    if (self.postAttempts[item.requestId] > self.maxPostAttempts) {
+                        log('Raygun4JS: Item has exceeded the maximum number of attempts. Request ID: ' + item.requestId);
+                    }
+                } else {
+                    self.postAttempts[item.requestId] = 1;
+                }
+            }
+
+            return itemsToSend;
+        };
+
+        this.requeueItemsToFront = function(itemsToSend) {
+            self.queuedItems = itemsToSend.concat(self.queuedItems);
+        };
+
+        this.postPayload = function(payload, _successCallback, _errorCallback) {
+            if (typeof _successCallback !== 'function') {
+                _successCallback = function() {};
+            }
+
+            if (typeof _errorCallback !== 'function') {
+                _errorCallback = function() {};
+            }
+
+            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload, _successCallback, _errorCallback);
+        };
+
+        this.makePostCorsRequest = function (url, data, successCallback, errorCallback) {
 
             if (self.excludedUserAgents instanceof Array) {
                 for (var userAgentIndex in self.excludedUserAgents) {
@@ -3364,83 +3488,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (!!payload.eventData) {
                 for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data) {
+                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
                         payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
                     }
                 }
             }
 
-            makePostCorsRequest(url, JSON.stringify(payload), postSuccessCallback, postErrorCallback);
+            makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
         };
 
         function addPerformanceTimingsToQueue(performanceData, forceSend) {
           self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
           sendQueuedPerformancePayloads(forceSend);
-        }
-
-        function sendQueuedPerformancePayloads(forceSend) {
-          if (self.pendingPayloadData && !forceSend) {
-            return;
-          }
-
-          var currentPayloadTimingData = [];
-          var payloadTimings = [];
-          var payloadIncludesPageTiming = false;
-          var data, i;
-
-          var addCurrentPayloadEvents = function() {
-            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
-            currentPayloadTimingData = [];
-            payloadIncludesPageTiming = false;
-          };
-
-          var sendTimingData = function() {
-            if (currentPayloadTimingData.length > 0) {
-              addCurrentPayloadEvents();
-            }
-
-            if ( payloadTimings.length > 0 ) {
-              self.postPayload({
-                eventData: payloadTimings
-              });
-              currentPayloadTimingData = [];
-              payloadIncludesPageTiming = false;
-            }
-          };
-
-          for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
-            data = self.queuedPerformanceTimings[i];
-            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
-
-            if (payloadIncludesPageTiming && isPageOrVirtualPage) {
-              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
-              addCurrentPayloadEvents();
-            }
-
-            if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
-              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
-              addCurrentPayloadEvents();
-            }
-
-            if (isPageOrVirtualPage) {
-              // If the next timing data is a page or virtual page, generate a new request ID
-              createRequestId();
-              self.postAttempts[self.requestId] = 0;
-            }
-
-            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
-              // Pending virtual page, wait until the virtual page timings have been calculated
-              sendTimingData();
-              self.queuedPerformanceTimings.splice(0, i);
-              return;
-            }
-
-            currentPayloadTimingData.push(data);
-            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
-          }
-
-          sendTimingData();
-          self.queuedPerformanceTimings = [];
         }
 
         function createTimingPayload(data) {
@@ -3571,7 +3630,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function processVirtualPageTimingsInQueue() {
           var i = 0, data;
-          for(i; i < self.queuedPerformanceTimings.length; i++) {
+          for (i; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
             if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
               data.timing = generateVirtualEncodedTimingData(data.timing);
@@ -3880,53 +3939,34 @@ var raygunRumFactory = function (window, $, Raygun) {
                     window.console.log(data);
                 }
             }
+        } 
+
+        function getCompareFunction(property) {
+            return function(a, b) {
+                if(!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
+                    log('Raygun4JS: Property "' + property + '" not found in items in this collection');
+                    return 0;
+                }
+
+                var propA = a[property];
+                var propB = b[property];
+                
+                var comparison = 0;
+                if (propA > propB) {
+                    comparison = 1;
+                } else if (propA < propB) {
+                    comparison = -1;
+                }
+                return comparison;
+            };
         }
 
-        // function getPostCallbacks() {
-        //     var postAttempts = 0;
-
-        //     return {
-        //         success: function() {
-        //             postAttempts = 0;
-        //         },
-        //         error: function(response, url, payload) {
-        //             postAttempts++;
-        //             var tooManyRequests = (response.status && response.status === 429);
-        //             var exceedsMaximumAttempts = postAttempts >= self.maxPostAttempts;
-        
-        //             if (tooManyRequests || exceedsMaximumAttempts) {
-        //                 if (tooManyRequests) {
-        //                     log('Raygun4JS: Too many requests made to the API');
-        //                 }
-        //                 if (exceedsMaximumAttempts) {
-        //                     log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
-        //                 }
-        //             } else {
-        //                 self.makePostCorsRequest(url, payload);
-        //             }
-        //         }
-        //     };
-        // }
-        
-        function postSuccessCallback() {
-            self.postAttempts[self.requestId] = 0;
+        function sortCollectionByProperty(collection, property) {
+            return collection.sort(getCompareFunction(property));
         }
 
-        function postErrorCallback(response, url, payload) {
-            self.postAttempts[self.requestId]++;
-            var tooManyRequests = (response.status && response.status === 429);
-            var exceedsMaximumAttempts = self.postAttempts[self.requestId] >= self.maxPostAttempts;
-
-            if (tooManyRequests || exceedsMaximumAttempts) {
-                if (tooManyRequests) {
-                    log('Raygun4JS: Too many requests made to the API');
-                }
-                if (exceedsMaximumAttempts) {
-                    log('Raygun4JS: Posting to the API failed after ' + self.maxPostAttempts + ' attempts');
-                }
-            } else {
-                self.makePostCorsRequest(url, payload);
-            }
+        function sortCollectionByTimestamp(collection) {
+            return sortCollectionByProperty(collection, 'timestamp');
         }
 
         _private.updateCookieTimestamp = updateCookieTimestamp;
