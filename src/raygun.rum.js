@@ -22,7 +22,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.pendingPayloadData = customTimingsEnabled || false;
-        this.queuedPerformanceTimings = [];
+        this.queuedPerformanceTimings = [];        
         this.pendingVirtualPage = null;
 
         this.sessionId = null;
@@ -31,9 +31,13 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.version = version;
         this.tags = tags;
         this.heartBeatInterval = null;
+        this.heartBeatIntervalTime = 30000;
         this.offset = 0;
+
         this.postAttempts = {};
         this.maxPostAttempts = 3;
+        this.queuedItems = [];
+        this.maxQueueItemsSent = 50;
 
         var Timings = {
           Page: 'p',
@@ -183,53 +187,39 @@ var raygunRumFactory = function (window, $, Raygun) {
           addPerformanceTimingsToQueue(data, forceSend);
         };
 
-        this.postPayload = function(payload) {
-          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+        this.sendQueuedItems = function() {
+            if (self.queuedItems.length > 0) {
+                // Dequeue:
+                self.queuedItems = sortCollectionByProperty(self.queuedItems, 'timestamp');
+                var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
+
+                self.sendItemsImmediately(itemsToSend);
+            }
         };
 
-        this.makePostCorsRequest = function (url, data) {
-            if (self.excludedUserAgents instanceof Array) {
-                for (var userAgentIndex in self.excludedUserAgents) {
-                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-                            log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-                            return;
-                        }
-                    }
-                }
-            }
+        this.sendItemImmediately = function(item) {
+            var itemsToSend = [item];
+            self.sendItemsImmediately(itemsToSend);
+        };
 
-            if (self.excludedHostNames instanceof Array) {
-                for (var hostIndex in self.excludedHostNames) {
-                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
-                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
-                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+        this.sendItemsImmediately = function(itemsToSend) {
+            var payload = {
+                eventData: itemsToSend
+            };
 
-                            return;
-                        }
-                    }
-                }
-            }
+            var successCallback = function() {
+                log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
+            };
 
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
-                return;
-            }
+            var errorCallback = function(response) {
+                itemsToSend = self.incrementPostAttempts(itemsToSend);
+                // Requeue:
+                self.requeueItemsToFront(itemsToSend);
 
-            var payload = self.beforeSend(data);
-            if (!payload) {
-                log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-                return;
-            }
+                log('Raygun4JS: Items failed to send. Queue length: ' + self.queuedItems.length + ' Response status code: ' + response.status);
+            };
 
-            if (!!payload.eventData) {
-                for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
-                    }
-                }
-            }
-
-            makePostCorsRequest(url, JSON.stringify(payload), postSuccessCallback, postErrorCallback);
+            this.postPayload(payload, successCallback, errorCallback);
         };
 
         function sendQueuedPerformancePayloads(forceSend) {
@@ -254,11 +244,9 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
 
             if ( payloadTimings.length > 0 ) {
-              self.postPayload({
-                eventData: payloadTimings
-              });
-              currentPayloadTimingData = [];
-              payloadIncludesPageTiming = false;
+                self.sendItemsImmediately(payloadTimings);
+                currentPayloadTimingData = [];
+                payloadIncludesPageTiming = false;
             }
           };
 
