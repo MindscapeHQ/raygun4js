@@ -808,9 +808,17 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         } 
 
+        /**
+         * getCompareFunction() returns a predicate function to pass into the Array.sort() function
+         * The predicate function checks for the property on each item being compared and returns the appropriate integer required by the sort function
+         * 
+         * @param {string} property
+         * @return {function} (a, b) => number
+         */
+
         function getCompareFunction(property) {
             return function(a, b) {
-                if(!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
+                if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
                     log('Raygun4JS: Property "' + property + '" not found in items in this collection');
                     return 0;
                 }
@@ -827,6 +835,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                 return comparison;
             };
         }
+
+        /**
+         * sortCollectionByProperty() returns an array of objects sorted by a given property on those objects
+         * 
+         * @param {array} collection
+         * @param {string} property
+         * @return {array} collection
+         */
 
         function sortCollectionByProperty(collection, property) {
             return collection.sort(getCompareFunction(property));
