@@ -58,6 +58,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var unloadHandler = function () {
               self.sendChildAssets(true);
+              self.sendQueuedItems();
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
