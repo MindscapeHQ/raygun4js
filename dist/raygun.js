@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.6 - 2018-03-02
+/*! Raygun4js - v2.8.6 - 2018-03-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3191,6 +3191,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var unloadHandler = function () {
               self.sendChildAssets(true);
+              self.sendQueuedItems();
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
