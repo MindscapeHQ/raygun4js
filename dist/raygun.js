@@ -3167,8 +3167,6 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.heartBeatIntervalTime = 30000;
         this.offset = 0;
 
-        this.postAttempts = {};
-        this.maxPostAttempts = 3;
         this.queuedItems = [];
         this.maxQueueItemsSent = 50;
 
@@ -3346,7 +3344,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             };
 
             var errorCallback = function(response) {
-                itemsToSend = self.incrementPostAttempts(itemsToSend);
                 // Requeue:
                 self.requeueItemsToFront(itemsToSend);
 
@@ -3417,24 +3414,6 @@ var raygunRumFactory = function (window, $, Raygun) {
           sendTimingData();
           self.queuedPerformanceTimings = [];
         }
-
-        this.incrementPostAttempts = function(itemsToSend) {
-            for (var i = 0; i < itemsToSend.length; i++) {
-                var item = itemsToSend[i];
-                // Increment post attempts:
-                if (self.postAttempts.hasOwnProperty(item.requestId)) {
-                    self.postAttempts[item.requestId]++;
-                    // If the item has exceeded the max number of post attempts, delete it from the queue
-                    if (self.postAttempts[item.requestId] > self.maxPostAttempts) {
-                        log('Raygun4JS: Item has exceeded the maximum number of attempts. Request ID: ' + item.requestId);
-                    }
-                } else {
-                    self.postAttempts[item.requestId] = 1;
-                }
-            }
-
-            return itemsToSend;
-        };
 
         this.requeueItemsToFront = function(itemsToSend) {
             self.queuedItems = itemsToSend.concat(self.queuedItems);
