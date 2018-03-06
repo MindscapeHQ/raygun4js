@@ -2,7 +2,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2013-2017 Raygun Limited
+ * Copyright (c) 2013-2018 Raygun Limited
  * Licensed under the MIT license.
  */
 
@@ -872,7 +872,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     // Make the actual CORS request.
-    function makePostCorsRequest(url, data) {
+    function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
         var xhr = createCORSRequest('POST', url, data);
 
         if (typeof _beforeXHRCallback === 'function') {
@@ -899,6 +899,10 @@ var raygunFactory = function (window, $, undefined) {
                 Raygun.Utilities.log('posted to Raygun');
 
                 callAfterSend(this);
+
+                if (_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
 
         } else if (window.XDomainRequest) {
@@ -914,6 +918,10 @@ var raygunFactory = function (window, $, undefined) {
 
                 sendSavedErrors();
                 callAfterSend(this);
+
+                if (_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
         }
 
@@ -921,6 +929,10 @@ var raygunFactory = function (window, $, undefined) {
             Raygun.Utilities.log('failed to post to Raygun');
 
             callAfterSend(this);
+
+            if (_errorCallback && typeof _errorCallback === 'function') {
+                _errorCallback(xhr, url, data);
+            }
         };
 
         if (!xhr) {

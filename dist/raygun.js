@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.5 - 2018-01-18
+/*! Raygun4js - v2.8.6 - 2018-03-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2959,7 +2959,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.5'
+                    'Version': '{{VERSION}}'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -3052,7 +3052,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     // Make the actual CORS request.
-    function makePostCorsRequest(url, data) {
+    function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
         var xhr = createCORSRequest('POST', url, data);
 
         if (typeof _beforeXHRCallback === 'function') {
@@ -3079,6 +3079,10 @@ var raygunFactory = function (window, $, undefined) {
                 Raygun.Utilities.log('posted to Raygun');
 
                 callAfterSend(this);
+
+                if (_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
 
         } else if (window.XDomainRequest) {
@@ -3094,6 +3098,10 @@ var raygunFactory = function (window, $, undefined) {
 
                 sendSavedErrors();
                 callAfterSend(this);
+
+                if (_successCallback && typeof _successCallback === 'function') {
+                    _successCallback(xhr, url, data);
+                }
             };
         }
 
@@ -3101,6 +3109,10 @@ var raygunFactory = function (window, $, undefined) {
             Raygun.Utilities.log('failed to post to Raygun');
 
             callAfterSend(this);
+
+            if (_errorCallback && typeof _errorCallback === 'function') {
+                _errorCallback(xhr, url, data);
+            }
         };
 
         if (!xhr) {
@@ -3143,7 +3155,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.beforeSend = beforeSendCb || function(payload) { return payload; };
 
         this.pendingPayloadData = customTimingsEnabled || false;
-        this.queuedPerformanceTimings = [];
+        this.queuedPerformanceTimings = [];        
         this.pendingVirtualPage = null;
 
         this.sessionId = null;
@@ -3152,7 +3164,11 @@ var raygunRumFactory = function (window, $, Raygun) {
         this.version = version;
         this.tags = tags;
         this.heartBeatInterval = null;
+        this.heartBeatIntervalTime = 30000;
         this.offset = 0;
+
+        this.queuedItems = [];
+        this.maxQueueItemsSent = 50;
 
         var Timings = {
           Page: 'p',
@@ -3173,6 +3189,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             var unloadHandler = function () {
               self.sendChildAssets(true);
+              self.sendQueuedItems();
             }.bind(_private);
 
             var visibilityChangeHandler = function () {
@@ -3203,75 +3220,6 @@ var raygunRumFactory = function (window, $, Raygun) {
             self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
         };
 
-        this.sendNewSessionStart = function() {
-          var payload = {
-              eventData: [{
-                  sessionId: self.sessionId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_start',
-                  user: self.user,
-                  version: self.version || 'Not supplied',
-                  tags: self.tags,
-                  device: navigator.userAgent
-              }]
-          };
-
-          self.postPayload(payload);
-        };
-
-        this.sendCustomTimings = function (customTimings) {
-            if (typeof customTimings === 'object' && (
-              typeof customTimings.custom1 === 'number' ||
-              typeof customTimings.custom2 === 'number' ||
-              typeof customTimings.custom3 === 'number' ||
-              typeof customTimings.custom4 === 'number' ||
-              typeof customTimings.custom5 === 'number' ||
-              typeof customTimings.custom6 === 'number' ||
-              typeof customTimings.custom7 === 'number' ||
-              typeof customTimings.custom8 === 'number' ||
-              typeof customTimings.custom9 === 'number' ||
-              typeof customTimings.custom10 === 'number')) {
-                if( self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
-                  // Append custom timings to first queued item, which should be a page view
-                  self.pendingPayloadData = false;
-                  self.queuedPerformanceTimings[0].customTiming = customTimings;
-                  sendQueuedPerformancePayloads();
-                }
-              }
-        };
-
-        this.setUser = function (user) {
-            self.user = user;
-        };
-
-        this.withTags = function (tags) {
-            self.tags = tags;
-        };
-
-        this.endSession = function () {
-            var payload = {
-                eventData: [{
-                  sessionId: self.sessionId,
-                  timestamp: new Date().toISOString(),
-                  type: 'session_end'
-                }]
-            };
-
-            self.postPayload(payload);
-        };
-
-        this.heartBeat = function () {
-
-          if(self.heartBeatInterval !== null) {
-            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
-            return;
-          }
-
-          self.heartBeatInterval = setInterval(function () {
-              self.sendChildAssets();
-          }, 30 * 1000); // 30 seconds between heartbeats
-        };
-
         this.virtualPageLoaded = function (path) {
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
@@ -3289,6 +3237,69 @@ var raygunRumFactory = function (window, $, Raygun) {
             this.sendPerformance(false);
         };
 
+        this.heartBeat = function () {
+
+          if (self.heartBeatInterval !== null) {
+            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+            return;
+          }
+
+          self.heartBeatInterval = setInterval(function () {
+              self.sendChildAssets();
+              self.sendQueuedItems();
+          }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+        };
+
+        this.setUser = function (user) {
+            self.user = user;
+        };
+
+        this.withTags = function (tags) {
+            self.tags = tags;
+        };
+
+        this.endSession = function () {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                requestId: self.requestId,
+                timestamp: new Date().toISOString(),
+                type: 'session_end'
+            });
+        };
+
+        this.sendNewSessionStart = function() {
+            self.sendItemImmediately({
+                sessionId: self.sessionId,
+                timestamp: new Date().toISOString(),
+                type: 'session_start',
+                user: self.user,
+                version: self.version || 'Not supplied',
+                tags: self.tags,
+                device: navigator.userAgent
+            });
+        };
+
+        this.sendCustomTimings = function (customTimings) {
+            if (typeof customTimings === 'object' && (
+              typeof customTimings.custom1 === 'number' ||
+              typeof customTimings.custom2 === 'number' ||
+              typeof customTimings.custom3 === 'number' ||
+              typeof customTimings.custom4 === 'number' ||
+              typeof customTimings.custom5 === 'number' ||
+              typeof customTimings.custom6 === 'number' ||
+              typeof customTimings.custom7 === 'number' ||
+              typeof customTimings.custom8 === 'number' ||
+              typeof customTimings.custom9 === 'number' ||
+              typeof customTimings.custom10 === 'number')) {
+                if (self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
+                  // Append custom timings to first queued item, which should be a page view
+                  self.pendingPayloadData = false;
+                  self.queuedPerformanceTimings[0].customTiming = customTimings;
+                  sendQueuedPerformancePayloads();
+                }
+              }
+        };
+
         this.sendPerformance = function (firstLoad) {
             var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
@@ -3300,7 +3311,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         };
 
         this.sendChildAssets = function(forceSend) {
-          if(forceSend) {
+          if (forceSend) {
             processVirtualPageTimingsInQueue();
           }
           var data = [];
@@ -3308,11 +3319,120 @@ var raygunRumFactory = function (window, $, Raygun) {
           addPerformanceTimingsToQueue(data, forceSend);
         };
 
-        this.postPayload = function(payload) {
-          self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload);
+        this.sendQueuedItems = function() {
+            if (self.queuedItems.length > 0) {
+                // Dequeue:
+                self.queuedItems = sortCollectionByProperty(self.queuedItems, 'timestamp');
+                var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
+
+                self.sendItemsImmediately(itemsToSend);
+            }
         };
 
-        this.makePostCorsRequest = function (url, data) {
+        this.sendItemImmediately = function(item) {
+            var itemsToSend = [item];
+            self.sendItemsImmediately(itemsToSend);
+        };
+
+        this.sendItemsImmediately = function(itemsToSend) {
+            var payload = {
+                eventData: itemsToSend
+            };
+
+            var successCallback = function() {
+                log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
+            };
+
+            var errorCallback = function(response) {
+                // Requeue:
+                self.requeueItemsToFront(itemsToSend);
+
+                log('Raygun4JS: Items failed to send. Queue length: ' + self.queuedItems.length + ' Response status code: ' + response.status);
+            };
+
+            this.postPayload(payload, successCallback, errorCallback);
+        };
+
+        function sendQueuedPerformancePayloads(forceSend) {
+          if (self.pendingPayloadData && !forceSend) {
+            return;
+          }
+
+          var currentPayloadTimingData = [];
+          var payloadTimings = [];
+          var payloadIncludesPageTiming = false;
+          var data, i;
+
+          var addCurrentPayloadEvents = function() {
+            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
+            currentPayloadTimingData = [];
+            payloadIncludesPageTiming = false;
+          };
+
+          var sendTimingData = function() {
+            if (currentPayloadTimingData.length > 0) {
+              addCurrentPayloadEvents();
+            }
+
+            if ( payloadTimings.length > 0 ) {
+                self.sendItemsImmediately(payloadTimings);
+                currentPayloadTimingData = [];
+                payloadIncludesPageTiming = false;
+            }
+          };
+
+          for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
+            data = self.queuedPerformanceTimings[i];
+            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
+
+            if (payloadIncludesPageTiming && isPageOrVirtualPage) {
+              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
+              addCurrentPayloadEvents();
+            }
+
+            if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
+              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
+              addCurrentPayloadEvents();
+            }
+
+            if (isPageOrVirtualPage) {
+              // If the next timing data is a page or virtual page, generate a new request ID
+              createRequestId();
+            }
+
+            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+              // Pending virtual page, wait until the virtual page timings have been calculated
+              sendTimingData();
+              self.queuedPerformanceTimings.splice(0, i);
+              return;
+            }
+
+            currentPayloadTimingData.push(data);
+            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
+          }
+
+          sendTimingData();
+          self.queuedPerformanceTimings = [];
+        }
+
+        this.requeueItemsToFront = function(itemsToSend) {
+            self.queuedItems = itemsToSend.concat(self.queuedItems);
+        };
+
+        this.postPayload = function(payload, _successCallback, _errorCallback) {
+            if (typeof _successCallback !== 'function') {
+                _successCallback = function() {};
+            }
+
+            if (typeof _errorCallback !== 'function') {
+                _errorCallback = function() {};
+            }
+
+            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload, _successCallback, _errorCallback);
+        };
+
+        this.makePostCorsRequest = function (url, data, successCallback, errorCallback) {
+
             if (self.excludedUserAgents instanceof Array) {
                 for (var userAgentIndex in self.excludedUserAgents) {
                     if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
@@ -3348,13 +3468,13 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (!!payload.eventData) {
                 for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data) {
+                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
                         payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
                     }
                 }
             }
 
-            makePostCorsRequest(url, JSON.stringify(payload));
+            makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
         };
 
         function addPerformanceTimingsToQueue(performanceData, forceSend) {
@@ -3362,67 +3482,10 @@ var raygunRumFactory = function (window, $, Raygun) {
           sendQueuedPerformancePayloads(forceSend);
         }
 
-        function sendQueuedPerformancePayloads(forceSend) {
-          if(self.pendingPayloadData && !forceSend) {
-            return;
-          }
-
-          var currentPayloadTimingData = [];
-          var payloadTimings = [];
-          var payloadIncludesPageTiming = false;
-          var data, i;
-
-          var addCurrentPayloadEvents = function() {
-            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
-            currentPayloadTimingData = [];
-            payloadIncludesPageTiming = false;
-          };
-
-          var sendTimingData = function() {
-            if(currentPayloadTimingData.length > 0) {
-              addCurrentPayloadEvents();
-            }
-
-            if( payloadTimings.length > 0 ) {
-              self.postPayload({
-                eventData: payloadTimings
-              });
-              currentPayloadTimingData = [];
-              payloadIncludesPageTiming = false;
-            }
-          };
-
-          for(i = 0; i < self.queuedPerformanceTimings.length; i++) {
-            data = self.queuedPerformanceTimings[i];
-
-            if(payloadIncludesPageTiming && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
-              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing
-              addCurrentPayloadEvents();
-            }
-
-            if(currentPayloadTimingData.length > 0 && (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage)) {
-              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
-              addCurrentPayloadEvents();
-            }
-
-            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
-              // Pending virtual page, wait until the virtual page timings have been calculated
-              sendTimingData();
-              self.queuedPerformanceTimings.splice(0, i);
-              return;
-            }
-
-            currentPayloadTimingData.push(data);
-            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
-          }
-
-          sendTimingData();
-          self.queuedPerformanceTimings = [];
-        }
-
         function createTimingPayload(data) {
             return {
               sessionId: self.sessionId,
+              requestId: self.requestId,
               timestamp: new Date().toISOString(),
               type: 'web_request_timing',
               user: self.user,
@@ -3467,6 +3530,10 @@ var raygunRumFactory = function (window, $, Raygun) {
             }
         }
 
+        function createRequestId() {
+            self.requestId = randomKey(16);
+        }
+
         function createCookie(name, value, hours) {
             var expires;
             var lastActivityTimestamp;
@@ -3475,8 +3542,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var date = new Date();
                 date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
                 expires = "; expires=" + date.toGMTString();
-            }
-            else {
+            } else {
                 expires = "";
             }
 
@@ -3518,8 +3584,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                 var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
                 var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
                 expiredCookie = timestamp < halfHrAgo;
-            }
-            else {
+            } else {
                 expiredCookie = true;
             }
 
@@ -3545,9 +3610,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         function processVirtualPageTimingsInQueue() {
           var i = 0, data;
-          for(i; i < self.queuedPerformanceTimings.length; i++) {
+          for (i; i < self.queuedPerformanceTimings.length; i++) {
             data = self.queuedPerformanceTimings[i];
-            if(data.timing.t === Timings.VirtualPage && data.timing.pending) {
+            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
               data.timing = generateVirtualEncodedTimingData(data.timing);
             }
           }
@@ -3629,9 +3694,9 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getSecondaryTimingType(timing) {
-          if(timing.initiatorType === 'xmlhttprequest') {
+          if (timing.initiatorType === 'xmlhttprequest') {
             return Timings.XHR;
-          } else if(timing.duration === 0) {
+          } else if (timing.duration === 0) {
             return Timings.CachedChildAsset;
           } else {
             return Timings.ChildAsset;
@@ -3777,7 +3842,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
                 for (var i = self.offset; i < resources.length; i++) {
                     var segment = resources[i].name.split('?')[0];
-                    if( !shouldIgnoreResource(segment) ) {
+                    if ( !shouldIgnoreResource(segment) ) {
                       collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
                     }
                 }
@@ -3835,7 +3900,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         function getPerformanceNow(fallbackValue) {
-          if(performanceEntryExists('now', 'function')) {
+          if (performanceEntryExists('now', 'function')) {
             return window.performance.now();
           } else {
             return fallbackValue;
@@ -3854,6 +3919,46 @@ var raygunRumFactory = function (window, $, Raygun) {
                     window.console.log(data);
                 }
             }
+        } 
+
+        /**
+         * getCompareFunction() returns a predicate function to pass into the Array.sort() function
+         * The predicate function checks for the property on each item being compared and returns the appropriate integer required by the sort function
+         * 
+         * @param {string} property
+         * @return {function} (a, b) => number
+         */
+
+        function getCompareFunction(property) {
+            return function(a, b) {
+                if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
+                    log('Raygun4JS: Property "' + property + '" not found in items in this collection');
+                    return 0;
+                }
+
+                var propA = a[property];
+                var propB = b[property];
+                
+                var comparison = 0;
+                if (propA > propB) {
+                    comparison = 1;
+                } else if (propA < propB) {
+                    comparison = -1;
+                }
+                return comparison;
+            };
+        }
+
+        /**
+         * sortCollectionByProperty() returns an array of objects sorted by a given property on those objects
+         * 
+         * @param {array} collection
+         * @param {string} property
+         * @return {array} collection
+         */
+
+        function sortCollectionByProperty(collection, property) {
+            return collection.sort(getCompareFunction(property));
         }
 
         _private.updateCookieTimestamp = updateCookieTimestamp;
