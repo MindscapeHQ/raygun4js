@@ -594,6 +594,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (!Raygun.Utilities.isReactNative() &&
+                typeof msg.substring === 'function' &&
                 msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
