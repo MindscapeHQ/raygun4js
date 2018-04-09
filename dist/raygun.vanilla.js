@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.6 - 2018-03-06
+/*! Raygun4js - v2.8.7 - 2018-04-10
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2706,6 +2706,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
             if (!Raygun.Utilities.isReactNative() &&
+                typeof msg.substring === 'function' &&
                 msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
@@ -2891,7 +2892,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '{{VERSION}}'
+                    'Version': '2.8.7'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
