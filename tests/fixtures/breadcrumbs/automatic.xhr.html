@@ -26,7 +26,6 @@
 
       setTimeout(function() {
         $.get('automatic.xhr.html').always(function() {
-          rg4js('logContentsOfXhrCalls', true);
           var request = new XMLHttpRequest();
           request.open('POST', 'automatic.xhr.html');
           request.responseType = 'document';

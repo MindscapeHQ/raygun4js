@@ -1,4 +1,4 @@
-/* globals describe, beforeEach, it, expect, browser */
+/* globals describe, beforeEach, it, expect, browser, window */
 
 var common = require("../common");
 
@@ -29,16 +29,13 @@ describe("XHR tracking", function() {
   });
 
   it("does not log bodies when logXhrContents is false", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = browser.execute(function() {
+      window.rg4js('logContentsOfXhrCalls', true);
+
+      return window.rg4js('getRaygunInstance').getBreadcrumbs();
+    }).value;
 
     expect(breadcrumbs[0].CustomData.requestText).toBe(undefined);
     expect(breadcrumbs[1].CustomData.responseText).toBe("Disabled");
-  });
-
-  it("does log bodies when logXhrContents is true", function() {
-    var breadcrumbs = common.getBreadcrumbs();
-
-    expect(breadcrumbs[2].CustomData.requestText).toContain('foo');
-    expect(breadcrumbs[3].CustomData.responseText).toContain("N/A");
   });
 });
