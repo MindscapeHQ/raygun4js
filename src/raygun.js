@@ -364,6 +364,9 @@ var raygunFactory = function (window, $, undefined) {
         },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;
+        },
+        getBreadcrumbs: function() {
+         return _breadcrumbs.all();
         }
     };
 
