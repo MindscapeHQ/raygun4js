@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.7 - 2018-04-10
+/*! Raygun4js - v2.8.7 - 2018-04-13
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1631,7 +1631,7 @@ window.raygunUtilityFactory = function (window, Raygun) {
         var text = node.textContent || node.innerText || "";
 
         if (["submit", "button"].indexOf(node.type) !== -1) {
-          text = node.value;
+          text = node.value || text;
         }
 
         text = text.replace(/^\s+|\s+$/g, "");
@@ -1806,7 +1806,25 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     };
 
     Breadcrumbs.prototype.all = function() {
-        return this.breadcrumbs;
+        var sanitizedBreadcrumbs = [];
+
+        for (var i = 0; i < this.breadcrumbs.length; i++) {
+            var crumb = this.breadcrumbs[i];
+
+            if (crumb.type === 'request' && !this.logXhrContents) {
+                if (crumb.metadata.responseText) {
+                    crumb.metadata.responseText = 'Disabled';
+                }
+
+                if (crumb.metadata.requestText) {
+                    crumb.metadata.requestText = undefined;
+                }
+            }
+
+            sanitizedBreadcrumbs.push(crumb);
+        }
+
+        return sanitizedBreadcrumbs;
     };
 
     Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
@@ -2039,7 +2057,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                     requestURL: url,
                 };
 
-                if (arguments[0] && typeof(arguments[0]) === 'string' && self.logXhrContents) {
+                if (arguments[0] && typeof(arguments[0]) === 'string') {
                     metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
                 }
 
@@ -2055,7 +2073,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
             this.addEventListener('load', self.wrapWithHandler(function() {
                 var responseText = 'N/A for non text responses';
 
-                if ((this.responseType === '' || this.responseType === 'text') && self.logXhrContents) {
+                if ((this.responseType === '' || this.responseType === 'text')) {
                     responseText = Raygun.Utilities.truncate(this.responseText, 500);
                 }
 
@@ -2067,7 +2085,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
                         status: this.status,
                         requestURL: url,
                         responseURL: this.responseURL,
-                        responseText: self.logXhrContents ? responseText : 'Disabled',
+                        responseText: responseText,
                         duration: new Date().getTime() - initTime + "ms"
                     }
                 });
@@ -2476,6 +2494,9 @@ var raygunFactory = function (window, $, undefined) {
         },
         setBreadcrumbs: function(breadcrumbs) {
             _breadcrumbs = breadcrumbs;
+        },
+        getBreadcrumbs: function() {
+         return _breadcrumbs.all();
         }
     };
 
