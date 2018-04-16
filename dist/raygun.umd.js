@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.8.7 - 2018-04-13
+/*! Raygun4js - v2.9.0 - 2018-04-16
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -21,6 +21,19 @@
 }(this, function () {
 
   var windw = this || window || global;
+  var originalOnError = windw.onerror;
+  windw.onerror = function (msg, url, line, col, err) {
+    if (originalOnError) {
+      originalOnError(msg, url, line, col, err);
+    }
+
+    if (!err) {
+      err = new Error(msg);
+    }
+
+    windw['rg4js'].q = windw['rg4js'].q || [];
+    windw['rg4js'].q.push({e: err});
+  };
 
   // Similar approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
   // script is executed, and later overwritten by the loader once it's finished
@@ -36,6 +49,7 @@
       }
       
   }})(windw);
+
 (function(window, undefined) {
 
 
@@ -3016,7 +3030,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.8.7'
+                    'Version': '2.9.0'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
