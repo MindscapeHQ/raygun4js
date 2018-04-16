@@ -18,6 +18,19 @@
 }(this, function () {
 
   var windw = this || window || global;
+  var o = windw.onerror;
+  windw.onerror = function (msg, url, line, col, err) {
+    if (o) {
+      o(msg, url, line, col, err);
+    }
+
+    if (!err) {
+      err = new Error(msg);
+    }
+
+    windw[obj].q = windw[obj].q || [];
+    windw[obj].q.push({e: err});
+  };
 
   // Similar approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
   // script is executed, and later overwritten by the loader once it's finished
