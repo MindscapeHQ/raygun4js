@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.9.0 - 2018-04-16
+/*! Raygun4js - v2.9.1 - 2018-04-18
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2730,6 +2730,7 @@ var raygunFactory = function (window, $, undefined) {
                 typeof msg.substring === 'function' &&
                 msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
+                stackTrace.stack[0].url !== undefined &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
                 (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
                 Raygun.Utilities.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
@@ -2913,7 +2914,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.9.0'
+                    'Version': '2.9.1'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,

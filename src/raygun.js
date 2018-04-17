@@ -600,6 +600,7 @@ var raygunFactory = function (window, $, undefined) {
                 typeof msg.substring === 'function' &&
                 msg.substring(0, scriptError.length) === scriptError &&
                 stackTrace.stack[0].url !== null &&
+                stackTrace.stack[0].url !== undefined &&
                 stackTrace.stack[0].url.indexOf(domain) === -1 &&
                 (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
                 Raygun.Utilities.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
