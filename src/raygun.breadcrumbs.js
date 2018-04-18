@@ -143,12 +143,12 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         for (var i = 0; i < this.breadcrumbs.length; i++) {
             var crumb = this.breadcrumbs[i];
 
-            if (crumb.type === 'request' && !this.logXhrContents) {
-                if (crumb.metadata.responseText) {
+            if (crumb && crumb.type === 'request' && !this.logXhrContents) {
+                if (crumb.metadata && crumb.metadata.responseText) {
                     crumb.metadata.responseText = 'Disabled';
                 }
 
-                if (crumb.metadata.requestText) {
+                if (crumb.metadata && crumb.metadata.requestText) {
                     crumb.metadata.requestText = undefined;
                 }
             }

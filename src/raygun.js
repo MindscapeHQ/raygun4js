@@ -805,7 +805,7 @@ var raygunFactory = function (window, $, undefined) {
 
         if (_breadcrumbs.any()) {
             payload.Details.Breadcrumbs = [];
-            var crumbs = _breadcrumbs.all();
+            var crumbs = _breadcrumbs.all() || [];
 
             crumbs.forEach(function(crumb) {
                 if (crumb.metadata) {
