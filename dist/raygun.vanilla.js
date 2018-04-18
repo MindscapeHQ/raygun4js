@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.9.1 - 2018-04-18
+/*! Raygun4js - v2.9.2 - 2018-04-19
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -1811,12 +1811,12 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         for (var i = 0; i < this.breadcrumbs.length; i++) {
             var crumb = this.breadcrumbs[i];
 
-            if (crumb.type === 'request' && !this.logXhrContents) {
-                if (crumb.metadata.responseText) {
+            if (crumb && crumb.type === 'request' && !this.logXhrContents) {
+                if (crumb.metadata && crumb.metadata.responseText) {
                     crumb.metadata.responseText = 'Disabled';
                 }
 
-                if (crumb.metadata.requestText) {
+                if (crumb.metadata && crumb.metadata.requestText) {
                     crumb.metadata.requestText = undefined;
                 }
             }
@@ -2914,7 +2914,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.9.1'
+                    'Version': '2.9.2'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
@@ -2935,7 +2935,7 @@ var raygunFactory = function (window, $, undefined) {
 
         if (_breadcrumbs.any()) {
             payload.Details.Breadcrumbs = [];
-            var crumbs = _breadcrumbs.all();
+            var crumbs = _breadcrumbs.all() || [];
 
             crumbs.forEach(function(crumb) {
                 if (crumb.metadata) {
