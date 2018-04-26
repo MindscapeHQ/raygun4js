@@ -495,7 +495,9 @@ var raygunFactory = function (window, $, undefined) {
         if (_filteredKeys) {
             for (var i = 0; i < _filteredKeys.length; i++) {
                 if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
-                    if (_filteredKeys[i].exec(key) !== null) {
+                    var executedFilter = _filteredKeys[i].exec(key);
+
+                    if (executedFilter !== null && executedFilter !== undefined) {
                         return '[removed by filter]';
                     }
                 }
@@ -608,7 +610,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
 
-            if (stackTrace.stack[0].url !== null && stackTrace.stack[0].url.indexOf(domain) === -1) {
+            if (stackTrace.stack[0].url !== null && stackTrace.stack[0] !== undefined && stackTrace.stack[0].url.indexOf(domain) === -1) {
                 var allowedDomainFound = false;
 
                 for (var i in _whitelistedScriptDomains) {

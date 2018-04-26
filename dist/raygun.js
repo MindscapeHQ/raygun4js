@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.9.2 - 2018-04-19
+/*! Raygun4js - v2.9.3 - 2018-04-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2693,7 +2693,9 @@ var raygunFactory = function (window, $, undefined) {
         if (_filteredKeys) {
             for (var i = 0; i < _filteredKeys.length; i++) {
                 if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
-                    if (_filteredKeys[i].exec(key) !== null) {
+                    var executedFilter = _filteredKeys[i].exec(key);
+
+                    if (executedFilter !== null && executedFilter !== undefined) {
                         return '[removed by filter]';
                     }
                 }
@@ -2806,7 +2808,7 @@ var raygunFactory = function (window, $, undefined) {
             }
 
 
-            if (stackTrace.stack[0].url !== null && stackTrace.stack[0].url.indexOf(domain) === -1) {
+            if (stackTrace.stack[0].url !== null && stackTrace.stack[0] !== undefined && stackTrace.stack[0].url.indexOf(domain) === -1) {
                 var allowedDomainFound = false;
 
                 for (var i in _whitelistedScriptDomains) {
@@ -2982,7 +2984,7 @@ var raygunFactory = function (window, $, undefined) {
                 },
                 'Client': {
                     'Name': 'raygun-js',
-                    'Version': '2.9.2'
+                    'Version': '2.9.3'
                 },
                 'UserCustomData': finalCustomData,
                 'Tags': options.tags,
