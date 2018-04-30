@@ -610,7 +610,11 @@ var raygunFactory = function (window, $, undefined) {
             }
 
 
-            if (stackTrace.stack[0].url !== null && stackTrace.stack[0] !== undefined && stackTrace.stack[0].url.indexOf(domain) === -1) {
+           if (stackTrace.stack[0] !== null &&
+              stackTrace.stack[0] !== undefined &&
+              stackTrace.stack[0].url !== null &&
+              stackTrace.stack[0].url !== undefined &&
+              stackTrace.stack[0].url.indexOf(domain) === -1) {
                 var allowedDomainFound = false;
 
                 for (var i in _whitelistedScriptDomains) {
