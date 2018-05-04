@@ -1,4 +1,8 @@
-(function (window, Raygun) {
+/**
+ * @prettier
+ */
+
+(function(window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
   }
@@ -14,14 +18,14 @@
     enablePulse,
     noConflict;
 
-var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e].q=a[e].q||[]"];
+  var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
   var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
-  var parseSnippetOptions = function () {
+  var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
 
     for (var i in snippetOptions) {
@@ -38,7 +42,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  var executor = function (pair) {
+  var executor = function(pair) {
     var key = pair[0];
     var value = pair[1];
 
@@ -74,7 +78,14 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'getRaygunInstance':
           return rg;
         case 'setUser':
-          rg.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
+          rg.setUser(
+            value.identifier,
+            value.isAnonymous,
+            value.email,
+            value.fullName,
+            value.firstName,
+            value.uuid
+          );
           break;
         case 'onBeforeSend':
           rg.onBeforeSend(value);
@@ -185,21 +196,21 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  var installGlobalExecutor = function () {
-    window[window['RaygunObject']] = function () {
+  var installGlobalExecutor = function() {
+    window[window['RaygunObject']] = function() {
       return executor(arguments);
     };
 
     globalExecutorInstalled = true;
   };
 
-  var onLoadHandler = function () {
+  var onLoadHandler = function() {
     parseSnippetOptions();
 
     if (noConflict) {
       rg = Raygun.noConflict();
     }
-    
+
     if (apiKey) {
       if (!options) {
         options = {};
@@ -221,8 +232,11 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
     } else if (typeof window.onerror === 'function') {
-      var onerrorSignature = window.onerror.toString(); 
-      if (onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 && onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1) {
+      var onerrorSignature = window.onerror.toString();
+      if (
+        onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 &&
+        onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1
+      ) {
         window.onerror = null;
       }
     }
@@ -253,14 +267,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     // then a manual rg4js('boot') call will trigger onLoadHandler, as the above events aren't available
     installGlobalExecutor();
   }
-
 })(window, window.__instantiatedRaygun);
 
-try
-{ 
-    delete window.__instantiatedRaygun;
-} 
-catch(e) 
-{ 
-    window["__instantiatedRaygun"] = undefined; 
+try {
+  delete window.__instantiatedRaygun;
+} catch (e) {
+  window['__instantiatedRaygun'] = undefined;
 }
