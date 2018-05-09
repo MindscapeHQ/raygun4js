@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.9.4 - 2018-05-01
+/*! Raygun4js - v2.9.4 - 2018-05-04
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -169,6 +169,9 @@ TraceKit.report = (function reportModuleWrapper() {
     function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
         var stack = null;
 
+        if (_oldOnerrorHandler) {
+            _oldOnerrorHandler.apply(this, arguments);
+        }
         if (errorObj) {
           stack = TraceKit.computeStackTrace(errorObj);
         }
@@ -199,9 +202,6 @@ TraceKit.report = (function reportModuleWrapper() {
 
         notifyHandlers(stack, 'from window.onerror');
 
-        if (_oldOnerrorHandler) {
-            return _oldOnerrorHandler.apply(this, arguments);
-        }
 
         return false;
     }
@@ -1384,2619 +1384,2904 @@ if (!Function.prototype.bind) {
     };
 }
 
+/*globals __DEV__ */
+
 // js-url - see LICENSE file
 
-window.raygunUtilityFactory = function (window, Raygun) {
+window.raygunUtilityFactory = function(window, Raygun) {
   var rg = {
-      getUuid: function () {
-          function _p8(s) {
-              var p = (Math.random().toString(16) + "000000000").substr(2, 8);
-              return s ? "-" + p.substr(0, 4) + "-" + p.substr(4, 4) : p;
-          }
+    getUuid: function() {
+      function _p8(s) {
+        var p = (Math.random().toString(16) + '000000000').substr(2, 8);
+        return s ? '-' + p.substr(0, 4) + '-' + p.substr(4, 4) : p;
+      }
 
-          return _p8() + _p8(true) + _p8(true) + _p8();
-      },
+      return _p8() + _p8(true) + _p8(true) + _p8();
+    },
 
-      createCookie: function (name, value, hours) {
-          if (this.isReactNative()) {
-              return;
-          }
+    createCookie: function(name, value, hours) {
+      if (this.isReactNative()) {
+        return;
+      }
 
-          var expires;
-          if (hours) {
-              var date = new Date();
-              date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-              expires = "; expires=" + date.toGMTString();
-          }
-          else {
-              expires = "";
-          }
+      var expires;
+      if (hours) {
+        var date = new Date();
+        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+        expires = '; expires=' + date.toGMTString();
+      } else {
+        expires = '';
+      }
 
-          document.cookie = name + "=" + value + expires + "; path=/";
-      },
+      document.cookie = name + '=' + value + expires + '; path=/';
+    },
 
-      readCookie: function (name, doneCallback) {
-          if (this.isReactNative()) {
-              doneCallback(null, 'none');
+    readCookie: function(name, doneCallback) {
+      if (this.isReactNative()) {
+        doneCallback(null, 'none');
 
-              return;
-          }
+        return;
+      }
 
-          var nameEQ = name + "=";
-          var ca = document.cookie.split(';');
-          for (var i = 0; i < ca.length; i++) {
-              var c = ca[i];
-              while (c.charAt(0) === ' ') {
-                  c = c.substring(1, c.length);
-              }
-              if (c.indexOf(nameEQ) === 0) {
-                  var cookieValue = c.substring(nameEQ.length, c.length);
-
-                  doneCallback(null, cookieValue);
-
-                  return;
-              }
-          }
-
-          doneCallback(null, null);
-      },
-
-      clearCookie: function (key) {
-          if (this.isReactNative()) {
-              return;
-          }
-
-          this.createCookie(key, '', -1);
-      },
-
-      log: function (message, data) {
-          if (window.console && window.console.log && Raygun.Options._debugMode) {
-              window.console.log(message);
-
-              if (data) {
-                  window.console.log(data);
-              }
-          }
-      },
-
-      isApiKeyConfigured: function () {
-          if (Raygun.Options._raygunApiKey && Raygun.Options._raygunApiKey !== '') {
-              return true;
-          }
-          Raygun.Utilities.log("Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)");
-          return false;
-      },
-
-      isReactNative: function () {
-          return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
-      },
-
-      defaultReactNativeGlobalHandler: function (error, fatal) {
-          if (typeof _defaultReactNativeGlobalHandler === 'function') {
-              _defaultReactNativeGlobalHandler(error, fatal);
-          }
-      },
-
-      localStorageAvailable: function () {
-          try {
-              return ('localStorage' in window) && window['localStorage'] !== null;
-          } catch (e) {
-              return false;
-          }
-      },
-
-      truncateURL: function (url) {
-          // truncate after fourth /, or 24 characters, whichever is shorter
-          // /api/1/diagrams/xyz/server becomes
-          // /api/1/diagrams/...
-          var truncated = url;
-          var path = url.split('//')[1];
-
-          if (path) {
-              var queryStart = path.indexOf('?');
-              var sanitizedPath = path.toString().substring(0, queryStart);
-              var truncated_parts = sanitizedPath.split('/').slice(0, 4).join('/');
-              var truncated_length = sanitizedPath.substring(0, 48);
-              truncated = truncated_parts.length < truncated_length.length ?
-                  truncated_parts : truncated_length;
-              if (truncated !== sanitizedPath) {
-                  truncated += '..';
-              }
-          }
-
-          return truncated;
-      },
-
-      merge: function (o1, o2) {
-          var a, o3 = {};
-          for (a in o1) {
-              o3[a] = o1[a];
-          }
-          for (a in o2) {
-              o3[a] = o2[a];
-          }
-          return o3;
-      },
-
-      mergeMutate: function(o1, o2) {
-        var a;
-
-        for(a in o2) {
-          o1[a] = o2[a];
+      var nameEQ = name + '=';
+      var ca = document.cookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1, c.length);
         }
+        if (c.indexOf(nameEQ) === 0) {
+          var cookieValue = c.substring(nameEQ.length, c.length);
 
-        return o1;
-      },
+          doneCallback(null, cookieValue);
 
-      mergeArray: function (t0, t1) {
-          if (t1 != null) {
-              return t0.concat(t1);
-          }
-          return t0;
-      },
+          return;
+        }
+      }
 
-      forEach: function (set, func) {
-          for (var i = 0; i < set.length; i++) {
-              func.call(null, i, set[i]);
-          }
-      },
+      doneCallback(null, null);
+    },
 
-      isEmpty: function (o) {
-          for (var p in o) {
-              if (o.hasOwnProperty(p)) {
-                  return false;
-              }
-          }
+    clearCookie: function(key) {
+      if (this.isReactNative()) {
+        return;
+      }
+
+      this.createCookie(key, '', -1);
+    },
+
+    log: function(message, data) {
+      if (window.console && window.console.log && Raygun.Options._debugMode) {
+        window.console.log(message);
+
+        if (data) {
+          window.console.log(data);
+        }
+      }
+    },
+
+    isApiKeyConfigured: function() {
+      if (Raygun.Options._raygunApiKey && Raygun.Options._raygunApiKey !== '') {
+        return true;
+      }
+      Raygun.Utilities.log(
+        'Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)'
+      );
+      return false;
+    },
+
+    isReactNative: function() {
+      return typeof document === 'undefined' && typeof __DEV__ !== 'undefined';
+    },
+
+    defaultReactNativeGlobalHandler: function(error, fatal) {
+      if (typeof _defaultReactNativeGlobalHandler === 'function') {
+        _defaultReactNativeGlobalHandler(error, fatal);
+      }
+    },
+
+    localStorageAvailable: function() {
+      try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+      } catch (e) {
+        return false;
+      }
+    },
+
+    truncateURL: function(url) {
+      // truncate after fourth /, or 24 characters, whichever is shorter
+      // /api/1/diagrams/xyz/server becomes
+      // /api/1/diagrams/...
+      var truncated = url;
+      var path = url.split('//')[1];
+
+      if (path) {
+        var queryStart = path.indexOf('?');
+        var sanitizedPath = path.toString().substring(0, queryStart);
+        var truncated_parts = sanitizedPath
+          .split('/')
+          .slice(0, 4)
+          .join('/');
+        var truncated_length = sanitizedPath.substring(0, 48);
+        truncated =
+          truncated_parts.length < truncated_length.length ? truncated_parts : truncated_length;
+        if (truncated !== sanitizedPath) {
+          truncated += '..';
+        }
+      }
+
+      return truncated;
+    },
+
+    merge: function(o1, o2) {
+      var a,
+        o3 = {};
+      for (a in o1) {
+        o3[a] = o1[a];
+      }
+      for (a in o2) {
+        o3[a] = o2[a];
+      }
+      return o3;
+    },
+
+    mergeMutate: function(o1, o2) {
+      var a;
+
+      for (a in o2) {
+        o1[a] = o2[a];
+      }
+
+      return o1;
+    },
+
+    mergeArray: function(t0, t1) {
+      if (t1 != null) {
+        return t0.concat(t1);
+      }
+      return t0;
+    },
+
+    forEach: function(set, func) {
+      for (var i = 0; i < set.length; i++) {
+        func.call(null, i, set[i]);
+      }
+    },
+
+    isEmpty: function(o) {
+      for (var p in o) {
+        if (o.hasOwnProperty(p)) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    contains: function(array, obj) {
+      var i = array.length;
+      while (i--) {
+        if (array[i] === obj) {
           return true;
-      },
-
-      contains: function (array, obj) {
-          var i = array.length;
-          while (i--) {
-              if (array[i] === obj) {
-                  return true;
-              }
-          }
-          return false;
-      },
-
-      getRandomInt: function () {
-          return Math.floor(Math.random() * 9007199254740993);
-      },
-
-      getViewPort: function () {
-          if (this.isReactNative()) {
-              return { width: 'Not available', height: 'Not available' };
-          }
-
-          var e = document.documentElement,
-              g = document.getElementsByTagName('body')[0],
-              x = window.innerWidth || e.clientWidth || g.clientWidth,
-              y = window.innerHeight || e.clientHeight || g.clientHeight;
-          return {width: x, height: y};
-      },
-
-      parseUrl: function(arg, url) {
-        function isNumeric(arg) {
-        return !isNaN(parseFloat(arg)) && isFinite(arg);
         }
+      }
+      return false;
+    },
 
-        return (function(arg, url) {
+    getRandomInt: function() {
+      return Math.floor(Math.random() * 9007199254740993);
+    },
+
+    getViewPort: function() {
+      if (this.isReactNative()) {
+        return { width: 'Not available', height: 'Not available' };
+      }
+
+      var e = document.documentElement,
+        g = document.getElementsByTagName('body')[0],
+        x = window.innerWidth || e.clientWidth || g.clientWidth,
+        y = window.innerHeight || e.clientHeight || g.clientHeight;
+      return { width: x, height: y };
+    },
+
+    parseUrl: function(arg, url) {
+      function isNumeric(arg) {
+        return !isNaN(parseFloat(arg)) && isFinite(arg);
+      }
+
+      return (function(arg, url) {
         if (typeof document === 'undefined') {
-            return '';
+          return '';
         }
 
         var _ls = url || window.location.toString();
 
-        if (!arg) { return _ls; }
-        else { arg = arg.toString(); }
+        if (!arg) {
+          return _ls;
+        } else {
+          arg = arg.toString();
+        }
 
-        if (_ls.substring(0,2) === '//') { _ls = 'http:' + _ls; }
-        else if (_ls.split('://').length === 1) { _ls = 'http://' + _ls; }
+        if (_ls.substring(0, 2) === '//') {
+          _ls = 'http:' + _ls;
+        } else if (_ls.split('://').length === 1) {
+          _ls = 'http://' + _ls;
+        }
 
         url = _ls.split('/');
-        var _l = {auth:''}, host = url[2].split('@');
+        var _l = { auth: '' },
+          host = url[2].split('@');
 
-        if (host.length === 1) { host = host[0].split(':'); }
-        else { _l.auth = host[0]; host = host[1].split(':'); }
+        if (host.length === 1) {
+          host = host[0].split(':');
+        } else {
+          _l.auth = host[0];
+          host = host[1].split(':');
+        }
 
-        _l.protocol=url[0];
-        _l.hostname=host[0];
-        _l.port=(host[1] || ((_l.protocol.split(':')[0].toLowerCase() === 'https') ? '443' : '80'));
-        _l.pathname=( (url.length > 3 ? '/' : '') + url.slice(3, url.length).join('/').split('?')[0].split('#')[0]);
+        _l.protocol = url[0];
+        _l.hostname = host[0];
+        _l.port = host[1] || (_l.protocol.split(':')[0].toLowerCase() === 'https' ? '443' : '80');
+        _l.pathname =
+          (url.length > 3 ? '/' : '') +
+          url
+            .slice(3, url.length)
+            .join('/')
+            .split('?')[0]
+            .split('#')[0];
         var _p = _l.pathname;
 
-        if (_p.charAt(_p.length-1) === '/') { _p=_p.substring(0, _p.length-1); }
-        var _h = _l.hostname, _hs = _h.split('.'), _ps = _p.split('/');
+        if (_p.charAt(_p.length - 1) === '/') {
+          _p = _p.substring(0, _p.length - 1);
+        }
+        var _h = _l.hostname,
+          _hs = _h.split('.'),
+          _ps = _p.split('/');
 
-        if (arg === 'hostname') { return _h; }
-        else if (arg === 'domain') {
-            if (/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/.test(_h)) { return _h; }
-            return _hs.slice(-2).join('.');
+        if (arg === 'hostname') {
+          return _h;
+        } else if (arg === 'domain') {
+          if (
+            /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/.test(
+              _h
+            )
+          ) {
+            return _h;
+          }
+          return _hs.slice(-2).join('.');
         }
         //else if (arg === 'tld') { return _hs.slice(-1).join('.'); }
-        else if (arg === 'sub') { return _hs.slice(0, _hs.length - 2).join('.'); }
-        else if (arg === 'port') { return _l.port; }
-        else if (arg === 'protocol') { return _l.protocol.split(':')[0]; }
-        else if (arg === 'auth') { return _l.auth; }
-        else if (arg === 'user') { return _l.auth.split(':')[0]; }
-        else if (arg === 'pass') { return _l.auth.split(':')[1] || ''; }
-        else if (arg === 'path') { return _l.pathname; }
-        else if (arg.charAt(0) === '.')
-        {
-            arg = arg.substring(1);
-            if(isNumeric(arg)) {arg = parseInt(arg, 10); return _hs[arg < 0 ? _hs.length + arg : arg-1] || ''; }
-        }
-        else if (isNumeric(arg)) { arg = parseInt(arg, 10); return _ps[arg < 0 ? _ps.length + arg : arg] || ''; }
-        else if (arg === 'file') { return _ps.slice(-1)[0]; }
-        else if (arg === 'filename') { return _ps.slice(-1)[0].split('.')[0]; }
-        else if (arg === 'fileext') { return _ps.slice(-1)[0].split('.')[1] || ''; }
-        else if (arg.charAt(0) === '?' || arg.charAt(0) === '#')
-        {
-            var params = _ls, param = null;
+        else if (arg === 'sub') {
+          return _hs.slice(0, _hs.length - 2).join('.');
+        } else if (arg === 'port') {
+          return _l.port;
+        } else if (arg === 'protocol') {
+          return _l.protocol.split(':')[0];
+        } else if (arg === 'auth') {
+          return _l.auth;
+        } else if (arg === 'user') {
+          return _l.auth.split(':')[0];
+        } else if (arg === 'pass') {
+          return _l.auth.split(':')[1] || '';
+        } else if (arg === 'path') {
+          return _l.pathname;
+        } else if (arg.charAt(0) === '.') {
+          arg = arg.substring(1);
+          if (isNumeric(arg)) {
+            arg = parseInt(arg, 10);
+            return _hs[arg < 0 ? _hs.length + arg : arg - 1] || '';
+          }
+        } else if (isNumeric(arg)) {
+          arg = parseInt(arg, 10);
+          return _ps[arg < 0 ? _ps.length + arg : arg] || '';
+        } else if (arg === 'file') {
+          return _ps.slice(-1)[0];
+        } else if (arg === 'filename') {
+          return _ps.slice(-1)[0].split('.')[0];
+        } else if (arg === 'fileext') {
+          return _ps.slice(-1)[0].split('.')[1] || '';
+        } else if (arg.charAt(0) === '?' || arg.charAt(0) === '#') {
+          var params = _ls,
+            param = null;
 
-            if(arg.charAt(0) === '?') { params = (params.split('?')[1] || '').split('#')[0]; }
-            else if(arg.charAt(0) === '#') { params = (params.split('#')[1] || ''); }
+          if (arg.charAt(0) === '?') {
+            params = (params.split('?')[1] || '').split('#')[0];
+          } else if (arg.charAt(0) === '#') {
+            params = params.split('#')[1] || '';
+          }
 
-            if(!arg.charAt(1)) { return params; }
+          if (!arg.charAt(1)) {
+            return params;
+          }
 
-            arg = arg.substring(1);
-            params = params.split('&');
+          arg = arg.substring(1);
+          params = params.split('&');
 
-            for(var i=0,ii=params.length; i<ii; i++)
-            {
-                param = params[i].split('=');
-                if(param[0] === arg) { return param[1] || ''; }
+          for (var i = 0, ii = params.length; i < ii; i++) {
+            param = params[i].split('=');
+            if (param[0] === arg) {
+              return param[1] || '';
             }
+          }
 
-            return null;
+          return null;
         }
 
         return '';
-        })(arg, url);
-      },
-      // Replace existing function on object with new, but call old one afterwards still
-      // Returns function that when called will un-enhance object
-      enhance: function(object, property, newFunction) {
-        var existingFunction = object[property];
+      })(arg, url);
+    },
+    // Replace existing function on object with new, but call old one afterwards still
+    // Returns function that when called will un-enhance object
+    enhance: function(object, property, newFunction) {
+      var existingFunction = object[property];
 
-        object[property] = function enhanced() {
-          newFunction.apply(this, arguments);
+      object[property] = function enhanced() {
+        newFunction.apply(this, arguments);
 
-          if (typeof existingFunction === "function") {
-            existingFunction.apply(this, arguments);
-          }
-        };
-
-        return function unenhance() {
-          object[property] = existingFunction;
-        };
-      },
-      // Theoretically cross browser event listening
-      // Returns function that when called will remove handler
-      addEventHandler: function(element, event, handler, useCapture) {
-        var capture = useCapture || false;
-
-        if (element.addEventListener) {
-          element.addEventListener(event, handler, capture);
-        } else if (element.attachEvent) {
-          element.attachEvent('on' + event, handler);
-        } else {
-          element['on' + event] = handler;
+        if (typeof existingFunction === 'function') {
+          existingFunction.apply(this, arguments);
         }
+      };
 
-        return function() {
-          if (element.removeEventListener) {
-            element.removeEventListener(event, handler, capture);
-          } else if (element.detachEvent) {
-            element.detachEvent('on' + event, handler);
-          } else {
-            element['on' + event] = function() {};
-          }
-        };
-      },
-      nodeText: function(node) {
-        var text = node.textContent || node.innerText || "";
+      return function unenhance() {
+        object[property] = existingFunction;
+      };
+    },
+    // Theoretically cross browser event listening
+    // Returns function that when called will remove handler
+    addEventHandler: function(element, event, handler, useCapture) {
+      var capture = useCapture || false;
 
-        if (["submit", "button"].indexOf(node.type) !== -1) {
-          text = node.value || text;
-        }
-
-        text = text.replace(/^\s+|\s+$/g, "");
-
-        return text;
-      },
-      // Returns simple CSS selector to target node
-      nodeSelector: function(node) {
-        var parts = [node.tagName];
-
-        if (node.id) {
-          parts.push("#" + node.id);
-        }
-
-        if (node.className && node.className.length) {
-          parts.push(
-            "." + node.className.split(" ").join(".")
-          );
-        }
-
-        return parts.join("");
-      },
-      truncate: function(text, length) {
-        var omission = "(...)";
-
-        if (text.length > length) {
-          return text.slice(0, length - omission.length) + omission;
-        } else {
-           return text;
-        }
+      if (element.addEventListener) {
+        element.addEventListener(event, handler, capture);
+      } else if (element.attachEvent) {
+        element.attachEvent('on' + event, handler);
+      } else {
+        element['on' + event] = handler;
       }
+
+      return function() {
+        if (element.removeEventListener) {
+          element.removeEventListener(event, handler, capture);
+        } else if (element.detachEvent) {
+          element.detachEvent('on' + event, handler);
+        } else {
+          element['on' + event] = function() {};
+        }
+      };
+    },
+    nodeText: function(node) {
+      var text = node.textContent || node.innerText || '';
+
+      if (['submit', 'button'].indexOf(node.type) !== -1) {
+        text = node.value || text;
+      }
+
+      text = text.replace(/^\s+|\s+$/g, '');
+
+      return text;
+    },
+    // Returns simple CSS selector to target node
+    nodeSelector: function(node) {
+      var parts = [node.tagName];
+
+      if (node.id) {
+        parts.push('#' + node.id);
+      }
+
+      if (node.className && node.className.length) {
+        parts.push('.' + node.className.split(' ').join('.'));
+      }
+
+      return parts.join('');
+    },
+    truncate: function(text, length) {
+      var omission = '(...)';
+
+      if (text.length > length) {
+        return text.slice(0, length - omission.length) + omission;
+      } else {
+        return text;
+      }
+    },
   };
 
   var _defaultReactNativeGlobalHandler;
-  if (rg.isReactNative() && __DEV__ !== true && window.ErrorUtils && window.ErrorUtils.getGlobalHandler) {
-      _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
+  if (
+    rg.isReactNative() &&
+    __DEV__ !== true &&
+    window.ErrorUtils &&
+    window.ErrorUtils.getGlobalHandler
+  ) {
+    _defaultReactNativeGlobalHandler = window.ErrorUtils.getGlobalHandler();
   }
 
   return rg;
 };
 
+/*
+ * raygun4js
+ * https://github.com/MindscapeHQ/raygun4js
+ *
+ * Copyright (c) 2017 MindscapeHQ
+ * Licensed under the MIT license.
+ */
 /* globals console */
 
 window.raygunBreadcrumbsFactory = function(window, Raygun) {
-    function urlMatchesIgnoredHosts(url, ignoredHosts) {
-        for (var i = 0;i < ignoredHosts.length;i ++) {
-            var host = ignoredHosts[i];
+  function urlMatchesIgnoredHosts(url, ignoredHosts) {
+    for (var i = 0; i < ignoredHosts.length; i++) {
+      var host = ignoredHosts[i];
 
-            if (typeof host === 'string' && url && url.indexOf(host) > -1) {
-                return true;
-            } else if (typeof host === 'object' && host.exec(url)) {
-                return true;
-            }
-        }
-
-        return false;
+      if (typeof host === 'string' && url && url.indexOf(host) > -1) {
+        return true;
+      } else if (typeof host === 'object' && host.exec(url)) {
+        return true;
+      }
     }
 
-    var Breadcrumbs = function() {
-        this.MAX_BREADCRUMBS = 32;
-        this.MAX_MESSAGE_SIZE = 1024;
-        this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
-        this.DEFAULT_BREADCRUMB_LEVEL = 'info';
-        this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
+    return false;
+  }
 
-        this.breadcrumbLevel = 'info';
-        this.logXhrContents = false;
-        this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
-        this.breadcrumbs = [];
-        this.wrapWithHandler = function(method) {
-            return function() {
-                try {
-                    return method.apply(this, arguments);
-                } catch (ex) {
-                    Raygun.Utilities.log(ex);
-                }
-            };
-        };
+  var Breadcrumbs = function() {
+    this.MAX_BREADCRUMBS = 32;
+    this.MAX_MESSAGE_SIZE = 1024;
+    this.BREADCRUMB_LEVELS = ['debug', 'info', 'warning', 'error'];
+    this.DEFAULT_BREADCRUMB_LEVEL = 'info';
+    this.DEFAULT_XHR_IGNORED_HOSTS = ['raygun'];
 
-        this.disableConsoleFunctions = [];
-        this.disableNavigationFunctions = [];
-        this.disableXHRLogging = function() {};
-        this.disableClicksTracking = function() {};
-
-        this.enableAutoBreadcrumbs();
-        this.wrapPrototypeWithHandlers();
+    this.breadcrumbLevel = 'info';
+    this.logXhrContents = false;
+    this.xhrIgnoredHosts = [].concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+    this.breadcrumbs = [];
+    this.wrapWithHandler = function(method) {
+      return function() {
+        try {
+          return method.apply(this, arguments);
+        } catch (ex) {
+          Raygun.Utilities.log(ex);
+        }
+      };
     };
 
-    Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
-        var crumb = {
-            level: this.DEFAULT_BREADCRUMB_LEVEL,
-            timestamp: new Date().getTime(),
-            type: 'manual'
-        };
+    this.disableConsoleFunctions = [];
+    this.disableNavigationFunctions = [];
+    this.disableXHRLogging = function() {};
+    this.disableClicksTracking = function() {};
 
-        switch (typeof value) {
-            case "object":
-                    crumb = Raygun.Utilities.merge(crumb, value);
-                break;
-            case "string":
-                crumb = Raygun.Utilities.merge(
-                    Raygun.Utilities.merge(
-                        crumb, {
-                            message: value,
-                            metadata: metadata
-                        }
-                    )
-                );
-                break;
-            default:
-                Raygun.Utilities.log(
-                    "expected first argument to recordBreadcrumb to be a 'string' or 'object', got " + typeof value
-                );
-                return;
+    this.enableAutoBreadcrumbs();
+    this.wrapPrototypeWithHandlers();
+  };
+
+  Breadcrumbs.prototype.recordBreadcrumb = function(value, metadata) {
+    var crumb = {
+      level: this.DEFAULT_BREADCRUMB_LEVEL,
+      timestamp: new Date().getTime(),
+      type: 'manual',
+    };
+
+    switch (typeof value) {
+      case 'object':
+        crumb = Raygun.Utilities.merge(crumb, value);
+        break;
+      case 'string':
+        crumb = Raygun.Utilities.merge(
+          Raygun.Utilities.merge(crumb, {
+            message: value,
+            metadata: metadata,
+          })
+        );
+        break;
+      default:
+        Raygun.Utilities.log(
+          "expected first argument to recordBreadcrumb to be a 'string' or 'object', got " +
+            typeof value
+        );
+        return;
+    }
+
+    if (this.BREADCRUMB_LEVELS.indexOf(crumb.level) === -1) {
+      Raygun.Utilities.log(
+        'unknown breadcrumb level ' +
+          crumb.level +
+          " setting to default of '" +
+          this.DEFAULT_BREADCRUMB_LEVEL +
+          "'"
+      );
+      crumb.level = this.DEFAULT_BREADCRUMB_LEVEL;
+    }
+
+    if (this.shouldRecord(crumb)) {
+      crumb.message = Raygun.Utilities.truncate(crumb.message, this.MAX_MESSAGE_SIZE);
+
+      this.breadcrumbs.push(crumb);
+      this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
+    }
+  };
+
+  Breadcrumbs.prototype.shouldRecord = function(crumb) {
+    var crumbLevel = this.BREADCRUMB_LEVELS.indexOf(crumb.level);
+    var activeLevel = this.BREADCRUMB_LEVELS.indexOf(this.breadcrumbLevel);
+
+    return crumbLevel >= activeLevel;
+  };
+
+  Breadcrumbs.prototype.setBreadcrumbLevel = function(level) {
+    if (this.BREADCRUMB_LEVELS.indexOf(level) === -1) {
+      Raygun.Utilities.log(
+        "Breadcrumb level of '" +
+          level +
+          "' is invalid, setting to default of '" +
+          this.DEFAULT_BREADCRUMB_LEVEL +
+          "'"
+      );
+
+      return;
+    }
+
+    this.breadcrumbLevel = level;
+  };
+
+  Breadcrumbs.prototype.setOption = function(option, value) {
+    if (option === 'breadcrumbsLevel') {
+      this.setBreadcrumbLevel(value);
+    } else if (option === 'xhrIgnoredHosts') {
+      this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
+
+      var self = this;
+      this.removeBreadcrumbsWithPredicate(function(crumb) {
+        if (crumb.type !== 'request') {
+          return false;
         }
 
-        if (this.BREADCRUMB_LEVELS.indexOf(crumb.level) === -1) {
+        return urlMatchesIgnoredHosts(
+          crumb.metadata.requestURL || crumb.metadata.responseURL,
+          self.xhrIgnoredHosts
+        );
+      });
+    } else if (option === 'logXhrContents') {
+      this.logXhrContents = value;
+    }
+  };
+
+  Breadcrumbs.prototype.any = function() {
+    return this.breadcrumbs.length > 0;
+  };
+
+  Breadcrumbs.prototype.all = function() {
+    var sanitizedBreadcrumbs = [];
+
+    for (var i = 0; i < this.breadcrumbs.length; i++) {
+      var crumb = this.breadcrumbs[i];
+
+      if (crumb && crumb.type === 'request' && !this.logXhrContents) {
+        if (crumb.metadata && crumb.metadata.responseText) {
+          crumb.metadata.responseText = 'Disabled';
+        }
+
+        if (crumb.metadata && crumb.metadata.requestText) {
+          crumb.metadata.requestText = undefined;
+        }
+      }
+
+      sanitizedBreadcrumbs.push(crumb);
+    }
+
+    return sanitizedBreadcrumbs;
+  };
+
+  Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
+    this.enableAutoBreadcrumbsXHR();
+    this.enableAutoBreadcrumbsClicks();
+    this.enableAutoBreadcrumbsConsole();
+    this.enableAutoBreadcrumbsNavigation();
+  };
+
+  Breadcrumbs.prototype.disableAutoBreadcrumbs = function() {
+    this.disableAutoBreadcrumbsXHR();
+    this.disableAutoBreadcrumbsClicks();
+    this.disableAutoBreadcrumbsConsole();
+    this.disableAutoBreadcrumbsNavigation();
+  };
+
+  Breadcrumbs.prototype.removeBreadcrumbsWithPredicate = function(predicate) {
+    var crumbs = this.breadcrumbs;
+    var filteredCrumbs = [];
+
+    for (var i = 0; i < crumbs.length; i++) {
+      var crumb = crumbs[i];
+
+      if (!predicate(crumb)) {
+        filteredCrumbs.push(crumb);
+      }
+    }
+
+    this.breadcrumbs = filteredCrumbs;
+  };
+
+  Breadcrumbs.prototype.removeCrumbsOfType = function(type) {
+    this.removeBreadcrumbsWithPredicate(function(crumb) {
+      return crumb.type === type;
+    });
+  };
+
+  Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
+    if (typeof window.console === 'undefined') {
+      return;
+    }
+
+    var logConsoleCall = function logConsoleCall(severity, args) {
+      var stringifiedArgs = [];
+
+      for (var i = 0; i < args.length; i++) {
+        var arg = args[i];
+        if (arg === null || arg === undefined) {
+          continue;
+        }
+
+        stringifiedArgs.push(arg.toString());
+      }
+
+      this.recordBreadcrumb({
+        type: 'console',
+        level: severity,
+        message: Array.prototype.slice.call(stringifiedArgs).join(', '),
+      });
+    }.bind(this);
+
+    var consoleProperties = ['log', 'warn', 'error'];
+    var self = this;
+    this.disableConsoleFunctions = consoleProperties.map(function(property) {
+      return Raygun.Utilities.enhance(
+        console,
+        property,
+        self.wrapWithHandler(function() {
+          var severity = property === 'log' ? 'info' : property === 'warn' ? 'warning' : 'error';
+
+          logConsoleCall(severity, arguments);
+        })
+      );
+    });
+  };
+
+  Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
+    this.disableConsoleFunctions.forEach(function(unenhance) {
+      unenhance();
+    });
+    this.removeCrumbsOfType('console');
+  };
+
+  Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
+    if (!window.addEventListener || !window.history || !window.history.pushState) {
+      return;
+    }
+
+    var buildStateChange = function(name, state, title, url) {
+      var currentPath = location.pathname + location.search + location.hash;
+      var prevState = null;
+
+      if (window.history.state) {
+        prevState = history.state;
+      }
+
+      return {
+        message: 'History ' + name,
+        type: 'navigation',
+        level: 'info',
+        metadata: {
+          from: currentPath,
+          to: url || currentPath,
+          prevState: JSON.stringify(prevState) || 'unsupported',
+          nextState: JSON.stringify(state),
+        },
+      };
+    }.bind(this);
+
+    var parseHash = function(url) {
+      return url.split('#')[1] || '';
+    };
+
+    var historyFunctionsToEnhance = ['pushState', 'replaceState'];
+    this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+      historyFunctionsToEnhance.map(
+        function(stateChange) {
+          return Raygun.Utilities.enhance(
+            history,
+            stateChange,
+            this.wrapWithHandler(
+              function(state, title, url) {
+                this.recordBreadcrumb(buildStateChange(stateChange, state, title, url));
+              }.bind(this)
+            )
+          );
+        }.bind(this)
+      )
+    );
+
+    var buildHashChange = function(e) {
+      var oldURL = e.oldURL;
+      var newURL = e.newURL;
+      var metadata;
+
+      if (oldURL && newURL) {
+        metadata = {
+          from: parseHash(oldURL),
+          to: parseHash(newURL),
+        };
+      } else {
+        metadata = {
+          to: location.hash,
+        };
+      }
+
+      return {
+        type: 'navigation',
+        message: 'Hash change',
+        metadata: metadata,
+      };
+    };
+
+    var logBreadcrumbWrapper = function(handler) {
+      return this.wrapWithHandler(
+        function() {
+          this.recordBreadcrumb(handler.apply(null, arguments));
+        }.bind(this)
+      );
+    }.bind(this);
+    var eventsWithHandlers = [
+      { element: window, event: 'hashchange', handler: buildHashChange },
+      {
+        element: window,
+        event: 'load',
+        handler: function() {
+          return { type: 'navigation', message: 'Page loaded' };
+        },
+      },
+      {
+        element: window,
+        event: 'popstate',
+        handler: function() {
+          return { type: 'navigation', message: 'Navigated back' };
+        },
+      },
+      {
+        element: window,
+        event: 'pagehide',
+        handler: function() {
+          return { type: 'navigation', message: 'Page hidden' };
+        },
+      },
+      {
+        element: window,
+        event: 'pageshow',
+        handler: function() {
+          return { type: 'navigation', message: 'Page shown' };
+        },
+      },
+      {
+        element: document,
+        event: 'DOMContentLoaded',
+        handler: function() {
+          return { type: 'navigation', message: 'DOMContentLoaded' };
+        },
+      },
+    ];
+
+    this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
+      eventsWithHandlers.map(
+        function(mapping) {
+          return Raygun.Utilities.addEventHandler(
+            mapping.element,
+            mapping.event,
+            logBreadcrumbWrapper(mapping.handler)
+          );
+        }.bind(this)
+      )
+    );
+  };
+
+  Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
+    this.disableNavigationFunctions.forEach(function(unenhance) {
+      unenhance();
+    });
+    this.disableNavigationFunctions = [];
+
+    this.removeCrumbsOfType('navigation');
+  };
+
+  Breadcrumbs.prototype.enableAutoBreadcrumbsClicks = function() {
+    this.disableClicksTracking = Raygun.Utilities.addEventHandler(
+      window,
+      'click',
+      this.wrapWithHandler(
+        function(e) {
+          var text, selector;
+
+          try {
+            text = Raygun.Utilities.truncate(Raygun.Utilities.nodeText(e.target), 150);
+            selector = Raygun.Utilities.nodeSelector(e.target);
+          } catch (exception) {
+            text = '[unknown]';
+            selector = '[unknown]';
+
             Raygun.Utilities.log(
-                "unknown breadcrumb level " + crumb.level + " setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
+              'Error retrieving node text/selector. Most likely due to a cross domain error'
             );
-            crumb.level = this.DEFAULT_BREADCRUMB_LEVEL;
+          }
+
+          this.recordBreadcrumb({
+            type: 'click-event',
+            message: 'UI Click',
+            level: 'info',
+            metadata: {
+              text: text,
+              selector: selector,
+            },
+          });
+        }.bind(this),
+        true
+      )
+    );
+  };
+
+  Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
+    this.disableClicksTracking();
+    this.removeCrumbsOfType('click-event');
+  };
+
+  Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
+    var self = this;
+
+    if (!window.XMLHttpRequest.prototype.addEventListener) {
+      this.disableXHRLogging = function() {};
+      return;
+    }
+
+    this.disableXHRLogging = Raygun.Utilities.enhance(
+      window.XMLHttpRequest.prototype,
+      'open',
+      self.wrapWithHandler(function() {
+        var initTime = new Date().getTime();
+        var url = arguments[1] || 'Unknown';
+        var method = arguments[0];
+
+        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
+          return;
         }
 
-        if (this.shouldRecord(crumb)) {
-            crumb.message = Raygun.Utilities.truncate(crumb.message, this.MAX_MESSAGE_SIZE);
-
-            this.breadcrumbs.push(crumb);
-            this.breadcrumbs = this.breadcrumbs.slice(-this.MAX_BREADCRUMBS);
-        }
-    };
-
-    Breadcrumbs.prototype.shouldRecord = function(crumb) {
-        var crumbLevel = this.BREADCRUMB_LEVELS.indexOf(crumb.level);
-        var activeLevel = this.BREADCRUMB_LEVELS.indexOf(this.breadcrumbLevel);
-
-        return crumbLevel >= activeLevel;
-    };
-
-    Breadcrumbs.prototype.setBreadcrumbLevel = function(level) {
-        if (this.BREADCRUMB_LEVELS.indexOf(level) === -1) {
-            Raygun.Utilities.log(
-                "Breadcrumb level of '" + level + "' is invalid, setting to default of '" + this.DEFAULT_BREADCRUMB_LEVEL + "'"
-            );
-
-            return;
-        }
-
-        this.breadcrumbLevel = level;
-    };
-
-    Breadcrumbs.prototype.setOption = function(option, value) {
-        if (option === 'breadcrumbsLevel') {
-            this.setBreadcrumbLevel(value);
-        } else if (option === 'xhrIgnoredHosts') {
-            this.xhrIgnoredHosts = value.concat(this.DEFAULT_XHR_IGNORED_HOSTS);
-
-            var self = this;
-            this.removeBreadcrumbsWithPredicate(function(crumb) {
-                if (crumb.type !== 'request') {
-                    return false;
-                }
-
-                return urlMatchesIgnoredHosts(crumb.metadata.requestURL || crumb.metadata.responseURL, self.xhrIgnoredHosts);
-            });
-        } else if (option === 'logXhrContents') {
-            this.logXhrContents = value;
-        }
-    };
-
-    Breadcrumbs.prototype.any = function() {
-        return this.breadcrumbs.length > 0;
-    };
-
-    Breadcrumbs.prototype.all = function() {
-        var sanitizedBreadcrumbs = [];
-
-        for (var i = 0; i < this.breadcrumbs.length; i++) {
-            var crumb = this.breadcrumbs[i];
-
-            if (crumb && crumb.type === 'request' && !this.logXhrContents) {
-                if (crumb.metadata && crumb.metadata.responseText) {
-                    crumb.metadata.responseText = 'Disabled';
-                }
-
-                if (crumb.metadata && crumb.metadata.requestText) {
-                    crumb.metadata.requestText = undefined;
-                }
-            }
-
-            sanitizedBreadcrumbs.push(crumb);
-        }
-
-        return sanitizedBreadcrumbs;
-    };
-
-    Breadcrumbs.prototype.enableAutoBreadcrumbs = function() {
-        this.enableAutoBreadcrumbsXHR();
-        this.enableAutoBreadcrumbsClicks();
-        this.enableAutoBreadcrumbsConsole();
-        this.enableAutoBreadcrumbsNavigation();
-    };
-
-    Breadcrumbs.prototype.disableAutoBreadcrumbs = function() {
-        this.disableAutoBreadcrumbsXHR();
-        this.disableAutoBreadcrumbsClicks();
-        this.disableAutoBreadcrumbsConsole();
-        this.disableAutoBreadcrumbsNavigation();
-    };
-
-    Breadcrumbs.prototype.removeBreadcrumbsWithPredicate = function(predicate) {
-        var crumbs = this.breadcrumbs;
-        var filteredCrumbs = [];
-
-        for (var i = 0;i < crumbs.length;i++) {
-            var crumb = crumbs[i];
-
-            if (!predicate(crumb)) {
-                filteredCrumbs.push(crumb);
-            }
-        }
-
-        this.breadcrumbs = filteredCrumbs;
-    };
-
-    Breadcrumbs.prototype.removeCrumbsOfType = function(type) {
-        this.removeBreadcrumbsWithPredicate(function(crumb) {
-            return crumb.type === type;
-        });
-    };
-
-    Breadcrumbs.prototype.enableAutoBreadcrumbsConsole = function() {
-        if (typeof window.console === "undefined") {
-            return;
-        }
-
-        var logConsoleCall = function logConsoleCall(severity, args) {
-            var stringifiedArgs = [];
-
-            for (var i = 0;i < args.length;i++) {
-                var arg = args[i];
-                if (arg === null || arg === undefined) {
-                    continue;
-                }
-
-                stringifiedArgs.push(arg.toString());
-            }
-
-            this.recordBreadcrumb({
-                type: 'console',
-                level: severity,
-                message: Array.prototype.slice.call(stringifiedArgs).join(", ")
-            });
-        }.bind(this);
-
-        var consoleProperties = ['log', 'warn', 'error'];
-        var self = this;
-        this.disableConsoleFunctions = consoleProperties.map(function(property) {
-            return Raygun.Utilities.enhance(console, property, self.wrapWithHandler(function() {
-                var severity = property === "log" ? "info" : property === "warn" ? "warning" : "error";
-
-                logConsoleCall(severity, arguments);
-            }));
-        });
-    };
-
-    Breadcrumbs.prototype.disableAutoBreadcrumbsConsole = function() {
-        this.disableConsoleFunctions.forEach(function(unenhance) { unenhance(); } );
-        this.removeCrumbsOfType('console');
-    };
-
-    Breadcrumbs.prototype.enableAutoBreadcrumbsNavigation = function() {
-        if (!window.addEventListener || !window.history || !window.history.pushState) {
-            return;
-        }
-
-        var buildStateChange = function(name, state, title, url) {
-            var currentPath = location.pathname + location.search + location.hash;
-            var prevState = null;
-
-            if (window.history.state) {
-                prevState = history.state;
-            }
-
-            return {
-                message: 'History ' + name,
-                type: 'navigation',
-                level: 'info',
-                metadata: {
-                    from: currentPath,
-                    to: url || currentPath,
-                    prevState: JSON.stringify(prevState) || 'unsupported',
-                    nextState: JSON.stringify(state)
-                }
+        Raygun.Utilities.enhance(
+          this,
+          'send',
+          self.wrapWithHandler(function() {
+            var metadata = {
+              method: method,
+              requestURL: url,
             };
-        }.bind(this);
 
-        var parseHash = function(url) {
-            return url.split("#")[1] || "";
-        };
+            if (arguments[0] && typeof arguments[0] === 'string') {
+              metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
+            }
 
-        var historyFunctionsToEnhance = ["pushState", "replaceState"];
-        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
-            historyFunctionsToEnhance.map(function(stateChange) {
-                return Raygun.Utilities.enhance(history, stateChange, this.wrapWithHandler(function(state, title, url) {
-                    this.recordBreadcrumb(buildStateChange(stateChange, state, title, url));
-                }.bind(this)));
-            }.bind(this))
+            self.recordBreadcrumb({
+              type: 'request',
+              message: 'Opening request to ' + url,
+              level: 'info',
+              metadata: metadata,
+            });
+          })
         );
 
-        var buildHashChange = function(e) {
-            var oldURL = e.oldURL;
-            var newURL = e.newURL;
-            var metadata;
+        this.addEventListener(
+          'load',
+          self.wrapWithHandler(function() {
+            var responseText = 'N/A for non text responses';
 
-            if (oldURL && newURL) {
-                metadata = {
-                    from: parseHash(oldURL),
-                    to: parseHash(newURL)
-                };
-            } else {
-                metadata = {
-                    to: location.hash
-                };
+            if (this.responseType === '' || this.responseType === 'text') {
+              responseText = Raygun.Utilities.truncate(this.responseText, 500);
             }
 
-            return {
-                type: 'navigation',
-                message: 'Hash change',
-                metadata: metadata
-            };
-        };
-
-        var logBreadcrumbWrapper = function(handler) {
-            return this.wrapWithHandler(function() {
-                this.recordBreadcrumb(handler.apply(null, arguments));
-            }.bind(this));
-        }.bind(this);
-        var eventsWithHandlers = [
-            {element: window, event: 'hashchange', handler: buildHashChange},
-            {element: window, event: 'load', handler: function() {
-                return { type: 'navigation', message: 'Page loaded'};
-            }},
-            {element: window, event: 'popstate', handler: function() {
-                return { type: 'navigation', message: 'Navigated back' };
-            }},
-            {element: window, event: 'pagehide', handler: function() {
-                return { type: 'navigation', message: 'Page hidden' };
-            }},
-            {element: window, event: 'pageshow', handler: function() {
-                return { type: 'navigation', message: 'Page shown' };
-            }},
-            {element: document, event: 'DOMContentLoaded', handler: function() {
-                return { type: 'navigation', message: 'DOMContentLoaded' };
-            }},
-        ];
-
-        this.disableNavigationFunctions = this.disableNavigationFunctions.concat(
-            eventsWithHandlers.map(function(mapping) {
-                return Raygun.Utilities.addEventHandler(mapping.element, mapping.event, logBreadcrumbWrapper(mapping.handler));
-            }.bind(this))
-        );
-    };
-
-    Breadcrumbs.prototype.disableAutoBreadcrumbsNavigation = function() {
-        this.disableNavigationFunctions.forEach(function(unenhance) { unenhance(); });
-        this.disableNavigationFunctions = [];
-
-        this.removeCrumbsOfType('navigation');
-    };
-
-
-    Breadcrumbs.prototype.enableAutoBreadcrumbsClicks = function() {
-        this.disableClicksTracking = Raygun.Utilities.addEventHandler(window, 'click', this.wrapWithHandler(function(e) {
-            var text, selector;
-
-            try {
-                text = Raygun.Utilities.truncate(Raygun.Utilities.nodeText(e.target), 150);
-                selector = Raygun.Utilities.nodeSelector(e.target);
-            } catch(exception) {
-                text = "[unknown]";
-                selector = "[unknown]";
-
-                Raygun.Utilities.log("Error retrieving node text/selector. Most likely due to a cross domain error");
-            }
-
-            this.recordBreadcrumb({
-                type: 'click-event',
-                message: 'UI Click',
-                level: 'info',
-                metadata: {
-                    text: text,
-                    selector: selector
-                }
+            self.recordBreadcrumb({
+              type: 'request',
+              message: 'Finished request to ' + url,
+              level: 'info',
+              metadata: {
+                status: this.status,
+                requestURL: url,
+                responseURL: this.responseURL,
+                responseText: responseText,
+                duration: new Date().getTime() - initTime + 'ms',
+              },
             });
-        }.bind(this), true));
-    };
+          })
+        );
+        this.addEventListener(
+          'error',
+          self.wrapWithHandler(function() {
+            self.recordBreadcrumb({
+              type: 'request',
+              message: 'Failed request to ' + url,
+              level: 'info',
+              metadata: {
+                status: this.status,
+                requestURL: url,
+                responseURL: this.responseURL,
+                duration: new Date().getTime() - initTime + 'ms',
+              },
+            });
+          })
+        );
+        this.addEventListener(
+          'abort',
+          self.wrapWithHandler(function() {
+            self.recordBreadcrumb({
+              type: 'request',
+              message: 'Request to ' + url + 'aborted',
+              level: 'info',
+              metadata: {
+                requestURL: url,
+                duration: new Date().getTime() - initTime + 'ms',
+              },
+            });
+          })
+        );
+      })
+    );
+  };
 
-    Breadcrumbs.prototype.disableAutoBreadcrumbsClicks = function() {
-        this.disableClicksTracking();
-        this.removeCrumbsOfType('click-event');
-    };
+  Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
+    this.disableXHRLogging();
+    this.removeCrumbsOfType('request');
+  };
 
-    Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
-        var self = this;
+  Breadcrumbs.prototype.wrapPrototypeWithHandlers = function() {
+    var name, method;
+    for (name in Breadcrumbs.prototype) {
+      method = Breadcrumbs.prototype[name];
+      if (typeof method === 'function') {
+        Breadcrumbs.prototype[name] = this.wrapWithHandler(method);
+      }
+    }
+  };
 
-        if (!window.XMLHttpRequest.prototype.addEventListener) {
-            this.disableXHRLogging = function() {};
-            return;
-        }
-
-        this.disableXHRLogging = Raygun.Utilities.enhance(window.XMLHttpRequest.prototype, 'open', self.wrapWithHandler(function() {
-            var initTime = new Date().getTime();
-            var url = arguments[1] || "Unknown";
-            var method = arguments[0];
-
-            if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-                return;
-            }
-
-            Raygun.Utilities.enhance(this, 'send', self.wrapWithHandler(function() {
-                var metadata = {
-                    method: method,
-                    requestURL: url,
-                };
-
-                if (arguments[0] && typeof(arguments[0]) === 'string') {
-                    metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
-                }
-
-                self.recordBreadcrumb({
-                    type: 'request',
-                    message: 'Opening request to ' + url,
-                    level: 'info',
-                    metadata: metadata
-                });
-            }));
-
-
-            this.addEventListener('load', self.wrapWithHandler(function() {
-                var responseText = 'N/A for non text responses';
-
-                if ((this.responseType === '' || this.responseType === 'text')) {
-                    responseText = Raygun.Utilities.truncate(this.responseText, 500);
-                }
-
-                self.recordBreadcrumb({
-                    type: 'request',
-                    message: 'Finished request to ' + url,
-                    level: 'info',
-                    metadata: {
-                        status: this.status,
-                        requestURL: url,
-                        responseURL: this.responseURL,
-                        responseText: responseText,
-                        duration: new Date().getTime() - initTime + "ms"
-                    }
-                });
-            }));
-            this.addEventListener('error', self.wrapWithHandler(function() {
-                self.recordBreadcrumb({
-                    type: 'request',
-                    message: 'Failed request to ' + url,
-                    level: 'info',
-                    metadata: {
-                        status: this.status,
-                        requestURL: url,
-                        responseURL: this.responseURL,
-                        duration: new Date().getTime() - initTime + "ms"
-                    }
-                });
-            }));
-            this.addEventListener('abort', self.wrapWithHandler(function() {
-                self.recordBreadcrumb({
-                    type: 'request',
-                    message: 'Request to ' + url + 'aborted',
-                    level: 'info',
-                    metadata: {
-                        requestURL: url,
-                        duration: new Date().getTime() - initTime + "ms"
-                    }
-                });
-            }));
-        }));
-    };
-
-    Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
-        this.disableXHRLogging();
-        this.removeCrumbsOfType('request');
-    };
-
-
-    Breadcrumbs.prototype.wrapPrototypeWithHandlers = function() {
-        var name, method;
-        for(name in Breadcrumbs.prototype) {
-            method = Breadcrumbs.prototype[name];
-            if (typeof method === "function") {
-                Breadcrumbs.prototype[name] = this.wrapWithHandler(method);
-            }
-        }
-    };
-
-    return Breadcrumbs;
+  return Breadcrumbs;
 };
+
+/*
+ * raygun4js
+ * https://github.com/MindscapeHQ/raygun4js
+ *
+ * Copyright (c) 2013-2018 Raygun Limited
+ * Licensed under the MIT license.
+ */
 
 /*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
 
-var raygunFactory = function (window, $, undefined) {
-    var Raygun = {};
-    Raygun.Utilities = raygunUtilityFactory(window, Raygun);
-    Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
+var raygunFactory = function(window, $, undefined) {
+  var Raygun = {};
+  Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+  Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
 
+  try {
     // Constants
     var ProviderStates = {
-        LOADING: 0,
-        READY: 1
+      LOADING: 0,
+      READY: 1,
     };
 
     var _userKey = 'raygun4js-userid';
 
     // State variables
     var _traceKit = TraceKit,
-        _raygun = window.Raygun,
-        _debugMode = false,
-        _allowInsecureSubmissions = false,
-        _ignoreAjaxAbort = false,
-        _ignoreAjaxError = false,
-        _enableOfflineSave = false,
-        _ignore3rdPartyErrors = false,
-        _disableAnonymousUserTracking = false,
-        _disableErrorTracking = false,
-        _disablePulse = true,
-        _wrapAsynchronousCallbacks = false,
-        _customData = {},
-        _tags = [],
-        _user,
-        _version,
-        _filteredKeys,
-        _whitelistedScriptDomains = [],
-        _beforeSendCallback,
-        _beforeSendRumCallback,
-        _groupingKeyCallback,
-        _beforeXHRCallback,
-        _afterSendCallback,
-        _raygunApiUrl = 'https://api.raygun.io',
-        _excludedHostnames = null,
-        _excludedUserAgents = null,
-        _filterScope = 'customData',
-        _rum = null,
-        _breadcrumbs = new Raygun.Breadcrumbs(),
-        _pulseMaxVirtualPageDuration = null,
-        _pulseIgnoreUrlCasing = true,
-        _providerState = ProviderStates.LOADING,
-        _loadedFrom,
-        _processExceptionQueue = [],
-        _trackEventQueue = [],
-        _pulseCustomLoadTimeEnabled = null,
-        $document;
+      _raygun = window.Raygun,
+      _debugMode = false,
+      _allowInsecureSubmissions = false,
+      _ignoreAjaxAbort = false,
+      _ignoreAjaxError = false,
+      _enableOfflineSave = false,
+      _ignore3rdPartyErrors = false,
+      _disableAnonymousUserTracking = false,
+      _disableErrorTracking = false,
+      _disablePulse = true,
+      _wrapAsynchronousCallbacks = false,
+      _customData = {},
+      _tags = [],
+      _user,
+      _version,
+      _filteredKeys,
+      _whitelistedScriptDomains = [],
+      _beforeSendCallback,
+      _beforeSendRumCallback,
+      _groupingKeyCallback,
+      _beforeXHRCallback,
+      _afterSendCallback,
+      _raygunApiUrl = 'https://api.raygun.io',
+      _excludedHostnames = null,
+      _excludedUserAgents = null,
+      _filterScope = 'customData',
+      _rum = null,
+      _breadcrumbs = new Raygun.Breadcrumbs(),
+      _pulseMaxVirtualPageDuration = null,
+      _pulseIgnoreUrlCasing = true,
+      _providerState = ProviderStates.LOADING,
+      _loadedFrom,
+      _processExceptionQueue = [],
+      _trackEventQueue = [],
+      _pulseCustomLoadTimeEnabled = null,
+      $document;
 
-   var rand = Math.random();
-    var _publicRaygunFunctions =
-      {
-         Rand: rand,
-        Options: { },
+    var rand = Math.random();
+    var _publicRaygunFunctions = {
+      Rand: rand,
+      Options: {},
 
-        noConflict: function () {
-            // Because _raygun potentially gets set before other code sets window.Raygun
-            // this will potentially overwrite the new Raygun object with undefined
-            // Not really much point in restoring undefined so just don't do that
-            if (_raygun) {
-               window.Raygun = _raygun;
-            }
-            return Raygun;
-        },
-
-        constructNewRaygun: function () {
-            var rgInstance = raygunFactory(window, window.jQuery);
-
-            return rgInstance;
-        },
-
-        init: function (key, options, customdata) {
-            _traceKit.remoteFetching = false;
-
-            this.Options._raygunApiKey = key;
-
-            if (customdata) {
-                _customData = customdata;
-            }
-
-            if ($) {
-                $document = $(document);
-            }
-
-            if (options) {
-                _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
-                _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
-                _ignoreAjaxError = options.ignoreAjaxError || false;
-                _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
-                _disableErrorTracking = options.disableErrorTracking || false;
-                _disablePulse = options.disablePulse === undefined ? true : options.disablePulse;
-                _excludedHostnames = options.excludedHostnames || false;
-                _excludedUserAgents = options.excludedUserAgents || false;
-                _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
-                _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
-                _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
-
-                if (options.apiUrl) {
-                    _raygunApiUrl = options.apiUrl;
-                }
-
-                if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
-                    _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
-                }
-
-                if (options.debugMode) {
-                    _debugMode = options.debugMode;
-                }
-                this.Options._debugMode =  _debugMode;
-
-                if (options.ignore3rdPartyErrors) {
-                    _ignore3rdPartyErrors = true;
-                }
-
-                if (options.apiEndpoint) {
-                    _raygunApiUrl = options.apiEndpoint;
-                }
-
-                if (options.from) {
-                    _loadedFrom = options.from;
-                }
-            }
-
-            ensureUser();
-
-            return Raygun;
-        },
-
-        withCustomData: function (customdata) {
-            _customData = customdata;
-            return Raygun;
-        },
-
-        withTags: function (tags) {
-            _tags = tags;
-
-            if (_rum !== undefined && _rum !== null) {
-              _rum.withTags(tags);
-            }
-
-            return Raygun;
-        },
-
-        attach: function () {
-            if (!Raygun.Utilities.isApiKeyConfigured() || _disableErrorTracking) {
-                return Raygun;
-            }
-
-            if (window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
-                window.onerror = null;
-            }
-
-            // Attach React Native's handler in Release mode
-            if (Raygun.Utilities.isReactNative()) {
-                if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
-                    window.ErrorUtils.setGlobalHandler(function (error, fatal) {
-                        // Calling the defaultReactNativeGlobalHandler in release mode instantly closes the application
-                        // If an exception is currently being sent it will be lost, this sets our own afterSendCallback
-                        // to notify us when the error is done sending so we can call the default handler
-                        var originalAfterSendCallback = _afterSendCallback;
-                        _afterSendCallback = function () {
-                            if (typeof originalAfterSendCallback === 'function') {
-                              originalAfterSendCallback();
-                            }
-
-                            Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
-                            _afterSendCallback = originalAfterSendCallback;
-                        };
-
-                        TraceKit.report(error);
-                    });
-                }
-            }
-
-            _traceKit.report.subscribe(processException);
-
-            if (_wrapAsynchronousCallbacks) {
-                _traceKit.extendToAsynchronousCallbacks();
-            }
-
-            if ($document && $document.ajaxError && !_ignoreAjaxError) {
-                $document.ajaxError(processJQueryAjaxError);
-            }
-            return Raygun;
-        },
-
-        detach: function () {
-            _traceKit.report.unsubscribe(processException);
-            if ($document) {
-                $document.unbind('ajaxError', processJQueryAjaxError);
-            }
-            return Raygun;
-        },
-
-        send: function (ex, customData, tags) {
-            if (_disableErrorTracking) {
-                Raygun.Utilities.log('Error not sent due to disabled error tracking');
-                return Raygun;
-            }
-
-            try {
-                processException(
-                    _traceKit.computeStackTrace(ex),
-                    {
-                        customData: typeof _customData === 'function' ?
-                            Raygun.Utilities.merge(_customData(), customData) :
-                            Raygun.Utilities.merge(_customData, customData),
-                        tags: typeof _tags === 'function' ?
-                            Raygun.Utilities.mergeArray(_tags(), tags) :
-                            Raygun.Utilities.mergeArray(_tags, tags)
-                    },
-                    true
-                );
-            }
-            catch (traceKitException) {
-                if (ex !== traceKitException) {
-                    throw traceKitException;
-                }
-            }
-            return Raygun;
-        },
-
-        setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
-            _user = {
-                'Identifier': user
-            };
-            if (typeof isAnonymous === 'boolean') {
-                _user['IsAnonymous'] = isAnonymous;
-            }
-            if (email) {
-                _user['Email'] = email;
-            }
-            if (fullName) {
-                _user['FullName'] = fullName;
-            }
-            if (firstName) {
-                _user['FirstName'] = firstName;
-            }
-            if (uuid) {
-                _user['UUID'] = uuid;
-            }
-
-            if (_rum !== undefined && _rum !== null) {
-                _rum.setUser(_user);
-            }
-
-
-            return Raygun;
-        },
-
-        resetAnonymousUser: function () {
-            Raygun.Utilities.clearCookie('raygun4js-userid');
-        },
-
-        setVersion: function (version) {
-            _version = version;
-            return Raygun;
-        },
-
-        saveIfOffline: function (enableOffline) {
-            if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
-                _enableOfflineSave = enableOffline;
-            }
-
-            return Raygun;
-        },
-
-        filterSensitiveData: function (filteredKeys) {
-            _filteredKeys = filteredKeys;
-            return Raygun;
-        },
-
-        setFilterScope: function (scope) {
-            if (scope === 'customData' || scope === 'all') {
-                _filterScope = scope;
-            }
-            return Raygun;
-        },
-
-        whitelistCrossOriginDomains: function (whitelist) {
-            _whitelistedScriptDomains = whitelist;
-            return Raygun;
-        },
-
-        onBeforeSend: function (callback) {
-            _beforeSendCallback = callback;
-            return Raygun;
-        },
-
-        onBeforeSendRum: function (callback) {
-            _beforeSendRumCallback = callback;
-           return Raygun;
-        },
-
-        groupingKey: function (callback) {
-            _groupingKeyCallback = callback;
-            return Raygun;
-        },
-
-        onBeforeXHR: function (callback) {
-            _beforeXHRCallback = callback;
-            return Raygun;
-        },
-
-        onAfterSend: function (callback) {
-            _afterSendCallback = callback;
-            return Raygun;
-        },
-
-        // Public Pulse functions
-
-        endSession: function () {
-            if (Raygun.RealUserMonitoring !== undefined && _rum) {
-                _rum.endSession();
-            }
-        },
-
-        trackEvent: function (type, options) {
-            if (_providerState !== ProviderStates.READY) {
-                _trackEventQueue.push({ type: type, options: options });
-                return;
-            }
-
-            if (Raygun.RealUserMonitoring !== undefined && _rum) {
-                if (type === 'pageView' && options.path) {
-                    _rum.virtualPageLoaded(options.path);
-                } else if (type === 'customTimings' && options.timings) {
-                    _rum.sendCustomTimings(options.timings);
-                }
-            }
-        },
-        recordBreadcrumb: function() {
-            _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
-        },
-        enableAutoBreadcrumbs: function(type) {
-            if (type) {
-                _breadcrumbs['enableAutoBreadcrumbs' + type]();
-            } else {
-                _breadcrumbs.enableAutoBreadcrumbs();
-            }
-        },
-        disableAutoBreadcrumbs: function(type) {
-            if (type) {
-                _breadcrumbs['disableAutoBreadcrumbs' + type]();
-            } else {
-                _breadcrumbs.disableAutoBreadcrumbs();
-            }
-        },
-        setBreadcrumbOption: function(option, value) {
-            _breadcrumbs.setOption(option, value);
-        },
-        setBreadcrumbs: function(breadcrumbs) {
-            _breadcrumbs = breadcrumbs;
-        },
-        getBreadcrumbs: function() {
-         return _breadcrumbs.all();
+      noConflict: function() {
+        // Because _raygun potentially gets set before other code sets window.Raygun
+        // this will potentially overwrite the new Raygun object with undefined
+        // Not really much point in restoring undefined so just don't do that
+        if (_raygun) {
+          window.Raygun = _raygun;
         }
+        return Raygun;
+      },
+
+      constructNewRaygun: function() {
+        var rgInstance = raygunFactory(window, window.jQuery);
+
+        return rgInstance;
+      },
+
+      init: function(key, options, customdata) {
+        _traceKit.remoteFetching = false;
+
+        this.Options._raygunApiKey = key;
+
+        if (customdata) {
+          _customData = customdata;
+        }
+
+        if ($) {
+          $document = $(document);
+        }
+
+        if (options) {
+          _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
+          _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
+          _ignoreAjaxError = options.ignoreAjaxError || false;
+          _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
+          _disableErrorTracking = options.disableErrorTracking || false;
+          _disablePulse = options.disablePulse === undefined ? true : options.disablePulse;
+          _excludedHostnames = options.excludedHostnames || false;
+          _excludedUserAgents = options.excludedUserAgents || false;
+          _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
+          _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
+          _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
+
+          if (options.apiUrl) {
+            _raygunApiUrl = options.apiUrl;
+          }
+
+          if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
+            _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
+          }
+
+          if (options.debugMode) {
+            _debugMode = options.debugMode;
+          }
+          this.Options._debugMode = _debugMode;
+
+          if (options.ignore3rdPartyErrors) {
+            _ignore3rdPartyErrors = true;
+          }
+
+          if (options.apiEndpoint) {
+            _raygunApiUrl = options.apiEndpoint;
+          }
+
+          if (options.from) {
+            _loadedFrom = options.from;
+          }
+        }
+
+        ensureUser();
+
+        return Raygun;
+      },
+
+      withCustomData: function(customdata) {
+        _customData = customdata;
+        return Raygun;
+      },
+
+      withTags: function(tags) {
+        _tags = tags;
+
+        if (_rum !== undefined && _rum !== null) {
+          _rum.withTags(tags);
+        }
+
+        return Raygun;
+      },
+
+      attach: function() {
+        if (!Raygun.Utilities.isApiKeyConfigured() || _disableErrorTracking) {
+          return Raygun;
+        }
+
+        if (window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
+          window.onerror = null;
+        }
+
+        // Attach React Native's handler in Release mode
+        if (Raygun.Utilities.isReactNative()) {
+          if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
+            window.ErrorUtils.setGlobalHandler(function(error, fatal) {
+              // Calling the defaultReactNativeGlobalHandler in release mode instantly closes the application
+              // If an exception is currently being sent it will be lost, this sets our own afterSendCallback
+              // to notify us when the error is done sending so we can call the default handler
+              var originalAfterSendCallback = _afterSendCallback;
+              _afterSendCallback = function() {
+                if (typeof originalAfterSendCallback === 'function') {
+                  originalAfterSendCallback();
+                }
+
+                Raygun.Utilities.defaultReactNativeGlobalHandler(error, fatal);
+                _afterSendCallback = originalAfterSendCallback;
+              };
+
+              TraceKit.report(error);
+            });
+          }
+        }
+
+        _traceKit.report.subscribe(processException);
+
+        if (_wrapAsynchronousCallbacks) {
+          _traceKit.extendToAsynchronousCallbacks();
+        }
+
+        if ($document && $document.ajaxError && !_ignoreAjaxError) {
+          $document.ajaxError(processJQueryAjaxError);
+        }
+        return Raygun;
+      },
+
+      detach: function() {
+        _traceKit.report.unsubscribe(processException);
+        if ($document) {
+          $document.unbind('ajaxError', processJQueryAjaxError);
+        }
+        return Raygun;
+      },
+
+      send: function(ex, customData, tags) {
+        if (_disableErrorTracking) {
+          Raygun.Utilities.log('Error not sent due to disabled error tracking');
+          return Raygun;
+        }
+
+        try {
+          processException(
+            _traceKit.computeStackTrace(ex),
+            {
+              customData:
+                typeof _customData === 'function'
+                  ? Raygun.Utilities.merge(_customData(), customData)
+                  : Raygun.Utilities.merge(_customData, customData),
+              tags:
+                typeof _tags === 'function'
+                  ? Raygun.Utilities.mergeArray(_tags(), tags)
+                  : Raygun.Utilities.mergeArray(_tags, tags),
+            },
+            true
+          );
+        } catch (traceKitException) {
+          if (ex !== traceKitException) {
+            throw traceKitException;
+          }
+        }
+        return Raygun;
+      },
+
+      setUser: function(user, isAnonymous, email, fullName, firstName, uuid) {
+        _user = {
+          Identifier: user,
+        };
+        if (typeof isAnonymous === 'boolean') {
+          _user['IsAnonymous'] = isAnonymous;
+        }
+        if (email) {
+          _user['Email'] = email;
+        }
+        if (fullName) {
+          _user['FullName'] = fullName;
+        }
+        if (firstName) {
+          _user['FirstName'] = firstName;
+        }
+        if (uuid) {
+          _user['UUID'] = uuid;
+        }
+
+        if (_rum !== undefined && _rum !== null) {
+          _rum.setUser(_user);
+        }
+
+        return Raygun;
+      },
+
+      resetAnonymousUser: function() {
+        Raygun.Utilities.clearCookie('raygun4js-userid');
+      },
+
+      setVersion: function(version) {
+        _version = version;
+        return Raygun;
+      },
+
+      saveIfOffline: function(enableOffline) {
+        if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
+          _enableOfflineSave = enableOffline;
+        }
+
+        return Raygun;
+      },
+
+      filterSensitiveData: function(filteredKeys) {
+        _filteredKeys = filteredKeys;
+        return Raygun;
+      },
+
+      setFilterScope: function(scope) {
+        if (scope === 'customData' || scope === 'all') {
+          _filterScope = scope;
+        }
+        return Raygun;
+      },
+
+      whitelistCrossOriginDomains: function(whitelist) {
+        _whitelistedScriptDomains = whitelist;
+        return Raygun;
+      },
+
+      onBeforeSend: function(callback) {
+        _beforeSendCallback = callback;
+        return Raygun;
+      },
+
+      onBeforeSendRum: function(callback) {
+        _beforeSendRumCallback = callback;
+        return Raygun;
+      },
+
+      groupingKey: function(callback) {
+        _groupingKeyCallback = callback;
+        return Raygun;
+      },
+
+      onBeforeXHR: function(callback) {
+        _beforeXHRCallback = callback;
+        return Raygun;
+      },
+
+      onAfterSend: function(callback) {
+        _afterSendCallback = callback;
+        return Raygun;
+      },
+
+      // Public Pulse functions
+
+      endSession: function() {
+        if (Raygun.RealUserMonitoring !== undefined && _rum) {
+          _rum.endSession();
+        }
+      },
+
+      trackEvent: function(type, options) {
+        if (_providerState !== ProviderStates.READY) {
+          _trackEventQueue.push({ type: type, options: options });
+          return;
+        }
+
+        if (Raygun.RealUserMonitoring !== undefined && _rum) {
+          if (type === 'pageView' && options.path) {
+            _rum.virtualPageLoaded(options.path);
+          } else if (type === 'customTimings' && options.timings) {
+            _rum.sendCustomTimings(options.timings);
+          }
+        }
+      },
+      recordBreadcrumb: function() {
+        _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
+      },
+      enableAutoBreadcrumbs: function(type) {
+        if (type) {
+          _breadcrumbs['enableAutoBreadcrumbs' + type]();
+        } else {
+          _breadcrumbs.enableAutoBreadcrumbs();
+        }
+      },
+      disableAutoBreadcrumbs: function(type) {
+        if (type) {
+          _breadcrumbs['disableAutoBreadcrumbs' + type]();
+        } else {
+          _breadcrumbs.disableAutoBreadcrumbs();
+        }
+      },
+      setBreadcrumbOption: function(option, value) {
+        _breadcrumbs.setOption(option, value);
+      },
+      setBreadcrumbs: function(breadcrumbs) {
+        _breadcrumbs = breadcrumbs;
+      },
+      getBreadcrumbs: function() {
+        return _breadcrumbs.all();
+      },
     };
 
-   Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
+    Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
 
     function callAfterSend(response) {
-        if (typeof _afterSendCallback === 'function') {
-            _afterSendCallback(response);
-        }
+      if (typeof _afterSendCallback === 'function') {
+        _afterSendCallback(response);
+      }
     }
 
     function ensureUser() {
-        if (!_user && !_disableAnonymousUserTracking) {
-            Raygun.Utilities.readCookie(_userKey, setUserComplete);
-        } else {
-            bootRaygun();
-        }
+      if (!_user && !_disableAnonymousUserTracking) {
+        Raygun.Utilities.readCookie(_userKey, setUserComplete);
+      } else {
+        bootRaygun();
+      }
     }
 
     function setUserComplete(error, userId) {
-        var userIdentifier;
+      var userIdentifier;
 
-        if (error) {
-            userIdentifier = "Unknown";
-        }
+      if (error) {
+        userIdentifier = 'Unknown';
+      }
 
-        if (!userId) {
-            userIdentifier = Raygun.Utilities.getUuid();
+      if (!userId) {
+        userIdentifier = Raygun.Utilities.getUuid();
 
-            Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
-        } else {
-            userIdentifier = userId;
-        }
+        Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
+      } else {
+        userIdentifier = userId;
+      }
 
-        Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
+      Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
 
-        bootRaygun();
+      bootRaygun();
     }
 
     // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
     // The common case executes it immediately due to that data being provided by the cookie synchronously
     // The case when Affected User Tracking is enabled calls this function when the code sets the user data
     function bootRaygun() {
-        if (_providerState === ProviderStates.READY) {
-            return;
+      if (_providerState === ProviderStates.READY) {
+        return;
+      }
+
+      _providerState = ProviderStates.READY;
+
+      if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
+        var startRum = function() {
+          _rum = new Raygun.RealUserMonitoring(
+            Raygun.Options._raygunApiKey,
+            _raygunApiUrl,
+            makePostCorsRequest,
+            _user,
+            _version,
+            _tags,
+            _excludedHostnames,
+            _excludedUserAgents,
+            _debugMode,
+            _pulseMaxVirtualPageDuration,
+            _pulseIgnoreUrlCasing,
+            _pulseCustomLoadTimeEnabled,
+            _beforeSendRumCallback
+          );
+          _rum.attach();
+        };
+
+        if (_loadedFrom === 'onLoad') {
+          startRum();
+        } else {
+          if (window.addEventListener) {
+            window.addEventListener('load', startRum);
+          } else {
+            window.attachEvent('onload', startRum);
+          }
         }
+      }
 
-        _providerState = ProviderStates.READY;
+      retriggerDelayedCommands();
 
-        if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
-            var startRum = function () {
-                _rum = new Raygun.RealUserMonitoring(Raygun.Options._raygunApiKey, _raygunApiUrl, makePostCorsRequest, _user, _version, _tags, _excludedHostnames, _excludedUserAgents, _debugMode, _pulseMaxVirtualPageDuration, _pulseIgnoreUrlCasing, _pulseCustomLoadTimeEnabled, _beforeSendRumCallback);
-                _rum.attach();
-            };
-
-            if (_loadedFrom === 'onLoad') {
-                startRum();
-            } else {
-                if (window.addEventListener) {
-                    window.addEventListener('load', startRum);
-                } else {
-                    window.attachEvent('onload', startRum);
-                }
-            }
-        }
-
-        retriggerDelayedCommands();
-
-        sendSavedErrors();
+      sendSavedErrors();
     }
 
     // We need to delay handled/unhandled send() and trackEvent() calls until the user data callback has returned
     function retriggerDelayedCommands() {
-        var i;
-        for (i = 0; i < _processExceptionQueue.length; i++) {
-            processException(_processExceptionQueue[i].stackTrace, _processExceptionQueue[i].options, _processExceptionQueue[i].userTriggered);
-        }
+      var i;
+      for (i = 0; i < _processExceptionQueue.length; i++) {
+        processException(
+          _processExceptionQueue[i].stackTrace,
+          _processExceptionQueue[i].options,
+          _processExceptionQueue[i].userTriggered
+        );
+      }
 
-        _processExceptionQueue = [];
+      _processExceptionQueue = [];
 
-        for (i = 0; i < _trackEventQueue.length; i++) {
-            _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
-        }
+      for (i = 0; i < _trackEventQueue.length; i++) {
+        _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+      }
 
-        _trackEventQueue = [];
+      _trackEventQueue = [];
     }
 
     function offlineSave(url, data) {
-        var dateTime = new Date().toJSON();
+      var dateTime = new Date().toJSON();
 
-        try {
-            var key = 'raygunjs+' + Raygun.Options._raygunApiKey + '=' + dateTime + '=' + Raygun.Utilities.getRandomInt();
+      try {
+        var key =
+          'raygunjs+' +
+          Raygun.Options._raygunApiKey +
+          '=' +
+          dateTime +
+          '=' +
+          Raygun.Utilities.getRandomInt();
 
-            if (typeof localStorage[key] === 'undefined') {
-                localStorage[key] = JSON.stringify({url: url, data: data});
-            }
-        } catch (e) {
-            Raygun.Utilities.log('Raygun4JS: LocalStorage full, cannot save exception');
+        if (typeof localStorage[key] === 'undefined') {
+          localStorage[key] = JSON.stringify({ url: url, data: data });
         }
+      } catch (e) {
+        Raygun.Utilities.log('Raygun4JS: LocalStorage full, cannot save exception');
+      }
     }
 
     function sendSavedErrors() {
-        if (Raygun.Utilities.localStorageAvailable()) {
-            for (var key in localStorage) {
-
-                // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
-                if (key.substring(0, 9) === 'raygunjs=' || key.substring(0, 33) === 'raygunjs+' + Raygun.Options._raygunApiKey) {
-                    try {
-                        var payload = JSON.parse(localStorage[key]);
-                        makePostCorsRequest(payload.url, payload.data);
-                    } catch (e) {
-                        Raygun.Utilities.log('Raygun4JS: Invalid JSON object in LocalStorage');
-                    }
-
-                    try {
-                        localStorage.removeItem(key);
-                    } catch (e) {
-                        Raygun.Utilities.log('Raygun4JS: Unable to remove error');
-                    }
-                }
+      if (Raygun.Utilities.localStorageAvailable()) {
+        for (var key in localStorage) {
+          // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
+          if (
+            key.substring(0, 9) === 'raygunjs=' ||
+            key.substring(0, 33) === 'raygunjs+' + Raygun.Options._raygunApiKey
+          ) {
+            try {
+              var payload = JSON.parse(localStorage[key]);
+              makePostCorsRequest(payload.url, payload.data);
+            } catch (e) {
+              Raygun.Utilities.log('Raygun4JS: Invalid JSON object in LocalStorage');
             }
+
+            try {
+              localStorage.removeItem(key);
+            } catch (e) {
+              Raygun.Utilities.log('Raygun4JS: Unable to remove error');
+            }
+          }
         }
+      }
     }
 
     function filterValue(key, value) {
-        if (_filteredKeys) {
-            for (var i = 0; i < _filteredKeys.length; i++) {
-                if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
-                    var executedFilter = _filteredKeys[i].exec(key);
+      if (_filteredKeys) {
+        for (var i = 0; i < _filteredKeys.length; i++) {
+          if (typeof _filteredKeys[i] === 'object' && typeof _filteredKeys[i].exec === 'function') {
+            var executedFilter = _filteredKeys[i].exec(key);
 
-                    if (executedFilter !== null && executedFilter !== undefined) {
-                        return '[removed by filter]';
-                    }
-                }
-                else if (_filteredKeys[i] === key) {
-                    return '[removed by filter]';
-                }
+            if (executedFilter !== null && executedFilter !== undefined) {
+              return '[removed by filter]';
             }
+          } else if (_filteredKeys[i] === key) {
+            return '[removed by filter]';
+          }
         }
+      }
 
-        return value;
+      return value;
     }
 
     function filterObject(reference, parentKey) {
-        if (reference == null) {
-            return reference;
+      if (reference == null) {
+        return reference;
+      }
+
+      if (Object.prototype.toString.call(reference) !== '[object Object]') {
+        return reference;
+      }
+
+      var filteredObject = {};
+
+      for (var propertyName in reference) {
+        var propertyValue = reference[propertyName];
+
+        if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
+          if (parentKey !== 'Details' || propertyName !== 'Client') {
+            filteredObject[propertyName] = filterObject(
+              filterValue(propertyName, propertyValue),
+              propertyName
+            );
+          } else {
+            filteredObject[propertyName] = propertyValue;
+          }
+        } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
+          if (typeof parentKey !== 'undefined') {
+            filteredObject[propertyName] = filterValue(propertyName, propertyValue);
+          } else if (propertyName === 'OccurredOn') {
+            filteredObject[propertyName] = propertyValue;
+          }
         }
+      }
 
-        if (Object.prototype.toString.call(reference) !== '[object Object]') {
-            return reference;
-        }
-
-        var filteredObject = {};
-
-        for (var propertyName in reference) {
-            var propertyValue = reference[propertyName];
-
-            if (Object.prototype.toString.call(propertyValue) === '[object Object]') {
-                if (parentKey !== 'Details' || propertyName !== 'Client') {
-                    filteredObject[propertyName] = filterObject(filterValue(propertyName, propertyValue), propertyName);
-                } else {
-                    filteredObject[propertyName] = propertyValue;
-                }
-            } else if (Object.prototype.toString.call(propertyValue) !== '[object Function]') {
-                if (typeof parentKey !== 'undefined') {
-                    filteredObject[propertyName] = filterValue(propertyName, propertyValue);
-                } else if (propertyName === 'OccurredOn') {
-                    filteredObject[propertyName] = propertyValue;
-                }
-            }
-        }
-
-        return filteredObject;
+      return filteredObject;
     }
 
     function processJQueryAjaxError(event, jqXHR, ajaxSettings, thrownError) {
-        var message = 'AJAX Error: ' +
-            (jqXHR.statusText || 'unknown') + ' ' +
-            (ajaxSettings.type || 'unknown') + ' ' +
-            (Raygun.Utilities.truncateURL(ajaxSettings.url) || 'unknown');
+      var message =
+        'AJAX Error: ' +
+        (jqXHR.statusText || 'unknown') +
+        ' ' +
+        (ajaxSettings.type || 'unknown') +
+        ' ' +
+        (Raygun.Utilities.truncateURL(ajaxSettings.url) || 'unknown');
 
-        // ignore ajax abort if set in the options
-        if (_ignoreAjaxAbort) {
-            if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
-                return;
-            }
+      // ignore ajax abort if set in the options
+      if (_ignoreAjaxAbort) {
+        if (jqXHR.status === 0 || !jqXHR.getAllResponseHeaders()) {
+          return;
         }
+      }
 
-        Raygun.send(thrownError || event.type, {
-            status: jqXHR.status,
-            statusText: jqXHR.statusText,
-            type: ajaxSettings.type,
-            url: ajaxSettings.url,
-            ajaxErrorMessage: message,
-            contentType: ajaxSettings.contentType,
-            requestData: ajaxSettings.data && ajaxSettings.data.slice ? ajaxSettings.data.slice(0, 10240) : undefined,
-            responseData: jqXHR.responseText && jqXHR.responseText.slice ? jqXHR.responseText.slice(0, 10240) : undefined,
-            activeTarget: event.target && event.target.activeElement && event.target.activeElement.outerHTML && event.target.activeElement.outerHTML.slice ? event.target.activeElement.outerHTML.slice(0, 10240) : undefined
-        });
+      Raygun.send(thrownError || event.type, {
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        type: ajaxSettings.type,
+        url: ajaxSettings.url,
+        ajaxErrorMessage: message,
+        contentType: ajaxSettings.contentType,
+        requestData:
+          ajaxSettings.data && ajaxSettings.data.slice
+            ? ajaxSettings.data.slice(0, 10240)
+            : undefined,
+        responseData:
+          jqXHR.responseText && jqXHR.responseText.slice
+            ? jqXHR.responseText.slice(0, 10240)
+            : undefined,
+        activeTarget:
+          event.target &&
+          event.target.activeElement &&
+          event.target.activeElement.outerHTML &&
+          event.target.activeElement.outerHTML.slice
+            ? event.target.activeElement.outerHTML.slice(0, 10240)
+            : undefined,
+      });
     }
 
     function processException(stackTrace, options, userTriggered) {
-        if (_providerState !== ProviderStates.READY) {
-            _processExceptionQueue.push({ stackTrace: stackTrace, options: options, userTriggered: userTriggered });
-            return;
+      if (_providerState !== ProviderStates.READY) {
+        _processExceptionQueue.push({
+          stackTrace: stackTrace,
+          options: options,
+          userTriggered: userTriggered,
+        });
+        return;
+      }
+
+      var scriptError = 'Script error';
+
+      var stack = [],
+        qs = {};
+
+      if (_ignore3rdPartyErrors) {
+        if (!stackTrace.stack || !stackTrace.stack.length) {
+          Raygun.Utilities.log('Raygun4JS: Cancelling send due to null stacktrace');
+          return;
         }
 
-        var scriptError = 'Script error';
+        var domain = Raygun.Utilities.parseUrl('domain');
 
-        var stack = [],
-            qs = {};
-
-        if (_ignore3rdPartyErrors) {
-            if (!stackTrace.stack || !stackTrace.stack.length) {
-                Raygun.Utilities.log('Raygun4JS: Cancelling send due to null stacktrace');
-                return;
-            }
-
-            var domain = Raygun.Utilities.parseUrl('domain');
-
-            var msg = scriptError;
-            if (stackTrace.message) {
-                msg = stackTrace.message;
-            } else if (options && options.status) {
-                msg = options.status;
-            }
-
-            if (typeof msg === 'undefined') {
-                msg = scriptError;
-            }
-
-            if (!Raygun.Utilities.isReactNative() &&
-                typeof msg.substring === 'function' &&
-                msg.substring(0, scriptError.length) === scriptError &&
-                stackTrace.stack[0].url !== null &&
-                stackTrace.stack[0].url !== undefined &&
-                stackTrace.stack[0].url.indexOf(domain) === -1 &&
-                (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')) {
-                Raygun.Utilities.log('Raygun4JS: cancelling send due to third-party script error with no stacktrace and message');
-                return;
-            }
-
-
-           if (stackTrace.stack[0] !== null &&
-              stackTrace.stack[0] !== undefined &&
-              stackTrace.stack[0].url !== null &&
-              stackTrace.stack[0].url !== undefined &&
-              stackTrace.stack[0].url.indexOf(domain) === -1) {
-                var allowedDomainFound = false;
-
-                for (var i in _whitelistedScriptDomains) {
-                    if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
-                        allowedDomainFound = true;
-                    }
-                }
-
-                if (!allowedDomainFound) {
-                    Raygun.Utilities.log('Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain');
-
-                    return;
-                }
-            }
-        }
-
-        if (_excludedHostnames instanceof Array) {
-            for (var hostIndex in _excludedHostnames) {
-                if (_excludedHostnames.hasOwnProperty(hostIndex)) {
-                    if (window.location.hostname && window.location.hostname.match(_excludedHostnames[hostIndex])) {
-                        Raygun.Utilities.log('Raygun4JS: cancelling send as error originates from an excluded hostname');
-
-                        return;
-                    }
-                }
-            }
-        }
-
-        if (_excludedUserAgents instanceof Array && !Raygun.Utilities.isReactNative()) {
-            for (var userAgentIndex in _excludedUserAgents) {
-                if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                    if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
-                        Raygun.Utilities.log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-
-                        return;
-                    }
-                }
-            }
-        }
-
-        if (!Raygun.Utilities.isReactNative() && navigator.userAgent.match("RaygunPulseInsightsCrawler"))
-        {
-            return;
-        }
-
-        if (stackTrace.stack && stackTrace.stack.length) {
-            Raygun.Utilities.forEach(stackTrace.stack, function (i, frame) {
-                stack.push({
-                    'LineNumber': frame.line,
-                    'ColumnNumber': frame.column,
-                    'ClassName': 'line ' + frame.line + ', column ' + frame.column,
-                    'FileName': frame.url,
-                    'MethodName': frame.func || '[anonymous]'
-                });
-            });
-        }
-
-        var queryString = Raygun.Utilities.parseUrl('?');
-
-        if (queryString.length > 0) {
-            Raygun.Utilities.forEach(queryString.split('&'), function (i, segment) {
-                var parts = segment.split('=');
-                if (parts && parts.length === 2) {
-                    var key = decodeURIComponent(parts[0]);
-                    var value = filterValue(key, parts[1]);
-
-                    qs[key] = value;
-                }
-            });
-        }
-
-        if (options === undefined) {
-            options = {};
-        }
-
-        if (Raygun.Utilities.isEmpty(options.customData)) {
-            if (typeof _customData === 'function') {
-                options.customData = _customData();
-            } else {
-                options.customData = _customData;
-            }
-        }
-
-        if (Raygun.Utilities.isEmpty(options.tags)) {
-            if (typeof _tags === 'function') {
-                options.tags = _tags();
-            } else if (typeof _tags === 'string') {
-               options.tags = [_tags];
-            } else {
-                options.tags = _tags;
-            }
-        }
-
-        if (!userTriggered) {
-            if (!options.tags) {
-                options.tags = [];
-            }
-
-            if (!Raygun.Utilities.contains(options.tags, 'UnhandledException')) {
-                options.tags.push('UnhandledException');
-            }
-        }
-
-        if (Raygun.Utilities.isReactNative() && !Raygun.Utilities.contains(options.tags, 'React Native')) {
-            options.tags.push('React Native');
-        }
-
-        var screenData = window.screen || {width: Raygun.Utilities.getViewPort().width, height: Raygun.Utilities.getViewPort().height, colorDepth: 8};
-
-        var custom_message = options.customData && options.customData.ajaxErrorMessage;
-
-        var finalCustomData;
-        if (_filterScope === 'customData') {
-            finalCustomData = filterObject(options.customData, 'UserCustomData');
-        } else {
-            finalCustomData = options.customData;
-        }
-
-        try {
-            JSON.stringify(finalCustomData);
-        } catch (e) {
-            var m = 'Cannot add custom data; may contain circular reference';
-            finalCustomData = {error: m};
-            Raygun.Utilities.log('Raygun4JS: ' + m);
-        }
-
-        var finalMessage = scriptError;
-        if (custom_message) {
-            finalMessage = custom_message;
-        } else if (stackTrace.message) {
-            finalMessage = stackTrace.message;
+        var msg = scriptError;
+        if (stackTrace.message) {
+          msg = stackTrace.message;
         } else if (options && options.status) {
-            finalMessage = options.status;
+          msg = options.status;
         }
 
-        if (typeof finalMessage === 'undefined') {
-            finalMessage = scriptError;
+        if (typeof msg === 'undefined') {
+          msg = scriptError;
         }
 
-        if (finalMessage && (typeof finalMessage === 'string')) {
-            finalMessage = finalMessage.substring(0, 512);
+        if (
+          !Raygun.Utilities.isReactNative() &&
+          typeof msg.substring === 'function' &&
+          msg.substring(0, scriptError.length) === scriptError &&
+          stackTrace.stack[0].url !== null &&
+          stackTrace.stack[0].url !== undefined &&
+          stackTrace.stack[0].url.indexOf(domain) === -1 &&
+          (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')
+        ) {
+          Raygun.Utilities.log(
+            'Raygun4JS: cancelling send due to third-party script error with no stacktrace and message'
+          );
+          return;
         }
 
-        var pageLocation;
-        if (!Raygun.Utilities.isReactNative()) {
-            pageLocation = [location.protocol, '//', location.host, location.pathname, location.hash].join('');
-        } else {
-            pageLocation = '/';
-        }
+        stackTrace.stack[0].url = undefined;
+        if (
+          stackTrace.stack[0] !== null &&
+          stackTrace.stack[0] !== undefined &&
+          stackTrace.stack[0].url !== null &&
+          stackTrace.stack[0].url.indexOf(domain) === -1
+        ) {
+          var allowedDomainFound = false;
 
-        var payload = {
-            'OccurredOn': new Date(),
-            'Details': {
-                'Error': {
-                    'ClassName': stackTrace.name,
-                    'Message': finalMessage,
-                    'StackTrace': stack,
-                    'StackString': stackTrace.stackstring
-                },
-                'Environment': {
-                    'UtcOffset': new Date().getTimezoneOffset() / -60.0,
-                    'User-Language': navigator.userLanguage,
-                    'Document-Mode': !Raygun.Utilities.isReactNative() ? document.documentMode : 'Not available',
-                    'Browser-Width': Raygun.Utilities.getViewPort().width,
-                    'Browser-Height': Raygun.Utilities.getViewPort().height,
-                    'Screen-Width': screenData.width,
-                    'Screen-Height': screenData.height,
-                    'Color-Depth': screenData.colorDepth,
-                    'Browser': navigator.appCodeName,
-                    'Browser-Name': navigator.appName,
-                    'Browser-Version': navigator.appVersion,
-                    'Platform': navigator.platform
-                },
-                'Client': {
-                    'Name': 'raygun-js',
-                    'Version': '2.9.4'
-                },
-                'UserCustomData': finalCustomData,
-                'Tags': options.tags,
-                'Request': {
-                    'Url': pageLocation,
-                    'QueryString': qs,
-                    'Headers': {
-                        'User-Agent': navigator.userAgent,
-                        'Referer': !Raygun.Utilities.isReactNative() ? document.referrer : 'Not available',
-                        'Host': !Raygun.Utilities.isReactNative() ? document.domain : 'Not available'
-                    }
-                },
-                'Version': _version || 'Not supplied'
+          for (var i in _whitelistedScriptDomains) {
+            if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
+              allowedDomainFound = true;
             }
-        };
+          }
 
-        payload.Details.User = _user;
+          if (!allowedDomainFound) {
+            Raygun.Utilities.log(
+              'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
+            );
 
-        if (_breadcrumbs.any()) {
-            payload.Details.Breadcrumbs = [];
-            var crumbs = _breadcrumbs.all() || [];
-
-            crumbs.forEach(function(crumb) {
-                if (crumb.metadata) {
-                    crumb.CustomData = crumb.metadata;
-                    delete crumb.metadata;
-                }
-
-                payload.Details.Breadcrumbs.push(crumb);
-            });
+            return;
+          }
         }
+      }
 
-        if (_filterScope === 'all') {
-            payload = filterObject(payload);
-        }
+      if (_excludedHostnames instanceof Array) {
+        for (var hostIndex in _excludedHostnames) {
+          if (_excludedHostnames.hasOwnProperty(hostIndex)) {
+            if (
+              window.location.hostname &&
+              window.location.hostname.match(_excludedHostnames[hostIndex])
+            ) {
+              Raygun.Utilities.log(
+                'Raygun4JS: cancelling send as error originates from an excluded hostname'
+              );
 
-        if (typeof _groupingKeyCallback === 'function') {
-            Raygun.Utilities.log('Raygun4JS: calling custom grouping key');
-            payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
-        }
-
-        if (typeof _beforeSendCallback === 'function') {
-            var mutatedPayload = _beforeSendCallback(payload);
-
-            if (mutatedPayload) {
-                sendToRaygun(mutatedPayload);
+              return;
             }
-        } else {
-            sendToRaygun(payload);
+          }
         }
+      }
+
+      if (_excludedUserAgents instanceof Array && !Raygun.Utilities.isReactNative()) {
+        for (var userAgentIndex in _excludedUserAgents) {
+          if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+            if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+              Raygun.Utilities.log(
+                'Raygun4JS: cancelling send as error originates from an excluded user agent'
+              );
+
+              return;
+            }
+          }
+        }
+      }
+
+      if (
+        !Raygun.Utilities.isReactNative() &&
+        navigator.userAgent.match('RaygunPulseInsightsCrawler')
+      ) {
+        return;
+      }
+
+      if (stackTrace.stack && stackTrace.stack.length) {
+        Raygun.Utilities.forEach(stackTrace.stack, function(i, frame) {
+          stack.push({
+            LineNumber: frame.line,
+            ColumnNumber: frame.column,
+            ClassName: 'line ' + frame.line + ', column ' + frame.column,
+            FileName: frame.url,
+            MethodName: frame.func || '[anonymous]',
+          });
+        });
+      }
+
+      var queryString = Raygun.Utilities.parseUrl('?');
+
+      if (queryString.length > 0) {
+        Raygun.Utilities.forEach(queryString.split('&'), function(i, segment) {
+          var parts = segment.split('=');
+          if (parts && parts.length === 2) {
+            var key = decodeURIComponent(parts[0]);
+            var value = filterValue(key, parts[1]);
+
+            qs[key] = value;
+          }
+        });
+      }
+
+      if (options === undefined) {
+        options = {};
+      }
+
+      if (Raygun.Utilities.isEmpty(options.customData)) {
+        if (typeof _customData === 'function') {
+          options.customData = _customData();
+        } else {
+          options.customData = _customData;
+        }
+      }
+
+      if (Raygun.Utilities.isEmpty(options.tags)) {
+        if (typeof _tags === 'function') {
+          options.tags = _tags();
+        } else if (typeof _tags === 'string') {
+          options.tags = [_tags];
+        } else {
+          options.tags = _tags;
+        }
+      }
+
+      if (!userTriggered) {
+        if (!options.tags) {
+          options.tags = [];
+        }
+
+        if (!Raygun.Utilities.contains(options.tags, 'UnhandledException')) {
+          options.tags.push('UnhandledException');
+        }
+      }
+
+      if (
+        Raygun.Utilities.isReactNative() &&
+        !Raygun.Utilities.contains(options.tags, 'React Native')
+      ) {
+        options.tags.push('React Native');
+      }
+
+      var screenData = window.screen || {
+        width: Raygun.Utilities.getViewPort().width,
+        height: Raygun.Utilities.getViewPort().height,
+        colorDepth: 8,
+      };
+
+      var custom_message = options.customData && options.customData.ajaxErrorMessage;
+
+      var finalCustomData;
+      if (_filterScope === 'customData') {
+        finalCustomData = filterObject(options.customData, 'UserCustomData');
+      } else {
+        finalCustomData = options.customData;
+      }
+
+      try {
+        JSON.stringify(finalCustomData);
+      } catch (e) {
+        var m = 'Cannot add custom data; may contain circular reference';
+        finalCustomData = { error: m };
+        Raygun.Utilities.log('Raygun4JS: ' + m);
+      }
+
+      var finalMessage = scriptError;
+      if (custom_message) {
+        finalMessage = custom_message;
+      } else if (stackTrace.message) {
+        finalMessage = stackTrace.message;
+      } else if (options && options.status) {
+        finalMessage = options.status;
+      }
+
+      if (typeof finalMessage === 'undefined') {
+        finalMessage = scriptError;
+      }
+
+      if (finalMessage && typeof finalMessage === 'string') {
+        finalMessage = finalMessage.substring(0, 512);
+      }
+
+      var pageLocation;
+      if (!Raygun.Utilities.isReactNative()) {
+        pageLocation = [
+          location.protocol,
+          '//',
+          location.host,
+          location.pathname,
+          location.hash,
+        ].join('');
+      } else {
+        pageLocation = '/';
+      }
+
+      var payload = {
+        OccurredOn: new Date(),
+        Details: {
+          Error: {
+            ClassName: stackTrace.name,
+            Message: finalMessage,
+            StackTrace: stack,
+            StackString: stackTrace.stackstring,
+          },
+          Environment: {
+            UtcOffset: new Date().getTimezoneOffset() / -60.0,
+            'User-Language': navigator.userLanguage,
+            'Document-Mode': !Raygun.Utilities.isReactNative()
+              ? document.documentMode
+              : 'Not available',
+            'Browser-Width': Raygun.Utilities.getViewPort().width,
+            'Browser-Height': Raygun.Utilities.getViewPort().height,
+            'Screen-Width': screenData.width,
+            'Screen-Height': screenData.height,
+            'Color-Depth': screenData.colorDepth,
+            Browser: navigator.appCodeName,
+            'Browser-Name': navigator.appName,
+            'Browser-Version': navigator.appVersion,
+            Platform: navigator.platform,
+          },
+          Client: {
+            Name: 'raygun-js',
+            Version: '2.9.4',
+          },
+          UserCustomData: finalCustomData,
+          Tags: options.tags,
+          Request: {
+            Url: pageLocation,
+            QueryString: qs,
+            Headers: {
+              'User-Agent': navigator.userAgent,
+              Referer: !Raygun.Utilities.isReactNative() ? document.referrer : 'Not available',
+              Host: !Raygun.Utilities.isReactNative() ? document.domain : 'Not available',
+            },
+          },
+          Version: _version || 'Not supplied',
+        },
+      };
+
+      payload.Details.User = _user;
+
+      if (_breadcrumbs.any()) {
+        payload.Details.Breadcrumbs = [];
+        var crumbs = _breadcrumbs.all() || [];
+
+        crumbs.forEach(function(crumb) {
+          if (crumb.metadata) {
+            crumb.CustomData = crumb.metadata;
+            delete crumb.metadata;
+          }
+
+          payload.Details.Breadcrumbs.push(crumb);
+        });
+      }
+
+      if (_filterScope === 'all') {
+        payload = filterObject(payload);
+      }
+
+      if (typeof _groupingKeyCallback === 'function') {
+        Raygun.Utilities.log('Raygun4JS: calling custom grouping key');
+        payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
+      }
+
+      if (typeof _beforeSendCallback === 'function') {
+        var mutatedPayload = _beforeSendCallback(payload);
+
+        if (mutatedPayload) {
+          sendToRaygun(mutatedPayload);
+        }
+      } else {
+        sendToRaygun(payload);
+      }
     }
 
     function sendToRaygun(data) {
-        if (!Raygun.Utilities.isApiKeyConfigured()) {
-            return;
-        }
+      if (!Raygun.Utilities.isApiKeyConfigured()) {
+        return;
+      }
 
-        Raygun.Utilities.log('Sending exception data to Raygun:', data);
-        var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
-        makePostCorsRequest(url, JSON.stringify(data));
+      Raygun.Utilities.log('Sending exception data to Raygun:', data);
+      var url =
+        _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
+      makePostCorsRequest(url, JSON.stringify(data));
     }
 
     // Create the XHR object.
     function createCORSRequest(method, url) {
-        var xhr;
+      var xhr;
 
-        xhr = new window.XMLHttpRequest();
+      xhr = new window.XMLHttpRequest();
 
-        if ("withCredentials" in xhr || Raygun.Utilities.isReactNative()) {
-            // XHR for Chrome/Firefox/Opera/Safari
-            // as well as React Native's custom XHR implementation
-            xhr.open(method, url, true);
-
-        } else if (window.XDomainRequest) {
-            // XDomainRequest for IE.
-            if (_allowInsecureSubmissions) {
-                // remove 'https:' and use relative protocol
-                // this allows IE8 to post messages when running
-                // on http
-                url = url.slice(6);
-            }
-
-            xhr = new window.XDomainRequest();
-            xhr.open(method, url);
+      if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
+        // XHR for Chrome/Firefox/Opera/Safari
+        // as well as React Native's custom XHR implementation
+        xhr.open(method, url, true);
+      } else if (window.XDomainRequest) {
+        // XDomainRequest for IE.
+        if (_allowInsecureSubmissions) {
+          // remove 'https:' and use relative protocol
+          // this allows IE8 to post messages when running
+          // on http
+          url = url.slice(6);
         }
 
-        xhr.timeout = 10000;
+        xhr = new window.XDomainRequest();
+        xhr.open(method, url);
+      }
 
-        return xhr;
+      xhr.timeout = 10000;
+
+      return xhr;
     }
 
     // Make the actual CORS request.
     function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
-        var xhr = createCORSRequest('POST', url, data);
+      var xhr = createCORSRequest('POST', url, data);
 
-        if (typeof _beforeXHRCallback === 'function') {
-            _beforeXHRCallback(xhr);
-        }
+      if (typeof _beforeXHRCallback === 'function') {
+        _beforeXHRCallback(xhr);
+      }
 
-        Raygun.Utilities.log("Is offline enabled? " + _enableOfflineSave);
+      Raygun.Utilities.log('Is offline enabled? ' + _enableOfflineSave);
 
-        // For some reason this check is false in React Native but these handlers still need to be attached
-        if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) {
-                    return;
-                }
+      // For some reason this check is false in React Native but these handlers still need to be attached
+      if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState !== 4) {
+            return;
+          }
 
-                if (xhr.status === 202) {
-                    sendSavedErrors();
-                } else if (_enableOfflineSave && xhr.status !== 403 && xhr.status !== 400 && xhr.status !== 429) {
-                    offlineSave(url, data);
-                }
-            };
-
-            xhr.onload = function () {
-                Raygun.Utilities.log('posted to Raygun');
-
-                callAfterSend(this);
-
-                if (_successCallback && typeof _successCallback === 'function') {
-                    _successCallback(xhr, url, data);
-                }
-            };
-
-        } else if (window.XDomainRequest) {
-            xhr.ontimeout = function () {
-                if (_enableOfflineSave) {
-                    Raygun.Utilities.log('Raygun: saved locally');
-                    offlineSave(url, data);
-                }
-            };
-
-            xhr.onload = function () {
-                Raygun.Utilities.log('posted to Raygun');
-
-                sendSavedErrors();
-                callAfterSend(this);
-
-                if (_successCallback && typeof _successCallback === 'function') {
-                    _successCallback(xhr, url, data);
-                }
-            };
-        }
-
-        xhr.onerror = function () {
-            Raygun.Utilities.log('failed to post to Raygun');
-
-            callAfterSend(this);
-
-            if (_errorCallback && typeof _errorCallback === 'function') {
-                _errorCallback(xhr, url, data);
-            }
+          if (xhr.status === 202) {
+            sendSavedErrors();
+          } else if (
+            _enableOfflineSave &&
+            xhr.status !== 403 &&
+            xhr.status !== 400 &&
+            xhr.status !== 429
+          ) {
+            offlineSave(url, data);
+          }
         };
 
-        if (!xhr) {
-            Raygun.Utilities.log('CORS not supported');
-            return;
-        }
+        xhr.onload = function() {
+          Raygun.Utilities.log('posted to Raygun');
 
-        // Old versions of RN fail to send errors without this
-        if (Raygun.Utilities.isReactNative()) {
-          xhr.setRequestHeader("Content-type", "application/json;charset=UTF-8");
-        }
+          callAfterSend(this);
 
-        xhr.send(data);
+          if (_successCallback && typeof _successCallback === 'function') {
+            _successCallback(xhr, url, data);
+          }
+        };
+      } else if (window.XDomainRequest) {
+        xhr.ontimeout = function() {
+          if (_enableOfflineSave) {
+            Raygun.Utilities.log('Raygun: saved locally');
+            offlineSave(url, data);
+          }
+        };
+
+        xhr.onload = function() {
+          Raygun.Utilities.log('posted to Raygun');
+
+          sendSavedErrors();
+          callAfterSend(this);
+
+          if (_successCallback && typeof _successCallback === 'function') {
+            _successCallback(xhr, url, data);
+          }
+        };
+      }
+
+      xhr.onerror = function() {
+        Raygun.Utilities.log('failed to post to Raygun');
+
+        callAfterSend(this);
+
+        if (_errorCallback && typeof _errorCallback === 'function') {
+          _errorCallback(xhr, url, data);
+        }
+      };
+
+      if (!xhr) {
+        Raygun.Utilities.log('CORS not supported');
+        return;
+      }
+
+      // Old versions of RN fail to send errors without this
+      if (Raygun.Utilities.isReactNative()) {
+        xhr.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
+      }
+
+      xhr.send(data);
     }
 
     if (!window.__raygunNoConflict) {
       window.Raygun = Raygun;
     }
     TraceKit.setRaygun(Raygun);
+  } catch (e) {
+    console.log('foo', e);
+  }
 
-    return Raygun;
+  return Raygun;
 };
 
 window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
 
-var raygunRumFactory = function (window, $, Raygun) {
-    Raygun.RealUserMonitoring = function (apiKey, apiUrl, makePostCorsRequest, user, version, tags, excludedHostNames, excludedUserAgents, debugMode, maxVirtualPageDuration, ignoreUrlCasing, customTimingsEnabled, beforeSendCb) {
-        var self = this;
-        var _private = {};
+/*
+ * raygun4js
+ * https://github.com/MindscapeHQ/raygun4js
+ *
+ * Copyright (c) 2018 MindscapeHQ
+ * Licensed under the MIT license.
+ */
+var raygunRumFactory = function(window, $, Raygun) {
+  Raygun.RealUserMonitoring = function(
+    apiKey,
+    apiUrl,
+    makePostCorsRequest,
+    user,
+    version,
+    tags,
+    excludedHostNames,
+    excludedUserAgents,
+    debugMode,
+    maxVirtualPageDuration,
+    ignoreUrlCasing,
+    customTimingsEnabled,
+    beforeSendCb
+  ) {
+    var self = this;
+    var _private = {};
 
-        this.cookieName = 'raygun4js-sid';
-        this.apiKey = apiKey;
-        this.apiUrl = apiUrl;
-        this.debugMode = debugMode;
-        this.excludedHostNames = excludedHostNames;
-        this.excludedUserAgents = excludedUserAgents;
-        this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
-        this.ignoreUrlCasing = ignoreUrlCasing;
-        this.customTimingsEnabled = customTimingsEnabled;
-        this.beforeSend = beforeSendCb || function(payload) { return payload; };
+    this.cookieName = 'raygun4js-sid';
+    this.apiKey = apiKey;
+    this.apiUrl = apiUrl;
+    this.debugMode = debugMode;
+    this.excludedHostNames = excludedHostNames;
+    this.excludedUserAgents = excludedUserAgents;
+    this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
+    this.ignoreUrlCasing = ignoreUrlCasing;
+    this.customTimingsEnabled = customTimingsEnabled;
+    this.beforeSend =
+      beforeSendCb ||
+      function(payload) {
+        return payload;
+      };
 
-        this.pendingPayloadData = customTimingsEnabled || false;
-        this.queuedPerformanceTimings = [];        
-        this.pendingVirtualPage = null;
+    this.pendingPayloadData = customTimingsEnabled || false;
+    this.queuedPerformanceTimings = [];
+    this.pendingVirtualPage = null;
 
-        this.sessionId = null;
-        this.virtualPage = null;
-        this.user = user;
-        this.version = version;
-        this.tags = tags;
-        this.heartBeatInterval = null;
-        this.heartBeatIntervalTime = 30000;
-        this.offset = 0;
+    this.sessionId = null;
+    this.virtualPage = null;
+    this.user = user;
+    this.version = version;
+    this.tags = tags;
+    this.heartBeatInterval = null;
+    this.heartBeatIntervalTime = 30000;
+    this.offset = 0;
 
-        this.queuedItems = [];
-        this.maxQueueItemsSent = 50;
+    this.queuedItems = [];
+    this.maxQueueItemsSent = 50;
 
-        var Timings = {
-          Page: 'p',
-          VirtualPage: 'v',
-          XHR: 'x',
-          CachedChildAsset: 'e',
-          ChildAsset: 'c'
-        };
+    var Timings = {
+      Page: 'p',
+      VirtualPage: 'v',
+      XHR: 'x',
+      CachedChildAsset: 'e',
+      ChildAsset: 'c',
+    };
 
-        this.attach = function () {
-            getSessionId(function (isNewSession) {
-              self.pageLoaded(isNewSession);
-            });
+    this.attach = function() {
+      getSessionId(function(isNewSession) {
+        self.pageLoaded(isNewSession);
+      });
 
-            var clickHandler = function () {
-              this.updateCookieTimestamp();
-            }.bind(_private);
+      var clickHandler = function() {
+        this.updateCookieTimestamp();
+      }.bind(_private);
 
-            var unloadHandler = function () {
-              self.sendChildAssets(true);
-              self.sendQueuedItems();
-            }.bind(_private);
+      var unloadHandler = function() {
+        self.sendChildAssets(true);
+        self.sendQueuedItems();
+      }.bind(_private);
 
-            var visibilityChangeHandler = function () {
-                if (document.visibilityState === 'visible') {
-                    this.updateCookieTimestamp();
-                }
-            }.bind(_private);
+      var visibilityChangeHandler = function() {
+        if (document.visibilityState === 'visible') {
+          this.updateCookieTimestamp();
+        }
+      }.bind(_private);
 
-            if (window.addEventListener) {
-                window.addEventListener('click', clickHandler);
-                document.addEventListener('visibilitychange', visibilityChangeHandler);
-                window.addEventListener('beforeunload', unloadHandler);
-            } else if (window.attachEvent) {
-                document.attachEvent('onclick', clickHandler);
-            }
-        };
+      if (window.addEventListener) {
+        window.addEventListener('click', clickHandler);
+        document.addEventListener('visibilitychange', visibilityChangeHandler);
+        window.addEventListener('beforeunload', unloadHandler);
+      } else if (window.attachEvent) {
+        document.attachEvent('onclick', clickHandler);
+      }
+    };
 
-        this.pageLoaded = function (isNewSession) {
-            // Only create a session if we don't have one.
-            if (isNewSession) {
-                this.sendNewSessionStart();
-            }
+    this.pageLoaded = function(isNewSession) {
+      // Only create a session if we don't have one.
+      if (isNewSession) {
+        this.sendNewSessionStart();
+      }
 
-            self.sendPerformance(true);
+      self.sendPerformance(true);
 
-            self.heartBeat();
+      self.heartBeat();
 
-            self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
-        };
+      self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
+    };
 
-        this.virtualPageLoaded = function (path) {
-            if (typeof path === 'string') {
-                if (path.length > 0 && path[0] !== '/') {
-                    path = path + '/';
-                }
+    this.virtualPageLoaded = function(path) {
+      if (typeof path === 'string') {
+        if (path.length > 0 && path[0] !== '/') {
+          path = path + '/';
+        }
 
-                if (path.length > 800) {
-                    path = path.substring(0, 800);
-                }
+        if (path.length > 800) {
+          path = path.substring(0, 800);
+        }
 
-                this.virtualPage = path;
-            }
+        this.virtualPage = path;
+      }
 
-            processVirtualPageTimingsInQueue();
-            this.sendPerformance(false);
-        };
+      processVirtualPageTimingsInQueue();
+      this.sendPerformance(false);
+    };
 
-        this.heartBeat = function () {
+    this.heartBeat = function() {
+      if (self.heartBeatInterval !== null) {
+        log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+        return;
+      }
 
-          if (self.heartBeatInterval !== null) {
-            log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
-            return;
-          }
+      self.heartBeatInterval = setInterval(function() {
+        self.sendChildAssets();
+        self.sendQueuedItems();
+      }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+    };
 
-          self.heartBeatInterval = setInterval(function () {
-              self.sendChildAssets();
-              self.sendQueuedItems();
-          }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
-        };
+    this.setUser = function(user) {
+      self.user = user;
+    };
 
-        this.setUser = function (user) {
-            self.user = user;
-        };
+    this.withTags = function(tags) {
+      self.tags = tags;
+    };
 
-        this.withTags = function (tags) {
-            self.tags = tags;
-        };
+    this.endSession = function() {
+      self.sendItemImmediately({
+        sessionId: self.sessionId,
+        requestId: self.requestId,
+        timestamp: new Date().toISOString(),
+        type: 'session_end',
+      });
+    };
 
-        this.endSession = function () {
-            self.sendItemImmediately({
-                sessionId: self.sessionId,
-                requestId: self.requestId,
-                timestamp: new Date().toISOString(),
-                type: 'session_end'
-            });
-        };
+    this.sendNewSessionStart = function() {
+      self.sendItemImmediately({
+        sessionId: self.sessionId,
+        timestamp: new Date().toISOString(),
+        type: 'session_start',
+        user: self.user,
+        version: self.version || 'Not supplied',
+        tags: self.tags,
+        device: navigator.userAgent,
+      });
+    };
 
-        this.sendNewSessionStart = function() {
-            self.sendItemImmediately({
-                sessionId: self.sessionId,
-                timestamp: new Date().toISOString(),
-                type: 'session_start',
-                user: self.user,
-                version: self.version || 'Not supplied',
-                tags: self.tags,
-                device: navigator.userAgent
-            });
-        };
+    this.sendCustomTimings = function(customTimings) {
+      if (
+        typeof customTimings === 'object' &&
+        (typeof customTimings.custom1 === 'number' ||
+          typeof customTimings.custom2 === 'number' ||
+          typeof customTimings.custom3 === 'number' ||
+          typeof customTimings.custom4 === 'number' ||
+          typeof customTimings.custom5 === 'number' ||
+          typeof customTimings.custom6 === 'number' ||
+          typeof customTimings.custom7 === 'number' ||
+          typeof customTimings.custom8 === 'number' ||
+          typeof customTimings.custom9 === 'number' ||
+          typeof customTimings.custom10 === 'number')
+      ) {
+        if (self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
+          // Append custom timings to first queued item, which should be a page view
+          self.pendingPayloadData = false;
+          self.queuedPerformanceTimings[0].customTiming = customTimings;
+          sendQueuedPerformancePayloads();
+        }
+      }
+    };
 
-        this.sendCustomTimings = function (customTimings) {
-            if (typeof customTimings === 'object' && (
-              typeof customTimings.custom1 === 'number' ||
-              typeof customTimings.custom2 === 'number' ||
-              typeof customTimings.custom3 === 'number' ||
-              typeof customTimings.custom4 === 'number' ||
-              typeof customTimings.custom5 === 'number' ||
-              typeof customTimings.custom6 === 'number' ||
-              typeof customTimings.custom7 === 'number' ||
-              typeof customTimings.custom8 === 'number' ||
-              typeof customTimings.custom9 === 'number' ||
-              typeof customTimings.custom10 === 'number')) {
-                if (self.pendingPayloadData && self.queuedPerformanceTimings.length > 0) {
-                  // Append custom timings to first queued item, which should be a page view
-                  self.pendingPayloadData = false;
-                  self.queuedPerformanceTimings[0].customTiming = customTimings;
-                  sendQueuedPerformancePayloads();
-                }
-              }
-        };
+    this.sendPerformance = function(firstLoad) {
+      var performanceData = getPerformanceData(this.virtualPage, firstLoad);
 
-        this.sendPerformance = function (firstLoad) {
-            var performanceData = getPerformanceData(this.virtualPage, firstLoad);
+      if (performanceData === null || performanceData.length < 0) {
+        return;
+      }
 
-            if (performanceData === null || performanceData.length < 0) {
-                return;
-            }
+      addPerformanceTimingsToQueue(performanceData, false);
+    };
 
-            addPerformanceTimingsToQueue(performanceData, false);
-        };
+    this.sendChildAssets = function(forceSend) {
+      if (forceSend) {
+        processVirtualPageTimingsInQueue();
+      }
+      var data = [];
+      extractChildData(data);
+      addPerformanceTimingsToQueue(data, forceSend);
+    };
 
-        this.sendChildAssets = function(forceSend) {
-          if (forceSend) {
-            processVirtualPageTimingsInQueue();
-          }
-          var data = [];
-          extractChildData(data);
-          addPerformanceTimingsToQueue(data, forceSend);
-        };
+    this.sendQueuedItems = function() {
+      if (self.queuedItems.length > 0) {
+        // Dequeue:
+        self.queuedItems = sortCollectionByProperty(self.queuedItems, 'timestamp');
+        var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
 
-        this.sendQueuedItems = function() {
-            if (self.queuedItems.length > 0) {
-                // Dequeue:
-                self.queuedItems = sortCollectionByProperty(self.queuedItems, 'timestamp');
-                var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
+        self.sendItemsImmediately(itemsToSend);
+      }
+    };
 
-                self.sendItemsImmediately(itemsToSend);
-            }
-        };
+    this.sendItemImmediately = function(item) {
+      var itemsToSend = [item];
+      self.sendItemsImmediately(itemsToSend);
+    };
 
-        this.sendItemImmediately = function(item) {
-            var itemsToSend = [item];
-            self.sendItemsImmediately(itemsToSend);
-        };
+    this.sendItemsImmediately = function(itemsToSend) {
+      var payload = {
+        eventData: itemsToSend,
+      };
 
-        this.sendItemsImmediately = function(itemsToSend) {
-            var payload = {
-                eventData: itemsToSend
-            };
+      var successCallback = function() {
+        log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
+      };
 
-            var successCallback = function() {
-                log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
-            };
+      var errorCallback = function(response) {
+        // Requeue:
+        self.requeueItemsToFront(itemsToSend);
 
-            var errorCallback = function(response) {
-                // Requeue:
-                self.requeueItemsToFront(itemsToSend);
+        log(
+          'Raygun4JS: Items failed to send. Queue length: ' +
+            self.queuedItems.length +
+            ' Response status code: ' +
+            response.status
+        );
+      };
 
-                log('Raygun4JS: Items failed to send. Queue length: ' + self.queuedItems.length + ' Response status code: ' + response.status);
-            };
+      this.postPayload(payload, successCallback, errorCallback);
+    };
 
-            this.postPayload(payload, successCallback, errorCallback);
-        };
+    function sendQueuedPerformancePayloads(forceSend) {
+      if (self.pendingPayloadData && !forceSend) {
+        return;
+      }
 
-        function sendQueuedPerformancePayloads(forceSend) {
-          if (self.pendingPayloadData && !forceSend) {
-            return;
-          }
+      var currentPayloadTimingData = [];
+      var payloadTimings = [];
+      var payloadIncludesPageTiming = false;
+      var data, i;
 
-          var currentPayloadTimingData = [];
-          var payloadTimings = [];
-          var payloadIncludesPageTiming = false;
-          var data, i;
+      var addCurrentPayloadEvents = function() {
+        payloadTimings.push(createTimingPayload(currentPayloadTimingData));
+        currentPayloadTimingData = [];
+        payloadIncludesPageTiming = false;
+      };
 
-          var addCurrentPayloadEvents = function() {
-            payloadTimings.push(createTimingPayload(currentPayloadTimingData));
-            currentPayloadTimingData = [];
-            payloadIncludesPageTiming = false;
-          };
+      var sendTimingData = function() {
+        if (currentPayloadTimingData.length > 0) {
+          addCurrentPayloadEvents();
+        }
 
-          var sendTimingData = function() {
-            if (currentPayloadTimingData.length > 0) {
-              addCurrentPayloadEvents();
-            }
+        if (payloadTimings.length > 0) {
+          self.sendItemsImmediately(payloadTimings);
+          currentPayloadTimingData = [];
+          payloadIncludesPageTiming = false;
+        }
+      };
 
-            if ( payloadTimings.length > 0 ) {
-                self.sendItemsImmediately(payloadTimings);
-                currentPayloadTimingData = [];
-                payloadIncludesPageTiming = false;
-            }
-          };
+      for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
+        data = self.queuedPerformanceTimings[i];
+        var isPageOrVirtualPage =
+          data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
 
-          for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
-            data = self.queuedPerformanceTimings[i];
-            var isPageOrVirtualPage = data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
+        if (payloadIncludesPageTiming && isPageOrVirtualPage) {
+          // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
+          addCurrentPayloadEvents();
+        }
 
-            if (payloadIncludesPageTiming && isPageOrVirtualPage) {
-              // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
-              addCurrentPayloadEvents();
-            }
+        if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
+          // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
+          addCurrentPayloadEvents();
+        }
 
-            if (currentPayloadTimingData.length > 0 && isPageOrVirtualPage) {
-              // Resources already exist before the page view so associate them with previous "page" by having them as a seperate web_request_timing
-              addCurrentPayloadEvents();
-            }
+        if (isPageOrVirtualPage) {
+          // If the next timing data is a page or virtual page, generate a new request ID
+          createRequestId();
+        }
 
-            if (isPageOrVirtualPage) {
-              // If the next timing data is a page or virtual page, generate a new request ID
-              createRequestId();
-            }
+        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+          // Pending virtual page, wait until the virtual page timings have been calculated
+          sendTimingData();
+          self.queuedPerformanceTimings.splice(0, i);
+          return;
+        }
 
-            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
-              // Pending virtual page, wait until the virtual page timings have been calculated
-              sendTimingData();
-              self.queuedPerformanceTimings.splice(0, i);
+        currentPayloadTimingData.push(data);
+        payloadIncludesPageTiming =
+          payloadIncludesPageTiming ||
+          (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
+      }
+
+      sendTimingData();
+      self.queuedPerformanceTimings = [];
+    }
+
+    this.requeueItemsToFront = function(itemsToSend) {
+      self.queuedItems = itemsToSend.concat(self.queuedItems);
+    };
+
+    this.postPayload = function(payload, _successCallback, _errorCallback) {
+      if (typeof _successCallback !== 'function') {
+        _successCallback = function() {};
+      }
+
+      if (typeof _errorCallback !== 'function') {
+        _errorCallback = function() {};
+      }
+
+      self.makePostCorsRequest(
+        self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey),
+        payload,
+        _successCallback,
+        _errorCallback
+      );
+    };
+
+    this.makePostCorsRequest = function(url, data, successCallback, errorCallback) {
+      if (self.excludedUserAgents instanceof Array) {
+        for (var userAgentIndex in self.excludedUserAgents) {
+          if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+              log('Raygun4JS: cancelling send as error originates from an excluded user agent');
               return;
             }
-
-            currentPayloadTimingData.push(data);
-            payloadIncludesPageTiming = payloadIncludesPageTiming || (data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage);
           }
-
-          sendTimingData();
-          self.queuedPerformanceTimings = [];
         }
+      }
 
-        this.requeueItemsToFront = function(itemsToSend) {
-            self.queuedItems = itemsToSend.concat(self.queuedItems);
-        };
+      if (self.excludedHostNames instanceof Array) {
+        for (var hostIndex in self.excludedHostNames) {
+          if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+            if (
+              window.location.hostname &&
+              window.location.hostname.match(self.excludedHostNames[hostIndex])
+            ) {
+              log('Raygun4JS: cancelling send as error originates from an excluded hostname');
 
-        this.postPayload = function(payload, _successCallback, _errorCallback) {
-            if (typeof _successCallback !== 'function') {
-                _successCallback = function() {};
-            }
-
-            if (typeof _errorCallback !== 'function') {
-                _errorCallback = function() {};
-            }
-
-            self.makePostCorsRequest(self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey), payload, _successCallback, _errorCallback);
-        };
-
-        this.makePostCorsRequest = function (url, data, successCallback, errorCallback) {
-
-            if (self.excludedUserAgents instanceof Array) {
-                for (var userAgentIndex in self.excludedUserAgents) {
-                    if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-                        if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-                            log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if (self.excludedHostNames instanceof Array) {
-                for (var hostIndex in self.excludedHostNames) {
-                    if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
-                        if (window.location.hostname && window.location.hostname.match(self.excludedHostNames[hostIndex])) {
-                            log('Raygun4JS: cancelling send as error originates from an excluded hostname');
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if (navigator.userAgent.match("RaygunPulseInsightsCrawler")) {
-                return;
-            }
-
-            var payload = self.beforeSend(data);
-            if (!payload) {
-                log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-                return;
-            }
-
-            if (!!payload.eventData) {
-                for (var i = 0;i < payload.eventData.length;i++) {
-                    if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-                        payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
-                    }
-                }
-            }
-
-            makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
-        };
-
-        function addPerformanceTimingsToQueue(performanceData, forceSend) {
-          self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
-          sendQueuedPerformancePayloads(forceSend);
-        }
-
-        function createTimingPayload(data) {
-            return {
-              sessionId: self.sessionId,
-              requestId: self.requestId,
-              timestamp: new Date().toISOString(),
-              type: 'web_request_timing',
-              user: self.user,
-              version: self.version || 'Not supplied',
-              device: navigator.userAgent,
-              tags: self.tags,
-              data: data
-            };
-        }
-
-        function getSessionId(callback) {
-            var existingCookie = readCookie(self.cookieName);
-
-            var nullCookie = existingCookie === null;
-            var legacyCookie = typeof exisitingCookie === 'string' &&
-                existingCookie.length > 0 &&
-                existingCookie.indexOf('timestamp') === -1;
-            var expiredCookie = null;
-
-            if (!nullCookie && !legacyCookie) {
-                var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-                var halfHrAgo = new Date(new Date() - 30 * 60000);
-                expiredCookie = existingTimestamp < halfHrAgo;
-            }
-
-            if (nullCookie || legacyCookie || expiredCookie) {
-                self.sessionId = randomKey(32);
-                createCookie(self.cookieName, self.sessionId);
-                callback(true);
-            } else {
-                var sessionCookie = readCookie(self.cookieName);
-                var id = readSessionCookieElement(sessionCookie, 'id');
-
-                if (id === 'undefined' || id === 'null') {
-                    self.sessionId = randomKey(32);
-                    createCookie(self.cookieName, self.sessionId);
-                    callback(true);
-                } else {
-                    self.sessionId = id;
-                    callback(false);
-                }
-            }
-        }
-
-        function createRequestId() {
-            self.requestId = randomKey(16);
-        }
-
-        function createCookie(name, value, hours) {
-            var expires;
-            var lastActivityTimestamp;
-
-            if (hours) {
-                var date = new Date();
-                date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-                expires = "; expires=" + date.toGMTString();
-            } else {
-                expires = "";
-            }
-
-            lastActivityTimestamp = new Date().toISOString();
-
-            document.cookie = name + "=id|" + value + "&timestamp|" + lastActivityTimestamp + expires + "; path=/";
-        }
-
-        function readSessionCookieElement(cookieString, element) {
-            var set = cookieString.split(/[|&]/);
-
-            if (element === 'id') {
-                return set[1];
-            } else if (element === 'timestamp') {
-                return set[3];
-            }
-        }
-
-        function readCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for (var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) === ' ') {
-                    c = c.substring(1, c.length);
-                }
-                if (c.indexOf(nameEQ) === 0) {
-                    return c.substring(nameEQ.length, c.length);
-                }
-            }
-            return null;
-        }
-
-        function updateCookieTimestamp() {
-            var existingCookie = readCookie(self.cookieName);
-
-            var expiredCookie;
-            if (existingCookie) {
-                var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-                var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-                expiredCookie = timestamp < halfHrAgo;
-            } else {
-                expiredCookie = true;
-            }
-
-            if (expiredCookie) {
-                self.sessionId = randomKey(32);
-            }
-
-            createCookie(self.cookieName, self.sessionId);
-
-            if (expiredCookie) {
-                self.sendNewSessionStart();
-            }
-        }
-
-        function prepareVirtualEncodedTimingData(virtualPageStartTime) {
-            return {
-                t: Timings.VirtualPage,
-                startTime: virtualPageStartTime,
-                staticLoad: self.initalStaticPageLoadTimestamp,
-                pending: true
-            };
-        }
-
-        function processVirtualPageTimingsInQueue() {
-          var i = 0, data;
-          for (i; i < self.queuedPerformanceTimings.length; i++) {
-            data = self.queuedPerformanceTimings[i];
-            if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
-              data.timing = generateVirtualEncodedTimingData(data.timing);
+              return;
             }
           }
         }
+      }
 
-        function generateVirtualEncodedTimingData(timingData) {
-          var now = getPerformanceNow(0);
+      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
+        return;
+      }
 
-          return {
-            t: timingData.t,
-            du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
-            o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad)
-          };
-        }
+      var payload = self.beforeSend(data);
+      if (!payload) {
+        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+        return;
+      }
 
-        function getEncodedTimingData(timing, offset) {
-            var data = {
-                du: timing.duration,
-                t: Timings.Page
-            };
-
-            data.a = offset + timing.fetchStart;
-
-            if (timing.domainLookupStart && timing.domainLookupStart > 0) {
-                data.b = (offset + timing.domainLookupStart) - data.a;
-            }
-
-            if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
-                data.c = (offset + timing.domainLookupEnd) - data.a;
-            }
-
-            if (timing.connectStart && timing.connectStart > 0) {
-                data.d = (offset + timing.connectStart) - data.a;
-            }
-
-            if (timing.connectEnd && timing.connectEnd > 0) {
-                data.e = (offset + timing.connectEnd) - data.a;
-            }
-
-            if (timing.responseStart && timing.responseStart > 0) {
-                data.f = (offset + timing.responseStart) - data.a;
-            }
-
-            if (timing.responseEnd && timing.responseEnd > 0) {
-                data.g = (offset + timing.responseEnd) - data.a;
-            }
-
-            if (timing.domLoading && timing.domLoading > 0) {
-                data.h = (offset + timing.domLoading) - data.a;
-            }
-
-            if (timing.domInteractive && timing.domInteractive > 0) {
-                data.i = (offset + timing.domInteractive) - data.a;
-            }
-
-            if (timing.domContentLoadedEventEnd && timing.domContentLoadedEventEnd > 0) {
-                data.j = (offset + timing.domContentLoadedEventEnd) - data.a;
-            }
-
-            if (timing.domComplete && timing.domComplete > 0) {
-                data.k = maxFiveMinutes((offset + timing.domComplete) - data.a);
-            }
-
-            if (timing.loadEventStart && timing.loadEventStart > 0) {
-                data.l = (offset + timing.loadEventStart) - data.a;
-            }
-
-            if (timing.loadEventEnd && timing.loadEventEnd > 0) {
-                data.m = (offset + timing.loadEventEnd) - data.a;
-            }
-
-            if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
-                data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
-            }
-
-            data = sanitizeNaNs(data);
-
-            return data;
-        }
-
-        function getSecondaryTimingType(timing) {
-          if (timing.initiatorType === 'xmlhttprequest') {
-            return Timings.XHR;
-          } else if (timing.duration === 0) {
-            return Timings.CachedChildAsset;
-          } else {
-            return Timings.ChildAsset;
+      if (!!payload.eventData) {
+        for (var i = 0; i < payload.eventData.length; i++) {
+          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
+            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
           }
         }
+      }
 
-        function getSecondaryEncodedTimingData(timing, offset) {
-            var data = {
-                du: maxFiveMinutes(timing.duration).toFixed(2),
-                t: getSecondaryTimingType(timing),
-                a: offset + timing.fetchStart
-            };
-
-            if (timing.domainLookupStart && timing.domainLookupStart > 0) {
-                data.b = (offset + timing.domainLookupStart) - data.a;
-            }
-
-            if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
-                data.c = (offset + timing.domainLookupEnd) - data.a;
-            }
-
-            if (timing.connectStart && timing.connectStart > 0) {
-                data.d = (offset + timing.connectStart) - data.a;
-            }
-
-            if (timing.connectEnd && timing.connectEnd > 0) {
-                data.e = (offset + timing.connectEnd) - data.a;
-            }
-
-            if (timing.responseStart && timing.responseStart > 0) {
-                data.f = (offset + timing.responseStart) - data.a;
-            }
-
-            if (timing.responseEnd && timing.responseEnd > 0) {
-                data.g = (offset + timing.responseEnd) - data.a;
-            }
-
-            if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
-                data.n = (offset + (timing.secureConnectionStart - timing.connectStart)) - data.a;
-            }
-
-            data.a = data.a.toFixed(2);
-            data = sanitizeNaNs(data);
-
-            return data;
-        }
-
-        function getPrimaryTimingData() {
-            var pathName = window.location.pathname;
-
-            if (self.ignoreUrlCasing) {
-                pathName = pathName.toLowerCase();
-            }
-
-            var url = window.location.protocol + '//' + window.location.host + pathName;
-
-            if (url.length > 800) {
-                url = url.substring(0, 800);
-            }
-
-            return {
-                url: url,
-                userAgent: navigator.userAgent,
-                timing: getEncodedTimingData(window.performance.timing, 0),
-                size: 0
-            };
-        }
-
-        function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
-            if (self.ignoreUrlCasing) {
-                virtualPage = virtualPage.toLowerCase();
-            }
-
-            if (virtualPage.indexOf('?') !== -1) {
-                virtualPage = virtualPage.split('?')[0];
-            }
-
-            var url = window.location.protocol + '//' + window.location.host + virtualPage;
-
-            if (url.length > 800) {
-                url = url.substring(0, 800);
-            }
-
-            return {
-                url: url,
-                userAgent: navigator.userAgent,
-                timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
-                size: 0
-            };
-        }
-
-        function getSecondaryTimingData(timing, fromZero) {
-            var url = timing.name.split('?')[0];
-
-            if (self.ignoreUrlCasing) {
-                url = url.toLowerCase();
-            }
-
-            if (url.length > 800) {
-                url = url.substring(0, 800);
-            }
-
-            return {
-                url: url,
-                timing: getSecondaryEncodedTimingData(timing, fromZero ? 0 : window.performance.timing.navigationStart),
-                size: timing.decodedBodySize || 0
-            };
-        }
-
-        function shouldIgnoreResource(name) {
-          if (name.indexOf(self.apiUrl) === 0) {
-              return true;
-          }
-          // Other ignored calls
-          if (name.indexOf('favicon.ico') > 0) {
-              return true;
-          }
-          if (name.indexOf('about:blank') === 0) {
-              return true;
-          }
-          if (name[0] === 'j' && name.indexOf('avascript:') === 1) {
-              return true;
-          }
-          if (name.indexOf('chrome-extension://') === 0) {
-              return true;
-          }
-          if (name.indexOf('res://') === 0) {
-              return true;
-          }
-          if (name.indexOf('file://') === 0) {
-              return true;
-          }
-          return false;
-        }
-
-        function extractChildData(collection, fromVirtualPage) {
-            if (!performanceEntryExists('getEntries', 'function')) {
-                return;
-            }
-
-            try {
-                var resources = window.performance.getEntries();
-
-                for (var i = self.offset; i < resources.length; i++) {
-                    var segment = resources[i].name.split('?')[0];
-                    if ( !shouldIgnoreResource(segment) ) {
-                      collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
-                    }
-                }
-
-                self.offset = resources.length;
-            }
-            catch (e) {
-            }
-        }
-
-        function getPerformanceData(virtualPage, firstLoad) {
-            if (!performanceEntryExists('timing', 'object') || window.performance.timing.fetchStart === undefined || isNaN(window.performance.timing.fetchStart)) {
-                return null;
-            }
-
-            var data = [];
-
-            if (firstLoad) {
-              // Called by the static onLoad event being fired, persist itself
-              data.push(getPrimaryTimingData());
-            }
-
-            // Called during both the static load event and the virtual load calls
-            // Associates all data loaded up to this point with the previous page
-            // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
-            extractChildData(data);
-
-            if (virtualPage) {
-                data.push(getVirtualPrimaryTimingData(
-                    virtualPage,
-                    getPerformanceNow(0)
-                ));
-                extractChildData(data, true);
-            }
-
-            return data;
-        }
-
-        function sanitizeNaNs(data) {
-            for (var i in data) {
-                if (isNaN(data[i]) && typeof data[i] !== 'string') {
-                    data[i] = 0;
-                }
-            }
-
-            return data;
-        }
-
-        function randomKey(length) {
-            return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
-        }
-
-        function performanceEntryExists(entry, entryType) {
-          return (typeof window.performance === "object" && (!entry || entry && typeof window.performance[entry] === entryType));
-        }
-
-        function getPerformanceNow(fallbackValue) {
-          if (performanceEntryExists('now', 'function')) {
-            return window.performance.now();
-          } else {
-            return fallbackValue;
-          }
-        }
-
-        function maxFiveMinutes(milliseconds) {
-            return Math.min(milliseconds, 300000);
-        }
-
-        function log(message, data) {
-            if (self.debugMode && window.console && window.console.log) {
-                window.console.log(message);
-
-                if (data) {
-                    window.console.log(data);
-                }
-            }
-        } 
-
-        /**
-         * getCompareFunction() returns a predicate function to pass into the Array.sort() function
-         * The predicate function checks for the property on each item being compared and returns the appropriate integer required by the sort function
-         * 
-         * @param {string} property
-         * @return {function} (a, b) => number
-         */
-
-        function getCompareFunction(property) {
-            return function(a, b) {
-                if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
-                    log('Raygun4JS: Property "' + property + '" not found in items in this collection');
-                    return 0;
-                }
-
-                var propA = a[property];
-                var propB = b[property];
-                
-                var comparison = 0;
-                if (propA > propB) {
-                    comparison = 1;
-                } else if (propA < propB) {
-                    comparison = -1;
-                }
-                return comparison;
-            };
-        }
-
-        /**
-         * sortCollectionByProperty() returns an array of objects sorted by a given property on those objects
-         * 
-         * @param {array} collection
-         * @param {string} property
-         * @return {array} collection
-         */
-
-        function sortCollectionByProperty(collection, property) {
-            return collection.sort(getCompareFunction(property));
-        }
-
-        _private.updateCookieTimestamp = updateCookieTimestamp;
+      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
     };
+
+    function addPerformanceTimingsToQueue(performanceData, forceSend) {
+      self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+      sendQueuedPerformancePayloads(forceSend);
+    }
+
+    function createTimingPayload(data) {
+      return {
+        sessionId: self.sessionId,
+        requestId: self.requestId,
+        timestamp: new Date().toISOString(),
+        type: 'web_request_timing',
+        user: self.user,
+        version: self.version || 'Not supplied',
+        device: navigator.userAgent,
+        tags: self.tags,
+        data: data,
+      };
+    }
+
+    function getSessionId(callback) {
+      var existingCookie = readCookie(self.cookieName);
+
+      var nullCookie = existingCookie === null;
+      var legacyCookie =
+        typeof exisitingCookie === 'string' &&
+        existingCookie.length > 0 &&
+        existingCookie.indexOf('timestamp') === -1;
+      var expiredCookie = null;
+
+      if (!nullCookie && !legacyCookie) {
+        var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+        var halfHrAgo = new Date(new Date() - 30 * 60000);
+        expiredCookie = existingTimestamp < halfHrAgo;
+      }
+
+      if (nullCookie || legacyCookie || expiredCookie) {
+        self.sessionId = randomKey(32);
+        createCookie(self.cookieName, self.sessionId);
+        callback(true);
+      } else {
+        var sessionCookie = readCookie(self.cookieName);
+        var id = readSessionCookieElement(sessionCookie, 'id');
+
+        if (id === 'undefined' || id === 'null') {
+          self.sessionId = randomKey(32);
+          createCookie(self.cookieName, self.sessionId);
+          callback(true);
+        } else {
+          self.sessionId = id;
+          callback(false);
+        }
+      }
+    }
+
+    function createRequestId() {
+      self.requestId = randomKey(16);
+    }
+
+    function createCookie(name, value, hours) {
+      var expires;
+      var lastActivityTimestamp;
+
+      if (hours) {
+        var date = new Date();
+        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+        expires = '; expires=' + date.toGMTString();
+      } else {
+        expires = '';
+      }
+
+      lastActivityTimestamp = new Date().toISOString();
+
+      document.cookie =
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + '; path=/';
+    }
+
+    function readSessionCookieElement(cookieString, element) {
+      var set = cookieString.split(/[|&]/);
+
+      if (element === 'id') {
+        return set[1];
+      } else if (element === 'timestamp') {
+        return set[3];
+      }
+    }
+
+    function readCookie(name) {
+      var nameEQ = name + '=';
+      var ca = document.cookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+          return c.substring(nameEQ.length, c.length);
+        }
+      }
+      return null;
+    }
+
+    function updateCookieTimestamp() {
+      var existingCookie = readCookie(self.cookieName);
+
+      var expiredCookie;
+      if (existingCookie) {
+        var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+        var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
+        expiredCookie = timestamp < halfHrAgo;
+      } else {
+        expiredCookie = true;
+      }
+
+      if (expiredCookie) {
+        self.sessionId = randomKey(32);
+      }
+
+      createCookie(self.cookieName, self.sessionId);
+
+      if (expiredCookie) {
+        self.sendNewSessionStart();
+      }
+    }
+
+    function prepareVirtualEncodedTimingData(virtualPageStartTime) {
+      return {
+        t: Timings.VirtualPage,
+        startTime: virtualPageStartTime,
+        staticLoad: self.initalStaticPageLoadTimestamp,
+        pending: true,
+      };
+    }
+
+    function processVirtualPageTimingsInQueue() {
+      var i = 0,
+        data;
+      for (i; i < self.queuedPerformanceTimings.length; i++) {
+        data = self.queuedPerformanceTimings[i];
+        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+          data.timing = generateVirtualEncodedTimingData(data.timing);
+        }
+      }
+    }
+
+    function generateVirtualEncodedTimingData(timingData) {
+      var now = getPerformanceNow(0);
+
+      return {
+        t: timingData.t,
+        du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
+        o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad),
+      };
+    }
+
+    function getEncodedTimingData(timing, offset) {
+      var data = {
+        du: timing.duration,
+        t: Timings.Page,
+      };
+
+      data.a = offset + timing.fetchStart;
+
+      if (timing.domainLookupStart && timing.domainLookupStart > 0) {
+        data.b = offset + timing.domainLookupStart - data.a;
+      }
+
+      if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
+        data.c = offset + timing.domainLookupEnd - data.a;
+      }
+
+      if (timing.connectStart && timing.connectStart > 0) {
+        data.d = offset + timing.connectStart - data.a;
+      }
+
+      if (timing.connectEnd && timing.connectEnd > 0) {
+        data.e = offset + timing.connectEnd - data.a;
+      }
+
+      if (timing.responseStart && timing.responseStart > 0) {
+        data.f = offset + timing.responseStart - data.a;
+      }
+
+      if (timing.responseEnd && timing.responseEnd > 0) {
+        data.g = offset + timing.responseEnd - data.a;
+      }
+
+      if (timing.domLoading && timing.domLoading > 0) {
+        data.h = offset + timing.domLoading - data.a;
+      }
+
+      if (timing.domInteractive && timing.domInteractive > 0) {
+        data.i = offset + timing.domInteractive - data.a;
+      }
+
+      if (timing.domContentLoadedEventEnd && timing.domContentLoadedEventEnd > 0) {
+        data.j = offset + timing.domContentLoadedEventEnd - data.a;
+      }
+
+      if (timing.domComplete && timing.domComplete > 0) {
+        data.k = maxFiveMinutes(offset + timing.domComplete - data.a);
+      }
+
+      if (timing.loadEventStart && timing.loadEventStart > 0) {
+        data.l = offset + timing.loadEventStart - data.a;
+      }
+
+      if (timing.loadEventEnd && timing.loadEventEnd > 0) {
+        data.m = offset + timing.loadEventEnd - data.a;
+      }
+
+      if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
+        data.n = offset + (timing.secureConnectionStart - timing.connectStart) - data.a;
+      }
+
+      data = sanitizeNaNs(data);
+
+      return data;
+    }
+
+    function getSecondaryTimingType(timing) {
+      if (timing.initiatorType === 'xmlhttprequest') {
+        return Timings.XHR;
+      } else if (timing.duration === 0) {
+        return Timings.CachedChildAsset;
+      } else {
+        return Timings.ChildAsset;
+      }
+    }
+
+    function getSecondaryEncodedTimingData(timing, offset) {
+      var data = {
+        du: maxFiveMinutes(timing.duration).toFixed(2),
+        t: getSecondaryTimingType(timing),
+        a: offset + timing.fetchStart,
+      };
+
+      if (timing.domainLookupStart && timing.domainLookupStart > 0) {
+        data.b = offset + timing.domainLookupStart - data.a;
+      }
+
+      if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
+        data.c = offset + timing.domainLookupEnd - data.a;
+      }
+
+      if (timing.connectStart && timing.connectStart > 0) {
+        data.d = offset + timing.connectStart - data.a;
+      }
+
+      if (timing.connectEnd && timing.connectEnd > 0) {
+        data.e = offset + timing.connectEnd - data.a;
+      }
+
+      if (timing.responseStart && timing.responseStart > 0) {
+        data.f = offset + timing.responseStart - data.a;
+      }
+
+      if (timing.responseEnd && timing.responseEnd > 0) {
+        data.g = offset + timing.responseEnd - data.a;
+      }
+
+      if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
+        data.n = offset + (timing.secureConnectionStart - timing.connectStart) - data.a;
+      }
+
+      data.a = data.a.toFixed(2);
+      data = sanitizeNaNs(data);
+
+      return data;
+    }
+
+    function getPrimaryTimingData() {
+      var pathName = window.location.pathname;
+
+      if (self.ignoreUrlCasing) {
+        pathName = pathName.toLowerCase();
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + pathName;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
+      return {
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: getEncodedTimingData(window.performance.timing, 0),
+        size: 0,
+      };
+    }
+
+    function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
+      if (self.ignoreUrlCasing) {
+        virtualPage = virtualPage.toLowerCase();
+      }
+
+      if (virtualPage.indexOf('?') !== -1) {
+        virtualPage = virtualPage.split('?')[0];
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + virtualPage;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
+      return {
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
+        size: 0,
+      };
+    }
+
+    function getSecondaryTimingData(timing, fromZero) {
+      var url = timing.name.split('?')[0];
+
+      if (self.ignoreUrlCasing) {
+        url = url.toLowerCase();
+      }
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
+      return {
+        url: url,
+        timing: getSecondaryEncodedTimingData(
+          timing,
+          fromZero ? 0 : window.performance.timing.navigationStart
+        ),
+        size: timing.decodedBodySize || 0,
+      };
+    }
+
+    function shouldIgnoreResource(name) {
+      if (name.indexOf(self.apiUrl) === 0) {
+        return true;
+      }
+      // Other ignored calls
+      if (name.indexOf('favicon.ico') > 0) {
+        return true;
+      }
+      if (name.indexOf('about:blank') === 0) {
+        return true;
+      }
+      if (name[0] === 'j' && name.indexOf('avascript:') === 1) {
+        return true;
+      }
+      if (name.indexOf('chrome-extension://') === 0) {
+        return true;
+      }
+      if (name.indexOf('res://') === 0) {
+        return true;
+      }
+      if (name.indexOf('file://') === 0) {
+        return true;
+      }
+      return false;
+    }
+
+    function extractChildData(collection, fromVirtualPage) {
+      if (!performanceEntryExists('getEntries', 'function')) {
+        return;
+      }
+
+      try {
+        var resources = window.performance.getEntries();
+
+        for (var i = self.offset; i < resources.length; i++) {
+          var segment = resources[i].name.split('?')[0];
+          if (!shouldIgnoreResource(segment)) {
+            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
+          }
+        }
+
+        self.offset = resources.length;
+      } catch (e) {}
+    }
+
+    function getPerformanceData(virtualPage, firstLoad) {
+      if (
+        !performanceEntryExists('timing', 'object') ||
+        window.performance.timing.fetchStart === undefined ||
+        isNaN(window.performance.timing.fetchStart)
+      ) {
+        return null;
+      }
+
+      var data = [];
+
+      if (firstLoad) {
+        // Called by the static onLoad event being fired, persist itself
+        data.push(getPrimaryTimingData());
+      }
+
+      // Called during both the static load event and the virtual load calls
+      // Associates all data loaded up to this point with the previous page
+      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+      extractChildData(data);
+
+      if (virtualPage) {
+        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
+        extractChildData(data, true);
+      }
+
+      return data;
+    }
+
+    function sanitizeNaNs(data) {
+      for (var i in data) {
+        if (isNaN(data[i]) && typeof data[i] !== 'string') {
+          data[i] = 0;
+        }
+      }
+
+      return data;
+    }
+
+    function randomKey(length) {
+      return Math.round(Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))
+        .toString(36)
+        .slice(1);
+    }
+
+    function performanceEntryExists(entry, entryType) {
+      return (
+        typeof window.performance === 'object' &&
+        (!entry || (entry && typeof window.performance[entry] === entryType))
+      );
+    }
+
+    function getPerformanceNow(fallbackValue) {
+      if (performanceEntryExists('now', 'function')) {
+        return window.performance.now();
+      } else {
+        return fallbackValue;
+      }
+    }
+
+    function maxFiveMinutes(milliseconds) {
+      return Math.min(milliseconds, 300000);
+    }
+
+    function log(message, data) {
+      if (self.debugMode && window.console && window.console.log) {
+        window.console.log(message);
+
+        if (data) {
+          window.console.log(data);
+        }
+      }
+    }
+
+    /**
+     * getCompareFunction() returns a predicate function to pass into the Array.sort() function
+     * The predicate function checks for the property on each item being compared and returns the appropriate integer required by the sort function
+     *
+     * @param {string} property
+     * @return {function} (a, b) => number
+     */
+
+    function getCompareFunction(property) {
+      return function(a, b) {
+        if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
+          log('Raygun4JS: Property "' + property + '" not found in items in this collection');
+          return 0;
+        }
+
+        var propA = a[property];
+        var propB = b[property];
+
+        var comparison = 0;
+        if (propA > propB) {
+          comparison = 1;
+        } else if (propA < propB) {
+          comparison = -1;
+        }
+        return comparison;
+      };
+    }
+
+    /**
+     * sortCollectionByProperty() returns an array of objects sorted by a given property on those objects
+     *
+     * @param {array} collection
+     * @param {string} property
+     * @return {array} collection
+     */
+
+    function sortCollectionByProperty(collection, property) {
+      return collection.sort(getCompareFunction(property));
+    }
+
+    _private.updateCookieTimestamp = updateCookieTimestamp;
+  };
 };
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
 
-(function (window, Raygun) {
+(function(window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
   }
@@ -4012,14 +4297,14 @@ raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
     enablePulse,
     noConflict;
 
-var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e].q=a[e].q||[]"];
+  var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
   var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
-  var parseSnippetOptions = function () {
+  var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
 
     for (var i in snippetOptions) {
@@ -4036,7 +4321,7 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  var executor = function (pair) {
+  var executor = function(pair) {
     var key = pair[0];
     var value = pair[1];
 
@@ -4072,7 +4357,14 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         case 'getRaygunInstance':
           return rg;
         case 'setUser':
-          rg.setUser(value.identifier, value.isAnonymous, value.email, value.fullName, value.firstName, value.uuid);
+          rg.setUser(
+            value.identifier,
+            value.isAnonymous,
+            value.email,
+            value.fullName,
+            value.firstName,
+            value.uuid
+          );
           break;
         case 'onBeforeSend':
           rg.onBeforeSend(value);
@@ -4183,21 +4475,21 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     }
   };
 
-  var installGlobalExecutor = function () {
-    window[window['RaygunObject']] = function () {
+  var installGlobalExecutor = function() {
+    window[window['RaygunObject']] = function() {
       return executor(arguments);
     };
 
     globalExecutorInstalled = true;
   };
 
-  var onLoadHandler = function () {
+  var onLoadHandler = function() {
     parseSnippetOptions();
 
     if (noConflict) {
       rg = Raygun.noConflict();
     }
-    
+
     if (apiKey) {
       if (!options) {
         options = {};
@@ -4219,8 +4511,11 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
     } else if (typeof window.onerror === 'function') {
-      var onerrorSignature = window.onerror.toString(); 
-      if (onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 && onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1) {
+      var onerrorSignature = window.onerror.toString();
+      if (
+        onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 &&
+        onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1
+      ) {
         window.onerror = null;
       }
     }
@@ -4251,14 +4546,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
     // then a manual rg4js('boot') call will trigger onLoadHandler, as the above events aren't available
     installGlobalExecutor();
   }
-
 })(window, window.__instantiatedRaygun);
 
-try
-{ 
-    delete window.__instantiatedRaygun;
-} 
-catch(e) 
-{ 
-    window["__instantiatedRaygun"] = undefined; 
+try {
+  delete window.__instantiatedRaygun;
+} catch (e) {
+  window['__instantiatedRaygun'] = undefined;
 }
