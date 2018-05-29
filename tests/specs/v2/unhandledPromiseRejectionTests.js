@@ -19,7 +19,5 @@ describe("Unhandled promise rejection tests", function() {
         });
 
         expect(passes).toBe(true);
-
-        expect(requestId1).not.toMatch(requestId2);
     });
 });
