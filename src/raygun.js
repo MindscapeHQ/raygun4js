@@ -207,6 +207,9 @@ var raygunFactory = function(window, $, undefined) {
       if ($document) {
         $document.unbind('ajaxError', processJQueryAjaxError);
       }
+      if (_captureUnhandledRejections) {
+        detachPromiseRejectionHandler();
+      }
       return Raygun;
     },
 
@@ -410,7 +413,8 @@ var raygunFactory = function(window, $, undefined) {
 
     bootRaygun();
   }
-
+  
+  /* jshint ignore:start */
   // Callback for `unhandledrejection` event.
   function promiseRejectionHandler(event) {
     _publicRaygunFunctions.send(event, {}, []);
@@ -425,6 +429,7 @@ var raygunFactory = function(window, $, undefined) {
   function detachPromiseRejectionHandler() {
     detachPromiseRejectionFunction();
   }
+  /* jshint ignore:end */
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
   // The common case executes it immediately due to that data being provided by the cookie synchronously
