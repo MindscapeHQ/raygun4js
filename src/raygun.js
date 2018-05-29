@@ -418,22 +418,20 @@ var raygunFactory = function(window, $, undefined) {
     bootRaygun();
   }
   
-  /* jshint ignore:start */
   // Callback for `unhandledrejection` event.
-  function promiseRejectionHandler(event) {
+  function promiseRejectionHandler(event) { // jshint ignore:line
     _publicRaygunFunctions.send(event, {}, []);
   }
   
   // Install global promise rejection handler.
-  function attachPromiseRejectionHandler() {
+  function attachPromiseRejectionHandler() { // jshint ignore:line
     detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', this.promiseRejectionHandler);
   }
   
   // Uninstall global promise rejection handler.
-  function detachPromiseRejectionHandler() {
+  function detachPromiseRejectionHandler() { // jshint ignore:line
     detachPromiseRejectionFunction();
   }
-  /* jshint ignore:end */
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
   // The common case executes it immediately due to that data being provided by the cookie synchronously
