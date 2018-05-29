@@ -16,7 +16,8 @@
     options,
     attach,
     enablePulse,
-    noConflict;
+    noConflict,
+    captureUnhandledRejections;
 
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
@@ -191,6 +192,9 @@
           break;
         case 'logContentsOfXhrCalls':
           rg.setBreadcrumbOption('logXhrContents', pair[1]);
+          break;
+        case 'captureUnhandledRejections':
+          captureUnhandledRejections = value;
           break;
       }
     }

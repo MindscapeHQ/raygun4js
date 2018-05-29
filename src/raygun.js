@@ -168,6 +168,10 @@ var raygunFactory = function(window, $, undefined) {
         window.onerror = null;
       }
 
+      if  (_captureUnhandledRejections) {
+        attachPromiseRejectionHandler();
+      }
+
       // Attach React Native's handler in Release mode
       if (Raygun.Utilities.isReactNative()) {
         if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
@@ -470,10 +474,6 @@ var raygunFactory = function(window, $, undefined) {
           window.attachEvent('onload', startRum);
         }
       }
-    }
-    
-    if  (_captureUnhandledRejections) {
-      attachPromiseRejectionHandler();
     }
 
     retriggerDelayedCommands();
