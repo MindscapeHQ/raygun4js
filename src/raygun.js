@@ -121,6 +121,10 @@ var raygunFactory = function(window, $, undefined) {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
         }
 
+        if(typeof options.captureUnhandledRejections !== 'undefined') {
+          _captureUnhandledRejections = options.captureUnhandledRejections;
+        }
+
         if (options.debugMode) {
           _debugMode = options.debugMode;
         }
@@ -381,7 +385,7 @@ var raygunFactory = function(window, $, undefined) {
       return _breadcrumbs.all();
     },
   };
-    
+
   Raygun = Raygun.Utilities.mergeMutate(Raygun, _publicRaygunFunctions);
 
   function callAfterSend(response) {
@@ -417,19 +421,19 @@ var raygunFactory = function(window, $, undefined) {
 
     bootRaygun();
   }
-  
+
   // Callback for `unhandledrejection` event.
-  function promiseRejectionHandler(event) { // jshint ignore:line
+  function promiseRejectionHandler(event) {
     _publicRaygunFunctions.send(event, {}, []);
   }
-  
+
   // Install global promise rejection handler.
-  function attachPromiseRejectionHandler() { // jshint ignore:line
-    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', this.promiseRejectionHandler);
+  function attachPromiseRejectionHandler() {
+    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', promiseRejectionHandler);
   }
-  
+
   // Uninstall global promise rejection handler.
-  function detachPromiseRejectionHandler() { // jshint ignore:line
+  function detachPromiseRejectionHandler() {
     detachPromiseRejectionFunction();
   }
 
