@@ -1,7 +1,7 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
 
-describe("Unhandled promise rejection tests", function() {
+describe("Unhandled promise rejection", function() {
 
     // Tests
 
@@ -12,8 +12,8 @@ describe("Unhandled promise rejection tests", function() {
 
         var requestPayloads = browser.execute(function () {
             return window.__requestPayloads;
-        }).value;
-
+        });
+        
         var passes = _.any(requestPayloads.value, function (payload) {
             return payload.Details.Error.Message.indexOf('rejected promise') > -1;
         });
