@@ -424,7 +424,17 @@ var raygunFactory = function(window, $, undefined) {
 
   // Callback for `unhandledrejection` event.
   function promiseRejectionHandler(event) {
-    _publicRaygunFunctions.send(event.reason, {}, []);
+    var error = event.reason;
+    if(!error && event.detail && event.detail.reason) {
+      error = event.detail.reason;
+    }
+    if(!error) {
+      error = event;
+    }
+    if(typeof error !== Error && typeof error === "string") {
+      error = new Error(error);
+    }
+    _publicRaygunFunctions.send(error);
   }
 
   // Install global promise rejection handler.

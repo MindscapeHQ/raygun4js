@@ -20,11 +20,19 @@
       captureUnhandledRejections: true
     });
 
-    setTimeout(function () {
-      new Promise(function(resolve, reject) {
-        reject(new Error('rejection'));
-      });
-    }, 1000);
+    window.supportsOnunhandledrejection = false;
+
+    if('onunhandledrejection' in window) {
+      window.supportsOnunhandledrejection = true;
+
+      setTimeout(function() {
+        new Promise(function(resolve, reject) {
+          reject(new Error('rejected promise'));
+        });
+
+        Promise.reject('rejected promise');
+      }, 1000);
+    }
 </script>
 </body>
 </html>
