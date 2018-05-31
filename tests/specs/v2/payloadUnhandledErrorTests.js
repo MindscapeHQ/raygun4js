@@ -33,7 +33,6 @@ describe("Payload functional validation tests for v2 automatic unhandled error s
 
     var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
-;
     });
 
     expect(didPerformRequest).toBe(false);

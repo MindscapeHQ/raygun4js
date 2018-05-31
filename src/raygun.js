@@ -62,7 +62,9 @@ var raygunFactory = function(window, $, undefined) {
     _processExceptionQueue = [],
     _trackEventQueue = [],
     _pulseCustomLoadTimeEnabled = null,
-    $document;
+    $document,
+    _captureUnhandledRejections = true,
+    detachPromiseRejectionFunction;
 
   var rand = Math.random();
   var _publicRaygunFunctions = {
@@ -119,6 +121,10 @@ var raygunFactory = function(window, $, undefined) {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
         }
 
+        if(typeof options.captureUnhandledRejections !== 'undefined') {
+          _captureUnhandledRejections = options.captureUnhandledRejections;
+        }
+
         if (options.debugMode) {
           _debugMode = options.debugMode;
         }
@@ -166,6 +172,10 @@ var raygunFactory = function(window, $, undefined) {
         window.onerror = null;
       }
 
+      if  (_captureUnhandledRejections) {
+        attachPromiseRejectionHandler();
+      }
+
       // Attach React Native's handler in Release mode
       if (Raygun.Utilities.isReactNative()) {
         if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
@@ -204,6 +214,9 @@ var raygunFactory = function(window, $, undefined) {
       _traceKit.report.unsubscribe(processException);
       if ($document) {
         $document.unbind('ajaxError', processJQueryAjaxError);
+      }
+      if (_captureUnhandledRejections) {
+        detachPromiseRejectionHandler();
       }
       return Raygun;
     },
@@ -407,6 +420,31 @@ var raygunFactory = function(window, $, undefined) {
     Raygun.setUser(userIdentifier, true, null, null, null, userIdentifier);
 
     bootRaygun();
+  }
+
+  // Callback for `unhandledrejection` event.
+  function promiseRejectionHandler(event) {
+    var error = event.reason;
+    if(!error && event.detail && event.detail.reason) {
+      error = event.detail.reason;
+    }
+    if(!error) {
+      error = event;
+    }
+    if(typeof error !== Error && typeof error === "string") {
+      error = new Error(error);
+    }
+    _publicRaygunFunctions.send(error);
+  }
+
+  // Install global promise rejection handler.
+  function attachPromiseRejectionHandler() {
+    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', promiseRejectionHandler);
+  }
+
+  // Uninstall global promise rejection handler.
+  function detachPromiseRejectionHandler() {
+    detachPromiseRejectionFunction();
   }
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
