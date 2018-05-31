@@ -1,3 +1,19 @@
+* v2.10.0
+  - Add support for unhandled promise exceptions 
+
+* v2.9.4
+  - Fix crash with stack traces containing undefined urls
+
+* v2.9.2
+  - Fix potential error attaching breadcrumbs to error payload
+
+* v2.9.1
+  - Fixes crash in third party error detection code when stacktraces have undefined urls
+
+* v2.9.0
+  - If logging of XHR contents in Breadcrumbs is enabled requests/responses before the onload event will now be recorded
+  - Errors that happen before onload event when using Raygun4JS via the NPM module will now be captured
+
 * v2.8.6
   - Add a request ID for each page and virtual page to associate it with its child assets
   - Add failed posted payload event items to a queue, attempt to send queued items on heartbeat
@@ -7,7 +23,7 @@
   - Stop multiple heartbeat timers from being created
   - Prevent 'page' and 'virtual page' timings from being included in the same event data item, fixing 'virtual pages' being counted as 'page views'
   - Fix child assets being associated with incorrect views
-  - Fix virtual page duration timings 
+  - Fix virtual page duration timings
 
 * v2.8.4
   - Correct error in Typescript definition requiring isAnonymous to be a string when setting user information

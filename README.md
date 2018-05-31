@@ -196,6 +196,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `pulseIgnoreUrlCasing` - Ignore URL casing when sending data to Pulse.
 
+`captureUnhandledRejections` - Automatically catch send errors relating to unhandled promise rejections. See [MDN for browser support](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
+
 An example:
 
 ```javascript
@@ -211,7 +213,8 @@ rg4js('options', {
   disableErrorTracking: false,
   disablePulse: false,
   pulseMaxVirtualPageDuration: 1800000,
-  pulseIgnoreUrlCasing: false
+  pulseIgnoreUrlCasing: false,
+  captureUnhandledRejections: true
 });
 ```
 
@@ -301,6 +304,25 @@ If you wish to have further control of the breadcrumb and configure the level (d
 `rg4js('recordBreadcrumb', {message: 'breadcrumb-message', metadata: {goes: 'here'}, level: 'info', location: 'class:method'})`
 
 You may use the above argument format
+
+### Unhandled Promise Rejection
+
+As of 2.10.0 Raygun4JS captures unhandled promise rejections automatically. Browser support for this feature is currently spotty and you can view browser support at [MDN](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).  
+
+To disable this functionality by default you can set the `captureUnhandledRejections` key in the [Initialization Options](Initialization Options).
+
+If you are using a Promise library which contains a global hook for capturing errors you can manually send errors inside of that global hook.
+
+[RSVP.js example:](https://github.com/tildeio/rsvp.js/)
+```javascript
+RSVP.on('error', function(reason) {
+    rg4js('send', {
+      error: reason
+    });
+});
+```
+
+Promise libraries which report unhandled rejections to a global `unhandledrejection` DOM event, like [Bluebird](http://bluebirdjs.com/), are automatically picked up when you have `captureUnhandledRejections` set.
 
 #### Payload size conservation
 
@@ -640,14 +662,14 @@ $httpProvider.interceptors.push(function($q, dependency1, dependency2) {
   return {
    'requestError': function(rejection) {
        rg4js('send', {
-          error: 'Failed $http request', 
+          error: 'Failed $http request',
           customData: { rejection: rejection }
        });
     },
 
     'responseError': function(rejection) {
        rg4js('send', {
-          error: 'Failed $http response', 
+          error: 'Failed $http response',
           customData: { rejection: rejection}
        });
     }
@@ -666,7 +688,7 @@ You can use the Vue.js error handler to send errors directly to Raygun.
 ```javascript
 Vue.config.errorHandler = function(err, vm, info) {
   rg4js('send', {
-    error: err, 
+    error: err,
     customData: [{ info: info }]
   });
 };
