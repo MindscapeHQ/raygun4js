@@ -615,7 +615,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function isChromeFetchCall(timing) {
       // Chrome doesn't report "initiatorType" as fetch
-      return typeof timing.initiatorType === "string" && timing.initiatorType === "" && PerformanceResourceTiming && timing instanceof PerformanceResourceTiming;
+      return typeof timing.initiatorType === "string" && timing.initiatorType === "" && window.PerformanceResourceTiming && timing instanceof window.PerformanceResourceTiming;
     }
 
     function isChildAsset(timing) {

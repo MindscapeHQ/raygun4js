@@ -4038,11 +4038,16 @@ var raygunRumFactory = function(window, $, Raygun) {
         return Timings.XHR;
       } else if(isChildAsset(timing)) {
         return getTypeForChildAsset(timing);
-      } else if(typeof timing.initiatorType === "string" && timing.initiatorType === "") { // Chrome doesn't report "initiatorType" as fetch
+      } else if(isChromeFetchCall(timing)) {
         return Timings.XHR;
       } else {
         return getTypeForChildAsset(timing);
       }
+    }
+
+    function isChromeFetchCall(timing) {
+      // Chrome doesn't report "initiatorType" as fetch
+      return typeof timing.initiatorType === "string" && timing.initiatorType === "" && window.PerformanceResourceTiming && timing instanceof window.PerformanceResourceTiming;
     }
 
     function isChildAsset(timing) {
