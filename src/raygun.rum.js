@@ -602,9 +602,32 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getSecondaryTimingType(timing) {
-      if (timing.initiatorType === 'xmlhttprequest') {
+      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === "fetch") {
         return Timings.XHR;
-      } else if (timing.duration === 0) {
+      } else if(isChildAsset(timing)) {
+        return getTypeForChildAsset(timing);
+      } else if(typeof timing.initiatorType === "string" && timing.initiatorType === "") { // Chrome doesn't report "initiatorType" as fetch
+        return Timings.XHR;
+      } else {
+        return getTypeForChildAsset(timing);
+      }
+    }
+
+    function isChildAsset(timing) {
+      switch(timing.initiatorType) {
+        case "img":
+        case "css":
+        case "script":
+        case "link":
+        case "other":
+        case "use":
+          return true;
+      }
+      return false;
+    }
+
+    function getTypeForChildAsset(timing) {
+      if (timing.duration === 0) {
         return Timings.CachedChildAsset;
       } else {
         return Timings.ChildAsset;
