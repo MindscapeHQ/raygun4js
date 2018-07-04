@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.10.1 - 2018-07-03
+/*! Raygun4js - v2.10.1 - 2018-07-04
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3979,7 +3979,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function isChromeFetchCall(timing) {
       // Chrome doesn't report "initiatorType" as fetch
-      return typeof timing.initiatorType === "string" && timing.initiatorType === "" && window.PerformanceResourceTiming && timing instanceof window.PerformanceResourceTiming;
+      return typeof timing.initiatorType === "string" && timing.initiatorType === "";
     }
 
     function isChildAsset(timing) {
