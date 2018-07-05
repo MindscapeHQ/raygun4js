@@ -31,9 +31,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
         expires = '';
       }
 
-      var secure = setAsSecure ? '; Secure' : '';
+      var secure = setAsSecure ? '; secure' : '';
 
-      document.cookie = name + '=' + value + expires + secure + '; path=/';
+      document.cookie = name + '=' + value + expires + '; path=/' + secure;
     },
 
     readCookie: function(name, doneCallback) {

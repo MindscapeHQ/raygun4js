@@ -1413,9 +1413,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
         expires = '';
       }
 
-      var secure = setAsSecure ? '; Secure' : '';
+      var secure = setAsSecure ? '; secure' : '';
 
-      document.cookie = name + '=' + value + expires + secure + '; path=/';
+      document.cookie = name + '=' + value + expires + '; path=/' + secure;
     },
 
     readCookie: function(name, doneCallback) {
@@ -3893,10 +3893,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       lastActivityTimestamp = new Date().toISOString();
 
-      var secure = saveAsSecure ? '; Secure' : '';
+      var secure = saveAsSecure ? '; secure' : '';
 
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + secure +'; path=/';
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
     }
 
     function readSessionCookieElement(cookieString, element) {

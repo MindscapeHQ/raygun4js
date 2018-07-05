@@ -456,10 +456,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       lastActivityTimestamp = new Date().toISOString();
 
-      var secure = saveAsSecure ? '; Secure' : '';
+      var secure = saveAsSecure ? '; secure' : '';
 
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + secure +'; path=/';
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
     }
 
     function readSessionCookieElement(cookieString, element) {
