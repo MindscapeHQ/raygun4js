@@ -1,5 +1,11 @@
+* v2.11.0
+  - Adds 'setCookieAsSecure' option which will set the '; secure' flag on cookies. Off by default
+
+* v2.10.1
+  - Fetch calls are now tracked like XHR calls for RUM
+
 * v2.10.0
-  - Add support for unhandled promise exceptions 
+  - Add support for unhandled promise exceptions
 
 * v2.9.4
   - Fix crash with stack traces containing undefined urls
