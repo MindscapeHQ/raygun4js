@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.10.1 - 2018-07-04
+/*! Raygun4js - v2.10.1 - 2018-07-06
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1448,7 +1448,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       return _p8() + _p8(true) + _p8(true) + _p8();
     },
 
-    createCookie: function(name, value, hours) {
+    createCookie: function(name, value, hours, setAsSecure) {
       if (this.isReactNative()) {
         return;
       }
@@ -1462,7 +1462,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
         expires = '';
       }
 
-      document.cookie = name + '=' + value + expires + '; path=/';
+      var secure = setAsSecure ? '; Secure' : '';
+
+      document.cookie = name + '=' + value + expires + secure + '; path=/';
     },
 
     readCookie: function(name, doneCallback) {
@@ -2456,6 +2458,7 @@ var raygunFactory = function(window, $, undefined) {
     _pulseCustomLoadTimeEnabled = null,
     $document,
     _captureUnhandledRejections = true,
+    _setCookieAsSecure = false,
     detachPromiseRejectionFunction;
 
   var rand = Math.random();
@@ -2504,6 +2507,7 @@ var raygunFactory = function(window, $, undefined) {
         _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
         _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
         _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
+        _setCookieAsSecure = options.setCookieAsSecure || false;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -2804,7 +2808,7 @@ var raygunFactory = function(window, $, undefined) {
     if (!userId) {
       userIdentifier = Raygun.Utilities.getUuid();
 
-      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
+      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31, _setCookieAsSecure);
     } else {
       userIdentifier = userId;
     }
@@ -2864,7 +2868,8 @@ var raygunFactory = function(window, $, undefined) {
           _pulseMaxVirtualPageDuration,
           _pulseIgnoreUrlCasing,
           _pulseCustomLoadTimeEnabled,
-          _beforeSendRumCallback
+          _beforeSendRumCallback,
+          _setCookieAsSecure
         );
         _rum.attach();
       };
@@ -3504,7 +3509,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     maxVirtualPageDuration,
     ignoreUrlCasing,
     customTimingsEnabled,
-    beforeSendCb
+    beforeSendCb,
+    setCookieAsSecure
   ) {
     var self = this;
     var _private = {};
@@ -3539,6 +3545,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
+    this.setCookieAsSecure = setCookieAsSecure;
 
     var Timings = {
       Page: 'p',
@@ -3900,7 +3907,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       if (nullCookie || legacyCookie || expiredCookie) {
         self.sessionId = randomKey(32);
-        createCookie(self.cookieName, self.sessionId);
+        createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
         callback(true);
       } else {
         var sessionCookie = readCookie(self.cookieName);
@@ -3908,7 +3915,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         if (id === 'undefined' || id === 'null') {
           self.sessionId = randomKey(32);
-          createCookie(self.cookieName, self.sessionId);
+          createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
           callback(true);
         } else {
           self.sessionId = id;
@@ -3921,7 +3928,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.requestId = randomKey(16);
     }
 
-    function createCookie(name, value, hours) {
+    function createCookie(name, value, hours, saveAsSecure) {
       var expires;
       var lastActivityTimestamp;
 
@@ -3935,8 +3942,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       lastActivityTimestamp = new Date().toISOString();
 
+      var secure = saveAsSecure ? '; Secure' : '';
+
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + '; path=/';
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + secure +'; path=/';
     }
 
     function readSessionCookieElement(cookieString, element) {
@@ -3980,7 +3989,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         self.sessionId = randomKey(32);
       }
 
-      createCookie(self.cookieName, self.sessionId);
+      createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
 
       if (expiredCookie) {
         self.sendNewSessionStart();

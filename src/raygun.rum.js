@@ -23,7 +23,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     maxVirtualPageDuration,
     ignoreUrlCasing,
     customTimingsEnabled,
-    beforeSendCb
+    beforeSendCb,
+    setCookieAsSecure
   ) {
     var self = this;
     var _private = {};
@@ -58,6 +59,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
+    this.setCookieAsSecure = setCookieAsSecure;
 
     var Timings = {
       Page: 'p',
@@ -419,7 +421,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       if (nullCookie || legacyCookie || expiredCookie) {
         self.sessionId = randomKey(32);
-        createCookie(self.cookieName, self.sessionId);
+        createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
         callback(true);
       } else {
         var sessionCookie = readCookie(self.cookieName);
@@ -427,7 +429,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         if (id === 'undefined' || id === 'null') {
           self.sessionId = randomKey(32);
-          createCookie(self.cookieName, self.sessionId);
+          createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
           callback(true);
         } else {
           self.sessionId = id;
@@ -440,7 +442,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.requestId = randomKey(16);
     }
 
-    function createCookie(name, value, hours) {
+    function createCookie(name, value, hours, saveAsSecure) {
       var expires;
       var lastActivityTimestamp;
 
@@ -454,8 +456,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       lastActivityTimestamp = new Date().toISOString();
 
+      var secure = saveAsSecure ? '; Secure' : '';
+
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + '; path=/';
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires + secure +'; path=/';
     }
 
     function readSessionCookieElement(cookieString, element) {
@@ -499,7 +503,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         self.sessionId = randomKey(32);
       }
 
-      createCookie(self.cookieName, self.sessionId);
+      createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
 
       if (expiredCookie) {
         self.sendNewSessionStart();
