@@ -9,6 +9,7 @@
     "name": "MindscapeHQ",
     "email": "hello@raygun.io"
   },
+  "types" : "typescript/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/MindscapeHQ/raygun4js.git"
