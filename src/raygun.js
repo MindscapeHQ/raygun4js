@@ -64,6 +64,7 @@ var raygunFactory = function(window, $, undefined) {
     _pulseCustomLoadTimeEnabled = null,
     $document,
     _captureUnhandledRejections = true,
+    _setCookieAsSecure = false,
     detachPromiseRejectionFunction;
 
   var rand = Math.random();
@@ -112,6 +113,7 @@ var raygunFactory = function(window, $, undefined) {
         _pulseMaxVirtualPageDuration = options.pulseMaxVirtualPageDuration || null;
         _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
         _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
+        _setCookieAsSecure = options.setCookieAsSecure || false;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -412,7 +414,7 @@ var raygunFactory = function(window, $, undefined) {
     if (!userId) {
       userIdentifier = Raygun.Utilities.getUuid();
 
-      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31);
+      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31, _setCookieAsSecure);
     } else {
       userIdentifier = userId;
     }
@@ -472,7 +474,8 @@ var raygunFactory = function(window, $, undefined) {
           _pulseMaxVirtualPageDuration,
           _pulseIgnoreUrlCasing,
           _pulseCustomLoadTimeEnabled,
-          _beforeSendRumCallback
+          _beforeSendRumCallback,
+          _setCookieAsSecure
         );
         _rum.attach();
       };

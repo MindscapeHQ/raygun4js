@@ -17,7 +17,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       return _p8() + _p8(true) + _p8(true) + _p8();
     },
 
-    createCookie: function(name, value, hours) {
+    createCookie: function(name, value, hours, setAsSecure) {
       if (this.isReactNative()) {
         return;
       }
@@ -31,7 +31,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
         expires = '';
       }
 
-      document.cookie = name + '=' + value + expires + '; path=/';
+      var secure = setAsSecure ? '; secure' : '';
+
+      document.cookie = name + '=' + value + expires + '; path=/' + secure;
     },
 
     readCookie: function(name, doneCallback) {

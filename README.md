@@ -198,6 +198,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `captureUnhandledRejections` - Automatically catch send errors relating to unhandled promise rejections. See [MDN for browser support](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
 
+`setCookieAsSecure` - Create cookies using the `; secure` thus cookies only work on HTTPS.
+
 An example:
 
 ```javascript
@@ -214,7 +216,8 @@ rg4js('options', {
   disablePulse: false,
   pulseMaxVirtualPageDuration: 1800000,
   pulseIgnoreUrlCasing: false,
-  captureUnhandledRejections: true
+  captureUnhandledRejections: true,
+  setCookieAsSecure: false
 });
 ```
 
