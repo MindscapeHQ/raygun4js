@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.11.0 - 2018-07-06
+/*! Raygun4js - v2.11.1 - 2018-07-16
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2981,28 +2981,32 @@ var raygunFactory = function(window, $, undefined) {
         return;
       }
 
-      if (
-        stackTrace.stack[0] !== null &&
-        stackTrace.stack[0] !== undefined &&
-        stackTrace.stack[0].url !== null &&
-        stackTrace.stack[0].url !== undefined &&
-        stackTrace.stack[0].url.indexOf(domain) === -1
-      ) {
-        var allowedDomainFound = false;
+      var foundValidDomain = false;
+      for (var i = 0; !foundValidDomain && stackTrace.stack && i < stackTrace.stack.length; i++) {
+        if (
+          stackTrace.stack[i] !== null &&
+          stackTrace.stack[i] !== undefined &&
+          stackTrace.stack[i].url !== null &&
+          stackTrace.stack[i].url !== undefined
+        ) {
+          for (var j in _whitelistedScriptDomains) {
+            if (stackTrace.stack[i].url.indexOf(_whitelistedScriptDomains[j]) > -1) {
+              foundValidDomain = true;
+            }
+          }
 
-        for (var i in _whitelistedScriptDomains) {
-          if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
-            allowedDomainFound = true;
+          if (stackTrace.stack[i].url.indexOf(domain) > -1) {
+            foundValidDomain = true;
           }
         }
+      }
 
-        if (!allowedDomainFound) {
-          Raygun.Utilities.log(
-            'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
-          );
+      if (!foundValidDomain) {
+        Raygun.Utilities.log(
+          'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
+        );
 
-          return;
-        }
+        return;
       }
     }
 
@@ -3189,7 +3193,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.11.0',
+          Version: '2.11.1',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
