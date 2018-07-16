@@ -55,6 +55,22 @@ describe("Payload functional validation tests for V2 manual send", function() {
     expect(passes).toBe(true);
   });
 
+  it("works with ignore3rdPartyErrors enabled", function() {
+    browser.url('http://localhost:4567/fixtures/v2/manualSend3rdParty.html');
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.any(requestPayloads.value, function (payload) {
+      return payload.Details.Error.Message === 'Manual send' || payload.Details.Error.Message === 'Script error';
+    });
+
+    expect(passes).toBe(true);
+  });
+
   it("has the classname in the payload set", function () {
     browser.url('http://localhost:4567/fixtures/v2/manualSend.html');
 
