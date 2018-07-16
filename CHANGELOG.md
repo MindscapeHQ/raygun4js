@@ -1,3 +1,7 @@
+* v2.11.1
+  - Fixes bug with `ignore3rdPartyErrors` that could result in first party errors being ignored
+  - Fixes Typescript definitions for V2 API
+
 * v2.11.0
   - Adds 'setCookieAsSecure' option which will set the '; secure' flag on cookies. Off by default
 
