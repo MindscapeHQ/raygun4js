@@ -704,28 +704,32 @@ var raygunFactory = function(window, $, undefined) {
         return;
       }
 
-      if (
-        stackTrace.stack[0] !== null &&
-        stackTrace.stack[0] !== undefined &&
-        stackTrace.stack[0].url !== null &&
-        stackTrace.stack[0].url !== undefined &&
-        stackTrace.stack[0].url.indexOf(domain) === -1
-      ) {
-        var allowedDomainFound = false;
+      var foundValidDomain = false;
+      for (var i = 0; !foundValidDomain && stackTrace.stack && i < stackTrace.stack.length; i++) {
+        if (
+          stackTrace.stack[i] !== null &&
+          stackTrace.stack[i] !== undefined &&
+          stackTrace.stack[i].url !== null &&
+          stackTrace.stack[i].url !== undefined
+        ) {
+          for (var j in _whitelistedScriptDomains) {
+            if (stackTrace.stack[i].url.indexOf(_whitelistedScriptDomains[j]) > -1) {
+              foundValidDomain = true;
+            }
+          }
 
-        for (var i in _whitelistedScriptDomains) {
-          if (stackTrace.stack[0].url.indexOf(_whitelistedScriptDomains[i]) > -1) {
-            allowedDomainFound = true;
+          if (stackTrace.stack[i].url.indexOf(domain) > -1) {
+            foundValidDomain = true;
           }
         }
+      }
 
-        if (!allowedDomainFound) {
-          Raygun.Utilities.log(
-            'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
-          );
+      if (!foundValidDomain) {
+        Raygun.Utilities.log(
+          'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
+        );
 
-          return;
-        }
+        return;
       }
     }
 
