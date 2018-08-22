@@ -327,6 +327,10 @@ RSVP.on('error', function(reason) {
 
 Promise libraries which report unhandled rejections to a global `unhandledrejection` DOM event, like [Bluebird](http://bluebirdjs.com/), are automatically picked up when you have `captureUnhandledRejections` set.
 
+### Dynamic code splitting / loading with Webpack
+
+If you are using Webpack to perform dynamic code splitting / loading and you are loading your bundles off of a separate domain (ie a cdn) you will need to ensure that you have set the `output.crossOriginLoading` configuration option to `anonymous` to have Raygun4JS pick up your errors without CORS issues. Without this setting the dynamic script tags will be created without a `crossorigin` attribute and be treated by the browser as private information in Raygun4JS's execution context.
+
 #### Payload size conservation
 
 To help ensure your payload does not become too large only the most recent 32 breadcrumbs are kept, as well as limiting the size of recorded network request/response texts to 500 characters.
