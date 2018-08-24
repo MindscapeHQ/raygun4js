@@ -686,8 +686,6 @@ var raygunFactory = function(window, $, undefined) {
         msg = stackTrace.message;
       } else if (options && options.status) {
         msg = options.status;
-      } else if(typeof error === "string") {
-        msg = error;
       }
 
       if (typeof msg === 'undefined') {
@@ -871,6 +869,8 @@ var raygunFactory = function(window, $, undefined) {
       finalMessage = stackTrace.message;
     } else if (options && options.status) {
       finalMessage = options.status;
+    } else if(typeof error === "string") {
+      finalMessage = error;
     }
 
     if (typeof finalMessage === 'undefined') {
