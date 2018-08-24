@@ -242,7 +242,8 @@ var raygunFactory = function(window, $, undefined) {
                 ? Raygun.Utilities.mergeArray(_tags(), tags)
                 : Raygun.Utilities.mergeArray(_tags, tags),
           },
-          true
+          true,
+          ex
         );
       } catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -503,7 +504,8 @@ var raygunFactory = function(window, $, undefined) {
       processException(
         _processExceptionQueue[i].stackTrace,
         _processExceptionQueue[i].options,
-        _processExceptionQueue[i].userTriggered
+        _processExceptionQueue[i].userTriggered,
+        _processExceptionQueue[i].error
       );
     }
 
@@ -655,12 +657,13 @@ var raygunFactory = function(window, $, undefined) {
     });
   }
 
-  function processException(stackTrace, options, userTriggered) {
+  function processException(stackTrace, options, userTriggered, error) {
     if (_providerState !== ProviderStates.READY) {
       _processExceptionQueue.push({
         stackTrace: stackTrace,
         options: options,
         userTriggered: userTriggered,
+        error: error
       });
       return;
     }
@@ -683,6 +686,8 @@ var raygunFactory = function(window, $, undefined) {
         msg = stackTrace.message;
       } else if (options && options.status) {
         msg = options.status;
+      } else if(typeof error === "string") {
+        msg = error;
       }
 
       if (typeof msg === 'undefined') {
