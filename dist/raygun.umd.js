@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.11.1 - 2018-07-16
+/*! Raygun4js - v2.11.2 - 2018-08-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -2636,7 +2636,8 @@ var raygunFactory = function(window, $, undefined) {
                 ? Raygun.Utilities.mergeArray(_tags(), tags)
                 : Raygun.Utilities.mergeArray(_tags, tags),
           },
-          true
+          true,
+          ex
         );
       } catch (traceKitException) {
         if (ex !== traceKitException) {
@@ -2897,7 +2898,8 @@ var raygunFactory = function(window, $, undefined) {
       processException(
         _processExceptionQueue[i].stackTrace,
         _processExceptionQueue[i].options,
-        _processExceptionQueue[i].userTriggered
+        _processExceptionQueue[i].userTriggered,
+        _processExceptionQueue[i].error
       );
     }
 
@@ -3049,12 +3051,13 @@ var raygunFactory = function(window, $, undefined) {
     });
   }
 
-  function processException(stackTrace, options, userTriggered) {
+  function processException(stackTrace, options, userTriggered, error) {
     if (_providerState !== ProviderStates.READY) {
       _processExceptionQueue.push({
         stackTrace: stackTrace,
         options: options,
         userTriggered: userTriggered,
+        error: error
       });
       return;
     }
@@ -3260,6 +3263,8 @@ var raygunFactory = function(window, $, undefined) {
       finalMessage = stackTrace.message;
     } else if (options && options.status) {
       finalMessage = options.status;
+    } else if(typeof error === "string") {
+      finalMessage = error;
     }
 
     if (typeof finalMessage === 'undefined') {
@@ -3310,7 +3315,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.11.1',
+          Version: '2.11.2',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
