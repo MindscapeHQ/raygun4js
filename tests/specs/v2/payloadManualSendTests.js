@@ -199,7 +199,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return payload.Details.Error.Message === 'Manual send';
     });
 
-    expect(requestPayloads.length).toBe(2)
+    expect(requestPayloads.value.length).toBe(2)
     expect(passes).toBe(true);
   });
 
