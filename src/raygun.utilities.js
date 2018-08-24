@@ -159,7 +159,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       if (t1 != null) {
         return t0.concat(t1);
       }
-      return t0;
+      return t0.slice(0);
     },
 
     forEach: function(set, func) {
