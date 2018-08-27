@@ -1,3 +1,8 @@
+* v2.12.0
+  - Add `UnhandledPromiseRejection` tag to errors caught by the unhandled promise callback
+  - Fixes a bug where the `UnhandledException` tag would be added unnecessarily to subsequent errors
+  - Manually sending a error which is a string and not a Error object no longer results in a `Script error` being sent. Instead it uses the string as the error message  
+
 * v2.11.1
   - Fixes bug with `ignore3rdPartyErrors` that could result in first party errors being ignored
   - Fixes Typescript definitions for V2 API
