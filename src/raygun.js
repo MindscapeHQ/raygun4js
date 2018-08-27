@@ -437,7 +437,7 @@ var raygunFactory = function(window, $, undefined) {
     if(typeof error !== Error && typeof error === "string") {
       error = new Error(error);
     }
-    _publicRaygunFunctions.send(error);
+    _publicRaygunFunctions.send(error, undefined, ['UnhandledPromiseRejection']);
   }
 
   // Install global promise rejection handler.
