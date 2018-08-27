@@ -186,4 +186,21 @@ describe("Payload functional validation tests for V2 manual send", function() {
     expect(passes).toBe(true);
   });
 
+  it("supports sending errors with the error as a string", function () {
+    browser.url('http://localhost:4567/fixtures/v2/manualSendErrorAsString.html');
+
+    browser.pause(4000);
+
+    var requestPayloads = browser.execute(function () {
+      return window.__requestPayloads;
+    });
+
+    var passes = _.every(requestPayloads.value, function (payload) {
+      return payload.Details.Error.Message === 'Manual send';
+    });
+
+    expect(requestPayloads.value.length).toBe(2)
+    expect(passes).toBe(true);
+  });
+
 });
