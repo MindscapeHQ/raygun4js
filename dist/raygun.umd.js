@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.11.2 - 2018-08-24
+/*! Raygun4js - v2.12.0 - 2018-08-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1590,7 +1590,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       if (t1 != null) {
         return t0.concat(t1);
       }
-      return t0;
+      return t0.slice(0);
     },
 
     forEach: function(set, func) {
@@ -2831,7 +2831,7 @@ var raygunFactory = function(window, $, undefined) {
     if(typeof error !== Error && typeof error === "string") {
       error = new Error(error);
     }
-    _publicRaygunFunctions.send(error);
+    _publicRaygunFunctions.send(error, undefined, ['UnhandledPromiseRejection']);
   }
 
   // Install global promise rejection handler.
@@ -3315,7 +3315,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.11.2',
+          Version: '2.12.0',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
