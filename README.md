@@ -5,6 +5,8 @@
 [rayguncom]: https://raygun.com
 
 [![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js)
+[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/MindscapeHQ/raygun4js.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MindscapeHQ/raygun4js/context:javascript)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/MindscapeHQ/raygun4js.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MindscapeHQ/raygun4js/alerts)
 
 ## Getting Started
 
