@@ -179,7 +179,7 @@ The second parameter should contain one or more of these keys and a value to cus
 
 `ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
-and will still be sent.
+and will still be sent. _Note: IE 9 and below have no stacktrace information and errors will be discarded with this enabled._
 
 `excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings or RegExp
 objects (for partial matches). Each should match the hostname or TLD that you want to exclude. Note that protocols are not tested.
