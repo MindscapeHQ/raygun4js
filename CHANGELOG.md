@@ -1,3 +1,6 @@
+* v2.12.1
+  - Bug where stacktraces/messages in older browsers wouldn't be calculated
+
 * v2.12.0
   - Add `UnhandledPromiseRejection` tag to errors caught by the unhandled promise callback
   - Fixes a bug where the `UnhandledException` tag would be added unnecessarily to subsequent errors
