@@ -1,3 +1,6 @@
+* v2.13.0
+  - Unhandled promise exceptions will now use the look for a `reason.error` error instance if `event.reason` isn't alreayd an Error instance.
+
 * v2.12.1
   - Bug where stacktraces/messages in older browsers wouldn't be calculated
 
