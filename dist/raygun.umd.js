@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.12.0 - 2018-08-28
+/*! Raygun4js - v2.12.1 - 2018-09-27
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -274,7 +274,7 @@ TraceKit.report = (function reportModuleWrapper() {
         if (typeof document !== 'undefined') {
             args = _slice.call(arguments, 1);
         }
-        
+
         if (lastExceptionStack) {
             if (lastException === ex) {
                 return; // already caught by an inner catch block, ignore
@@ -688,7 +688,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         var parseError;
 
         if (!ex.stack) {
-            return { "tracekitResult": "nostack" };
+            return null;
         }
 
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>|\/).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
@@ -3315,7 +3315,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.12.0',
+          Version: '2.12.1',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
