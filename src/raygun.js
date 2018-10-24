@@ -447,7 +447,9 @@ var raygunFactory = function(window, $, undefined) {
 
   // Uninstall global promise rejection handler.
   function detachPromiseRejectionHandler() {
-    detachPromiseRejectionFunction();
+    if(detachPromiseRejectionFunction) {
+      detachPromiseRejectionFunction();
+    }
   }
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
