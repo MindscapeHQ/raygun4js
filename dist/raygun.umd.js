@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.13.0 - 2018-09-28
+/*! Raygun4js - v2.13.1 - 2018-10-24
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -2841,7 +2841,9 @@ var raygunFactory = function(window, $, undefined) {
 
   // Uninstall global promise rejection handler.
   function detachPromiseRejectionHandler() {
-    detachPromiseRejectionFunction();
+    if(detachPromiseRejectionFunction) {
+      detachPromiseRejectionFunction();
+    }
   }
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
@@ -3315,7 +3317,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.13.0',
+          Version: '2.13.1',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
@@ -3409,6 +3411,7 @@ var raygunFactory = function(window, $, undefined) {
   // Make the actual CORS request.
   function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
     var xhr = createCORSRequest('POST', url, data);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
 
     if (typeof _beforeXHRCallback === 'function') {
       _beforeXHRCallback(xhr);
