@@ -1,3 +1,7 @@
+* v2.13.1
+  - Set `content-type` header on XHR calls
+  - Fix issue #302 with the promiseRejectionHandler throwing rejection errors
+
 * v2.13.0
   - Unhandled promise exceptions will now use the look for a `reason.error` error instance if `event.reason` isn't alreayd an Error instance.
 
