@@ -1,3 +1,6 @@
+* v2.13.2
+  - Typescript definitions removed, they are now maintained in @types/raygun4js
+
 * v2.13.1
   - Set `content-type` header on XHR calls
   - Fix issue #302 with the promiseRejectionHandler throwing rejection errors
