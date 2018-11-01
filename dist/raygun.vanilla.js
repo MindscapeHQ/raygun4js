@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.13.1 - 2018-10-24
+/*! Raygun4js - v2.13.2 - 2018-11-02
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3200,7 +3200,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.13.1',
+          Version: '2.13.2',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
