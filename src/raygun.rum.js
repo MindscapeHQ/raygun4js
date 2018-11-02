@@ -585,6 +585,26 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
+    function extractChildData(collection, fromVirtualPage) {
+      if (!performanceEntryExists('getEntries', 'function')) {
+        return;
+      }
+
+      try {
+        var resources = window.performance.getEntries();
+
+        for (var i = self.offset; i < resources.length; i++) {
+          var segment = resources[i].name.split('?')[0];
+          if (!shouldIgnoreResource(segment)) {
+            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
+          }
+        }
+
+        self.offset = resources.length;
+      } catch (e) {}
+    }
+
+
     function getPrimaryTimingData() {
       var pathName = window.location.pathname;
 
@@ -628,6 +648,36 @@ var raygunRumFactory = function(window, $, Raygun) {
         size: 0,
       };
     }
+
+    function getPerformanceData(virtualPage, firstLoad) {
+      if (
+        !performanceEntryExists('timing', 'object') ||
+        window.performance.timing.fetchStart === undefined ||
+        isNaN(window.performance.timing.fetchStart)
+      ) {
+        return null;
+      }
+
+      var data = [];
+
+      if (firstLoad) {
+        // Called by the static onLoad event being fired, persist itself
+        data.push(getPrimaryTimingData());
+      }
+
+      // Called during both the static load event and the virtual load calls
+      // Associates all data loaded up to this point with the previous page
+      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+      extractChildData(data);
+
+      if (virtualPage) {
+        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
+        extractChildData(data, true);
+      }
+
+      return data;
+    }
+
 
     function getSecondaryTimingData(timing, fromZero) {
       var url = timing.name.split('?')[0];
@@ -674,35 +724,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         return true;
       }
       return false;
-    }
-
-    function getPerformanceData(virtualPage, firstLoad) {
-      if (
-        !performanceEntryExists('timing', 'object') ||
-        window.performance.timing.fetchStart === undefined ||
-        isNaN(window.performance.timing.fetchStart)
-      ) {
-        return null;
-      }
-
-      var data = [];
-
-      if (firstLoad) {
-        // Called by the static onLoad event being fired, persist itself
-        data.push(getPrimaryTimingData());
-      }
-
-      // Called during both the static load event and the virtual load calls
-      // Associates all data loaded up to this point with the previous page
-      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
-      extractChildData(data);
-
-      if (virtualPage) {
-        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
-        extractChildData(data, true);
-      }
-
-      return data;
     }
 
     function sanitizeNaNs(data) {
@@ -811,25 +832,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       }
       return null;
-    }
-
-    function extractChildData(collection, fromVirtualPage) {
-      if (!performanceEntryExists('getEntries', 'function')) {
-        return;
-      }
-
-      try {
-        var resources = window.performance.getEntries();
-
-        for (var i = self.offset; i < resources.length; i++) {
-          var segment = resources[i].name.split('?')[0];
-          if (!shouldIgnoreResource(segment)) {
-            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
-          }
-        }
-
-        self.offset = resources.length;
-      } catch (e) {}
     }
 
     function getSecondaryTimingType(timing) {
