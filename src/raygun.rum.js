@@ -69,6 +69,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       ChildAsset: 'c',
     };
 
+    // ================================================================================
+    // =                                                                              =
+    // =                                 Public Api                                   =
+    // =                                                                              =
+    // ================================================================================
+
     this.attach = function() {
       getSessionId(function(isNewSession) {
         self.pageLoaded(isNewSession);
@@ -168,6 +174,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
+    // ================================================================================
+    // =                                                                              =
+    // =                              Session Management                              =
+    // =                                                                              =
+    // ================================================================================
+
     function heartBeat() {
       if (self.heartBeatInterval !== null) {
         log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
@@ -249,6 +261,12 @@ var raygunRumFactory = function(window, $, Raygun) {
         sendNewSessionStart();
       }
     }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                  Queueing                                    =
+    // =                                                                              =
+    // ================================================================================
 
     function sendPerformance(firstLoad) {
       var performanceData = getPerformanceData(this.virtualPage, firstLoad);
@@ -384,6 +402,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       sendQueuedPerformancePayloads(forceSend);
     }
 
+    // ================================================================================
+    // =                                                                              =
+    // =                                Networking                                    =
+    // =                                                                              =
+    // ================================================================================
+
     function postPayload(payload, _successCallback, _errorCallback) {
       if (typeof _successCallback !== 'function') {
         _successCallback = function() {};
@@ -448,6 +472,12 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
     }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                Timing Data                                   =
+    // =                                                                              =
+    // ================================================================================
 
     function prepareVirtualEncodedTimingData(virtualPageStartTime) {
       return {
@@ -725,6 +755,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
       return false;
     }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                  Utilities                                   =
+    // =                                                                              =
+    // ================================================================================
 
     function sanitizeNaNs(data) {
       for (var i in data) {
