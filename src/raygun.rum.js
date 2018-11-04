@@ -131,7 +131,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       processVirtualPageTimingsInQueue();
-      this.sendPerformance(false);
+      sendPerformance(false);
     };
 
     this.setUser = function(user) {
