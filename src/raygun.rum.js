@@ -298,6 +298,17 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     }
 
+    function processVirtualPageTimingsInQueue() {
+      var i = 0,
+        data;
+      for (i; i < self.queuedPerformanceTimings.length; i++) {
+        data = self.queuedPerformanceTimings[i];
+        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+          data.timing = generateVirtualEncodedTimingData(data.timing);
+        }
+      }
+    }
+
     function sendItemImmediately(item) {
       var itemsToSend = [item];
 
@@ -479,33 +490,116 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function prepareVirtualEncodedTimingData(virtualPageStartTime) {
+    function getPerformanceData(virtualPage, firstLoad) {
+      if (
+        !performanceEntryExists('timing', 'object') ||
+        window.performance.timing.fetchStart === undefined ||
+        isNaN(window.performance.timing.fetchStart)
+      ) {
+        return null;
+      }
+
+      var data = [];
+
+      if (firstLoad) {
+        // Called by the static onLoad event being fired, persist itself
+        data.push(getPrimaryTimingData());
+      }
+
+      // Called during both the static load event and the virtual load calls
+      // Associates all data loaded up to this point with the previous page
+      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+      extractChildData(data);
+
+      if (virtualPage) {
+        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
+        extractChildData(data, true);
+      }
+
+      return data;
+    }
+
+    function extractChildData(collection, fromVirtualPage) {
+      if (!performanceEntryExists('getEntries', 'function')) {
+        return;
+      }
+
+      try {
+        var resources = window.performance.getEntries();
+
+        for (var i = self.offset; i < resources.length; i++) {
+          var segment = resources[i].name.split('?')[0];
+          if (!shouldIgnoreResource(segment)) {
+            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
+          }
+        }
+
+        self.offset = resources.length;
+      } catch (e) {}
+    }
+
+    function getPrimaryTimingData() {
+      var pathName = window.location.pathname;
+
+      if (self.ignoreUrlCasing) {
+        pathName = pathName.toLowerCase();
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + pathName;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
       return {
-        t: Timings.VirtualPage,
-        startTime: virtualPageStartTime,
-        staticLoad: self.initalStaticPageLoadTimestamp,
-        pending: true,
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: getEncodedTimingData(window.performance.timing, 0),
+        size: 0,
       };
     }
 
-    function processVirtualPageTimingsInQueue() {
-      var i = 0,
-        data;
-      for (i; i < self.queuedPerformanceTimings.length; i++) {
-        data = self.queuedPerformanceTimings[i];
-        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
-          data.timing = generateVirtualEncodedTimingData(data.timing);
-        }
+    function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
+      if (self.ignoreUrlCasing) {
+        virtualPage = virtualPage.toLowerCase();
       }
-    }
 
-    function generateVirtualEncodedTimingData(timingData) {
-      var now = getPerformanceNow(0);
+      if (virtualPage.indexOf('?') !== -1) {
+        virtualPage = virtualPage.split('?')[0];
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + virtualPage;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
 
       return {
-        t: timingData.t,
-        du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
-        o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad),
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
+        size: 0,
+      };
+    }
+
+    function getSecondaryTimingData(timing, fromZero) {
+      var url = timing.name.split('?')[0];
+
+      if (self.ignoreUrlCasing) {
+        url = url.toLowerCase();
+      }
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
+      return {
+        url: url,
+        timing: getSecondaryEncodedTimingData(
+          timing,
+          fromZero ? 0 : window.performance.timing.navigationStart
+        ),
+        size: timing.decodedBodySize || 0,
       };
     }
 
@@ -615,120 +709,30 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage) {
-      if (!performanceEntryExists('getEntries', 'function')) {
-        return;
-      }
-
-      try {
-        var resources = window.performance.getEntries();
-
-        for (var i = self.offset; i < resources.length; i++) {
-          var segment = resources[i].name.split('?')[0];
-          if (!shouldIgnoreResource(segment)) {
-            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
-          }
-        }
-
-        self.offset = resources.length;
-      } catch (e) {}
-    }
-
-
-    function getPrimaryTimingData() {
-      var pathName = window.location.pathname;
-
-      if (self.ignoreUrlCasing) {
-        pathName = pathName.toLowerCase();
-      }
-
-      var url = window.location.protocol + '//' + window.location.host + pathName;
-
-      if (url.length > 800) {
-        url = url.substring(0, 800);
-      }
+    function generateVirtualEncodedTimingData(timingData) {
+      var now = getPerformanceNow(0);
 
       return {
-        url: url,
-        userAgent: navigator.userAgent,
-        timing: getEncodedTimingData(window.performance.timing, 0),
-        size: 0,
+        t: timingData.t,
+        du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
+        o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad),
       };
     }
 
-    function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
-      if (self.ignoreUrlCasing) {
-        virtualPage = virtualPage.toLowerCase();
-      }
-
-      if (virtualPage.indexOf('?') !== -1) {
-        virtualPage = virtualPage.split('?')[0];
-      }
-
-      var url = window.location.protocol + '//' + window.location.host + virtualPage;
-
-      if (url.length > 800) {
-        url = url.substring(0, 800);
-      }
-
+    function prepareVirtualEncodedTimingData(virtualPageStartTime) {
       return {
-        url: url,
-        userAgent: navigator.userAgent,
-        timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
-        size: 0,
+        t: Timings.VirtualPage,
+        startTime: virtualPageStartTime,
+        staticLoad: self.initalStaticPageLoadTimestamp,
+        pending: true,
       };
     }
 
-    function getPerformanceData(virtualPage, firstLoad) {
-      if (
-        !performanceEntryExists('timing', 'object') ||
-        window.performance.timing.fetchStart === undefined ||
-        isNaN(window.performance.timing.fetchStart)
-      ) {
-        return null;
-      }
-
-      var data = [];
-
-      if (firstLoad) {
-        // Called by the static onLoad event being fired, persist itself
-        data.push(getPrimaryTimingData());
-      }
-
-      // Called during both the static load event and the virtual load calls
-      // Associates all data loaded up to this point with the previous page
-      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
-      extractChildData(data);
-
-      if (virtualPage) {
-        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
-        extractChildData(data, true);
-      }
-
-      return data;
-    }
-
-
-    function getSecondaryTimingData(timing, fromZero) {
-      var url = timing.name.split('?')[0];
-
-      if (self.ignoreUrlCasing) {
-        url = url.toLowerCase();
-      }
-
-      if (url.length > 800) {
-        url = url.substring(0, 800);
-      }
-
-      return {
-        url: url,
-        timing: getSecondaryEncodedTimingData(
-          timing,
-          fromZero ? 0 : window.performance.timing.navigationStart
-        ),
-        size: timing.decodedBodySize || 0,
-      };
-    }
+    // ================================================================================
+    // =                                                                              =
+    // =                                  Utilities                                   =
+    // =                                                                              =
+    // ================================================================================
 
     function shouldIgnoreResource(name) {
       if (name.indexOf(self.apiUrl) === 0) {
@@ -755,12 +759,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
       return false;
     }
-
-    // ================================================================================
-    // =                                                                              =
-    // =                                  Utilities                                   =
-    // =                                                                              =
-    // ================================================================================
 
     function sanitizeNaNs(data) {
       for (var i in data) {
