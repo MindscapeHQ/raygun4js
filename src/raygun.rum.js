@@ -415,77 +415,6 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     // ================================================================================
     // =                                                                              =
-    // =                                Networking                                    =
-    // =                                                                              =
-    // ================================================================================
-
-    function postPayload(payload, _successCallback, _errorCallback) {
-      if (typeof _successCallback !== 'function') {
-        _successCallback = function() {};
-      }
-
-      if (typeof _errorCallback !== 'function') {
-        _errorCallback = function() {};
-      }
-
-      makePostCorsRequestRum(
-        self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey),
-        payload,
-        _successCallback,
-        _errorCallback
-      );
-    }
-
-    function makePostCorsRequestRum(url, data, successCallback, errorCallback) {
-      if (self.excludedUserAgents instanceof Array) {
-        for (var userAgentIndex in self.excludedUserAgents) {
-          if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-              log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-              return;
-            }
-          }
-        }
-      }
-
-      if (self.excludedHostNames instanceof Array) {
-        for (var hostIndex in self.excludedHostNames) {
-          if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
-            if (
-              window.location.hostname &&
-              window.location.hostname.match(self.excludedHostNames[hostIndex])
-            ) {
-              log('Raygun4JS: cancelling send as error originates from an excluded hostname');
-
-              return;
-            }
-          }
-        }
-      }
-
-      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
-        return;
-      }
-
-      var payload = self.beforeSend(data);
-      if (!payload) {
-        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-        return;
-      }
-
-      if (!!payload.eventData) {
-        for (var i = 0; i < payload.eventData.length; i++) {
-          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
-          }
-        }
-      }
-
-      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
-    }
-
-    // ================================================================================
-    // =                                                                              =
     // =                                Timing Data                                   =
     // =                                                                              =
     // ================================================================================
@@ -727,6 +656,77 @@ var raygunRumFactory = function(window, $, Raygun) {
         staticLoad: self.initalStaticPageLoadTimestamp,
         pending: true,
       };
+    }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                Networking                                    =
+    // =                                                                              =
+    // ================================================================================
+
+    function postPayload(payload, _successCallback, _errorCallback) {
+      if (typeof _successCallback !== 'function') {
+        _successCallback = function() {};
+      }
+
+      if (typeof _errorCallback !== 'function') {
+        _errorCallback = function() {};
+      }
+
+      makePostCorsRequestRum(
+        self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey),
+        payload,
+        _successCallback,
+        _errorCallback
+      );
+    }
+
+    function makePostCorsRequestRum(url, data, successCallback, errorCallback) {
+      if (self.excludedUserAgents instanceof Array) {
+        for (var userAgentIndex in self.excludedUserAgents) {
+          if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+              log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+              return;
+            }
+          }
+        }
+      }
+
+      if (self.excludedHostNames instanceof Array) {
+        for (var hostIndex in self.excludedHostNames) {
+          if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+            if (
+              window.location.hostname &&
+              window.location.hostname.match(self.excludedHostNames[hostIndex])
+            ) {
+              log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+              return;
+            }
+          }
+        }
+      }
+
+      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
+        return;
+      }
+
+      var payload = self.beforeSend(data);
+      if (!payload) {
+        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+        return;
+      }
+
+      if (!!payload.eventData) {
+        for (var i = 0; i < payload.eventData.length; i++) {
+          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
+            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+          }
+        }
+      }
+
+      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
     }
 
     // ================================================================================
