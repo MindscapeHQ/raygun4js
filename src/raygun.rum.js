@@ -269,7 +269,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function sendPerformance(firstLoad) {
-      var performanceData = getPerformanceData(this.virtualPage, firstLoad);
+      var performanceData = getPerformanceData(self.virtualPage, firstLoad);
 
       if (performanceData === null || performanceData.length < 0) {
         return;
@@ -513,6 +513,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       if (virtualPage) {
         data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
+
         extractChildData(data, true);
       }
 
