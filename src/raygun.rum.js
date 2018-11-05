@@ -69,6 +69,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       ChildAsset: 'c',
     };
 
+    // ================================================================================
+    // =                                                                              =
+    // =                                 Public Api                                   =
+    // =                                                                              =
+    // ================================================================================
+
     this.attach = function() {
       getSessionId(function(isNewSession) {
         self.pageLoaded(isNewSession);
@@ -79,8 +85,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       }.bind(_private);
 
       var unloadHandler = function() {
-        self.sendChildAssets(true);
-        self.sendQueuedItems();
+        sendChildAssets(true);
+        sendQueuedItems();
       }.bind(_private);
 
       var visibilityChangeHandler = function() {
@@ -101,12 +107,12 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.pageLoaded = function(isNewSession) {
       // Only create a session if we don't have one.
       if (isNewSession) {
-        this.sendNewSessionStart();
+        sendNewSessionStart();
       }
 
-      self.sendPerformance(true);
+      sendPerformance(true);
 
-      self.heartBeat();
+      heartBeat();
 
       self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
     };
@@ -125,19 +131,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       processVirtualPageTimingsInQueue();
-      this.sendPerformance(false);
-    };
-
-    this.heartBeat = function() {
-      if (self.heartBeatInterval !== null) {
-        log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
-        return;
-      }
-
-      self.heartBeatInterval = setInterval(function() {
-        self.sendChildAssets();
-        self.sendQueuedItems();
-      }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+      sendPerformance(false);
     };
 
     this.setUser = function(user) {
@@ -149,23 +143,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     this.endSession = function() {
-      self.sendItemImmediately({
+      sendItemImmediately({
         sessionId: self.sessionId,
         requestId: self.requestId,
         timestamp: new Date().toISOString(),
         type: 'session_end',
-      });
-    };
-
-    this.sendNewSessionStart = function() {
-      self.sendItemImmediately({
-        sessionId: self.sessionId,
-        timestamp: new Date().toISOString(),
-        type: 'session_start',
-        user: self.user,
-        version: self.version || 'Not supplied',
-        tags: self.tags,
-        device: navigator.userAgent,
       });
     };
 
@@ -192,41 +174,148 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
-    this.sendPerformance = function(firstLoad) {
-      var performanceData = getPerformanceData(this.virtualPage, firstLoad);
+    // ================================================================================
+    // =                                                                              =
+    // =                              Session Management                              =
+    // =                                                                              =
+    // ================================================================================
+
+    function heartBeat() {
+      if (self.heartBeatInterval !== null) {
+        log('Raygun4JS: Heartbeat already exists. Skipping heartbeat creation.');
+        return;
+      }
+
+      self.heartBeatInterval = setInterval(function() {
+        sendChildAssets();
+        sendQueuedItems();
+      }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
+    }
+
+   function sendNewSessionStart() {
+      sendItemImmediately({
+        sessionId: self.sessionId,
+        timestamp: new Date().toISOString(),
+        type: 'session_start',
+        user: self.user,
+        version: self.version || 'Not supplied',
+        tags: self.tags,
+        device: navigator.userAgent,
+      });
+    }
+
+    function getSessionId(callback) {
+      var existingCookie = readCookie(self.cookieName);
+
+      var nullCookie = existingCookie === null;
+      var legacyCookie =
+        typeof exisitingCookie === 'string' &&
+        existingCookie.length > 0 &&
+        existingCookie.indexOf('timestamp') === -1;
+      var expiredCookie = null;
+
+      if (!nullCookie && !legacyCookie) {
+        var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+        var halfHrAgo = new Date(new Date() - 30 * 60000);
+        expiredCookie = existingTimestamp < halfHrAgo;
+      }
+
+      if (nullCookie || legacyCookie || expiredCookie) {
+        self.sessionId = randomKey(32);
+        createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
+        callback(true);
+      } else {
+        var sessionCookie = readCookie(self.cookieName);
+        var id = readSessionCookieElement(sessionCookie, 'id');
+
+        if (id === 'undefined' || id === 'null') {
+          self.sessionId = randomKey(32);
+          createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
+          callback(true);
+        } else {
+          self.sessionId = id;
+          callback(false);
+        }
+      }
+    }
+
+    function updateCookieTimestamp() {
+      var existingCookie = readCookie(self.cookieName);
+
+      var expiredCookie;
+      if (existingCookie) {
+        var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
+        var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
+        expiredCookie = timestamp < halfHrAgo;
+      } else {
+        expiredCookie = true;
+      }
+
+      if (expiredCookie) {
+        self.sessionId = randomKey(32);
+      }
+
+      createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
+
+      if (expiredCookie) {
+        sendNewSessionStart();
+      }
+    }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                  Queueing                                    =
+    // =                                                                              =
+    // ================================================================================
+
+    function sendPerformance(firstLoad) {
+      var performanceData = getPerformanceData(self.virtualPage, firstLoad);
 
       if (performanceData === null || performanceData.length < 0) {
         return;
       }
 
       addPerformanceTimingsToQueue(performanceData, false);
-    };
+    }
 
-    this.sendChildAssets = function(forceSend) {
+    function sendChildAssets(forceSend) {
       if (forceSend) {
         processVirtualPageTimingsInQueue();
       }
+
       var data = [];
       extractChildData(data);
       addPerformanceTimingsToQueue(data, forceSend);
-    };
+    }
 
-    this.sendQueuedItems = function() {
+    function sendQueuedItems() {
       if (self.queuedItems.length > 0) {
         // Dequeue:
         self.queuedItems = sortCollectionByProperty(self.queuedItems, 'timestamp');
         var itemsToSend = self.queuedItems.splice(0, self.maxQueueItemsSent);
 
-        self.sendItemsImmediately(itemsToSend);
+        sendItemsImmediately(itemsToSend);
       }
-    };
+    }
 
-    this.sendItemImmediately = function(item) {
+    function processVirtualPageTimingsInQueue() {
+      var i = 0,
+        data;
+      for (i; i < self.queuedPerformanceTimings.length; i++) {
+        data = self.queuedPerformanceTimings[i];
+        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
+          data.timing = generateVirtualEncodedTimingData(data.timing);
+        }
+      }
+    }
+
+    function sendItemImmediately(item) {
       var itemsToSend = [item];
-      self.sendItemsImmediately(itemsToSend);
-    };
 
-    this.sendItemsImmediately = function(itemsToSend) {
+      sendItemsImmediately(itemsToSend);
+    }
+
+    function sendItemsImmediately(itemsToSend) {
       var payload = {
         eventData: itemsToSend,
       };
@@ -237,7 +326,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var errorCallback = function(response) {
         // Requeue:
-        self.requeueItemsToFront(itemsToSend);
+        requeueItemsToFront(itemsToSend);
 
         log(
           'Raygun4JS: Items failed to send. Queue length: ' +
@@ -247,8 +336,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         );
       };
 
-      this.postPayload(payload, successCallback, errorCallback);
-    };
+      postPayload(payload, successCallback, errorCallback);
+    }
 
     function sendQueuedPerformancePayloads(forceSend) {
       if (self.pendingPayloadData && !forceSend) {
@@ -272,7 +361,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
 
         if (payloadTimings.length > 0) {
-          self.sendItemsImmediately(payloadTimings);
+          sendItemsImmediately(payloadTimings);
           currentPayloadTimingData = [];
           payloadIncludesPageTiming = false;
         }
@@ -315,228 +404,132 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.queuedPerformanceTimings = [];
     }
 
-    this.requeueItemsToFront = function(itemsToSend) {
+    function requeueItemsToFront(itemsToSend) {
       self.queuedItems = itemsToSend.concat(self.queuedItems);
-    };
-
-    this.postPayload = function(payload, _successCallback, _errorCallback) {
-      if (typeof _successCallback !== 'function') {
-        _successCallback = function() {};
-      }
-
-      if (typeof _errorCallback !== 'function') {
-        _errorCallback = function() {};
-      }
-
-      self.makePostCorsRequest(
-        self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey),
-        payload,
-        _successCallback,
-        _errorCallback
-      );
-    };
-
-    this.makePostCorsRequest = function(url, data, successCallback, errorCallback) {
-      if (self.excludedUserAgents instanceof Array) {
-        for (var userAgentIndex in self.excludedUserAgents) {
-          if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
-              log('Raygun4JS: cancelling send as error originates from an excluded user agent');
-              return;
-            }
-          }
-        }
-      }
-
-      if (self.excludedHostNames instanceof Array) {
-        for (var hostIndex in self.excludedHostNames) {
-          if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
-            if (
-              window.location.hostname &&
-              window.location.hostname.match(self.excludedHostNames[hostIndex])
-            ) {
-              log('Raygun4JS: cancelling send as error originates from an excluded hostname');
-
-              return;
-            }
-          }
-        }
-      }
-
-      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
-        return;
-      }
-
-      var payload = self.beforeSend(data);
-      if (!payload) {
-        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-        return;
-      }
-
-      if (!!payload.eventData) {
-        for (var i = 0; i < payload.eventData.length; i++) {
-          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
-          }
-        }
-      }
-
-      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
-    };
+    }
 
     function addPerformanceTimingsToQueue(performanceData, forceSend) {
       self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
       sendQueuedPerformancePayloads(forceSend);
     }
 
-    function createTimingPayload(data) {
+    // ================================================================================
+    // =                                                                              =
+    // =                                Timing Data                                   =
+    // =                                                                              =
+    // ================================================================================
+
+    function getPerformanceData(virtualPage, firstLoad) {
+      if (
+        !performanceEntryExists('timing', 'object') ||
+        window.performance.timing.fetchStart === undefined ||
+        isNaN(window.performance.timing.fetchStart)
+      ) {
+        return null;
+      }
+
+      var data = [];
+
+      if (firstLoad) {
+        // Called by the static onLoad event being fired, persist itself
+        data.push(getPrimaryTimingData());
+      }
+
+      // Called during both the static load event and the virtual load calls
+      // Associates all data loaded up to this point with the previous page
+      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
+      extractChildData(data);
+
+      if (virtualPage) {
+        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
+
+        extractChildData(data, true);
+      }
+
+      return data;
+    }
+
+    function extractChildData(collection, fromVirtualPage) {
+      if (!performanceEntryExists('getEntries', 'function')) {
+        return;
+      }
+
+      try {
+        var resources = window.performance.getEntries();
+
+        for (var i = self.offset; i < resources.length; i++) {
+          var segment = resources[i].name.split('?')[0];
+          if (!shouldIgnoreResource(segment)) {
+            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
+          }
+        }
+
+        self.offset = resources.length;
+      } catch (e) {}
+    }
+
+    function getPrimaryTimingData() {
+      var pathName = window.location.pathname;
+
+      if (self.ignoreUrlCasing) {
+        pathName = pathName.toLowerCase();
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + pathName;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
       return {
-        sessionId: self.sessionId,
-        requestId: self.requestId,
-        timestamp: new Date().toISOString(),
-        type: 'web_request_timing',
-        user: self.user,
-        version: self.version || 'Not supplied',
-        device: navigator.userAgent,
-        tags: self.tags,
-        data: data,
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: getEncodedTimingData(window.performance.timing, 0),
+        size: 0,
       };
     }
 
-    function getSessionId(callback) {
-      var existingCookie = readCookie(self.cookieName);
-
-      var nullCookie = existingCookie === null;
-      var legacyCookie =
-        typeof exisitingCookie === 'string' &&
-        existingCookie.length > 0 &&
-        existingCookie.indexOf('timestamp') === -1;
-      var expiredCookie = null;
-
-      if (!nullCookie && !legacyCookie) {
-        var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-        var halfHrAgo = new Date(new Date() - 30 * 60000);
-        expiredCookie = existingTimestamp < halfHrAgo;
+    function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
+      if (self.ignoreUrlCasing) {
+        virtualPage = virtualPage.toLowerCase();
       }
 
-      if (nullCookie || legacyCookie || expiredCookie) {
-        self.sessionId = randomKey(32);
-        createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
-        callback(true);
-      } else {
-        var sessionCookie = readCookie(self.cookieName);
-        var id = readSessionCookieElement(sessionCookie, 'id');
-
-        if (id === 'undefined' || id === 'null') {
-          self.sessionId = randomKey(32);
-          createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
-          callback(true);
-        } else {
-          self.sessionId = id;
-          callback(false);
-        }
-      }
-    }
-
-    function createRequestId() {
-      self.requestId = randomKey(16);
-    }
-
-    function createCookie(name, value, hours, saveAsSecure) {
-      var expires;
-      var lastActivityTimestamp;
-
-      if (hours) {
-        var date = new Date();
-        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-        expires = '; expires=' + date.toGMTString();
-      } else {
-        expires = '';
+      if (virtualPage.indexOf('?') !== -1) {
+        virtualPage = virtualPage.split('?')[0];
       }
 
-      lastActivityTimestamp = new Date().toISOString();
+      var url = window.location.protocol + '//' + window.location.host + virtualPage;
 
-      var secure = saveAsSecure ? '; secure' : '';
-
-      document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
-    }
-
-    function readSessionCookieElement(cookieString, element) {
-      var set = cookieString.split(/[|&]/);
-
-      if (element === 'id') {
-        return set[1];
-      } else if (element === 'timestamp') {
-        return set[3];
-      }
-    }
-
-    function readCookie(name) {
-      var nameEQ = name + '=';
-      var ca = document.cookie.split(';');
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ') {
-          c = c.substring(1, c.length);
-        }
-        if (c.indexOf(nameEQ) === 0) {
-          return c.substring(nameEQ.length, c.length);
-        }
-      }
-      return null;
-    }
-
-    function updateCookieTimestamp() {
-      var existingCookie = readCookie(self.cookieName);
-
-      var expiredCookie;
-      if (existingCookie) {
-        var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-        var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-        expiredCookie = timestamp < halfHrAgo;
-      } else {
-        expiredCookie = true;
+      if (url.length > 800) {
+        url = url.substring(0, 800);
       }
 
-      if (expiredCookie) {
-        self.sessionId = randomKey(32);
-      }
-
-      createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
-
-      if (expiredCookie) {
-        self.sendNewSessionStart();
-      }
-    }
-
-    function prepareVirtualEncodedTimingData(virtualPageStartTime) {
       return {
-        t: Timings.VirtualPage,
-        startTime: virtualPageStartTime,
-        staticLoad: self.initalStaticPageLoadTimestamp,
-        pending: true,
+        url: url,
+        userAgent: navigator.userAgent,
+        timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
+        size: 0,
       };
     }
 
-    function processVirtualPageTimingsInQueue() {
-      var i = 0,
-        data;
-      for (i; i < self.queuedPerformanceTimings.length; i++) {
-        data = self.queuedPerformanceTimings[i];
-        if (data.timing.t === Timings.VirtualPage && data.timing.pending) {
-          data.timing = generateVirtualEncodedTimingData(data.timing);
-        }
-      }
-    }
+    function getSecondaryTimingData(timing, fromZero) {
+      var url = timing.name.split('?')[0];
 
-    function generateVirtualEncodedTimingData(timingData) {
-      var now = getPerformanceNow(0);
+      if (self.ignoreUrlCasing) {
+        url = url.toLowerCase();
+      }
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
 
       return {
-        t: timingData.t,
-        du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
-        o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad),
+        url: url,
+        timing: getSecondaryEncodedTimingData(
+          timing,
+          fromZero ? 0 : window.performance.timing.navigationStart
+        ),
+        size: timing.decodedBodySize || 0,
       };
     }
 
@@ -605,44 +598,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function getSecondaryTimingType(timing) {
-      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === "fetch") {
-        return Timings.XHR;
-      } else if(isChildAsset(timing)) {
-        return getTypeForChildAsset(timing);
-      } else if(isChromeFetchCall(timing)) {
-        return Timings.XHR;
-      } else {
-        return getTypeForChildAsset(timing);
-      }
-    }
-
-    function isChromeFetchCall(timing) {
-      // Chrome doesn't report "initiatorType" as fetch
-      return typeof timing.initiatorType === "string" && timing.initiatorType === "";
-    }
-
-    function isChildAsset(timing) {
-      switch(timing.initiatorType) {
-        case "img":
-        case "css":
-        case "script":
-        case "link":
-        case "other":
-        case "use":
-          return true;
-      }
-      return false;
-    }
-
-    function getTypeForChildAsset(timing) {
-      if (timing.duration === 0) {
-        return Timings.CachedChildAsset;
-      } else {
-        return Timings.ChildAsset;
-      }
-    }
-
     function getSecondaryEncodedTimingData(timing, offset) {
       var data = {
         du: maxFiveMinutes(timing.duration).toFixed(2),
@@ -684,70 +639,101 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function getPrimaryTimingData() {
-      var pathName = window.location.pathname;
-
-      if (self.ignoreUrlCasing) {
-        pathName = pathName.toLowerCase();
-      }
-
-      var url = window.location.protocol + '//' + window.location.host + pathName;
-
-      if (url.length > 800) {
-        url = url.substring(0, 800);
-      }
+    function generateVirtualEncodedTimingData(timingData) {
+      var now = getPerformanceNow(0);
 
       return {
-        url: url,
-        userAgent: navigator.userAgent,
-        timing: getEncodedTimingData(window.performance.timing, 0),
-        size: 0,
+        t: timingData.t,
+        du: Math.min(self.maxVirtualPageDuration, now - timingData.startTime),
+        o: Math.min(self.maxVirtualPageDuration, now - timingData.staticLoad),
       };
     }
 
-    function getVirtualPrimaryTimingData(virtualPage, virtualPageStartTime) {
-      if (self.ignoreUrlCasing) {
-        virtualPage = virtualPage.toLowerCase();
-      }
-
-      if (virtualPage.indexOf('?') !== -1) {
-        virtualPage = virtualPage.split('?')[0];
-      }
-
-      var url = window.location.protocol + '//' + window.location.host + virtualPage;
-
-      if (url.length > 800) {
-        url = url.substring(0, 800);
-      }
-
+    function prepareVirtualEncodedTimingData(virtualPageStartTime) {
       return {
-        url: url,
-        userAgent: navigator.userAgent,
-        timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
-        size: 0,
+        t: Timings.VirtualPage,
+        startTime: virtualPageStartTime,
+        staticLoad: self.initalStaticPageLoadTimestamp,
+        pending: true,
       };
     }
 
-    function getSecondaryTimingData(timing, fromZero) {
-      var url = timing.name.split('?')[0];
+    // ================================================================================
+    // =                                                                              =
+    // =                                Networking                                    =
+    // =                                                                              =
+    // ================================================================================
 
-      if (self.ignoreUrlCasing) {
-        url = url.toLowerCase();
+    function postPayload(payload, _successCallback, _errorCallback) {
+      if (typeof _successCallback !== 'function') {
+        _successCallback = function() {};
       }
 
-      if (url.length > 800) {
-        url = url.substring(0, 800);
+      if (typeof _errorCallback !== 'function') {
+        _errorCallback = function() {};
       }
 
-      return {
-        url: url,
-        timing: getSecondaryEncodedTimingData(
-          timing,
-          fromZero ? 0 : window.performance.timing.navigationStart
-        ),
-        size: timing.decodedBodySize || 0,
-      };
+      makePostCorsRequestRum(
+        self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey),
+        payload,
+        _successCallback,
+        _errorCallback
+      );
     }
+
+    function makePostCorsRequestRum(url, data, successCallback, errorCallback) {
+      if (self.excludedUserAgents instanceof Array) {
+        for (var userAgentIndex in self.excludedUserAgents) {
+          if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
+            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+              log('Raygun4JS: cancelling send as error originates from an excluded user agent');
+              return;
+            }
+          }
+        }
+      }
+
+      if (self.excludedHostNames instanceof Array) {
+        for (var hostIndex in self.excludedHostNames) {
+          if (self.excludedHostNames.hasOwnProperty(hostIndex)) {
+            if (
+              window.location.hostname &&
+              window.location.hostname.match(self.excludedHostNames[hostIndex])
+            ) {
+              log('Raygun4JS: cancelling send as error originates from an excluded hostname');
+
+              return;
+            }
+          }
+        }
+      }
+
+      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
+        return;
+      }
+
+      var payload = self.beforeSend(data);
+      if (!payload) {
+        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+        return;
+      }
+
+      if (!!payload.eventData) {
+        for (var i = 0; i < payload.eventData.length; i++) {
+          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
+            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+          }
+        }
+      }
+
+      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
+    }
+
+    // ================================================================================
+    // =                                                                              =
+    // =                                  Utilities                                   =
+    // =                                                                              =
+    // ================================================================================
 
     function shouldIgnoreResource(name) {
       if (name.indexOf(self.apiUrl) === 0) {
@@ -773,54 +759,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         return true;
       }
       return false;
-    }
-
-    function extractChildData(collection, fromVirtualPage) {
-      if (!performanceEntryExists('getEntries', 'function')) {
-        return;
-      }
-
-      try {
-        var resources = window.performance.getEntries();
-
-        for (var i = self.offset; i < resources.length; i++) {
-          var segment = resources[i].name.split('?')[0];
-          if (!shouldIgnoreResource(segment)) {
-            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
-          }
-        }
-
-        self.offset = resources.length;
-      } catch (e) {}
-    }
-
-    function getPerformanceData(virtualPage, firstLoad) {
-      if (
-        !performanceEntryExists('timing', 'object') ||
-        window.performance.timing.fetchStart === undefined ||
-        isNaN(window.performance.timing.fetchStart)
-      ) {
-        return null;
-      }
-
-      var data = [];
-
-      if (firstLoad) {
-        // Called by the static onLoad event being fired, persist itself
-        data.push(getPrimaryTimingData());
-      }
-
-      // Called during both the static load event and the virtual load calls
-      // Associates all data loaded up to this point with the previous page
-      // Eg: Page load if it is this is a new load, or the last view if a virtual page was freshly triggered
-      extractChildData(data);
-
-      if (virtualPage) {
-        data.push(getVirtualPrimaryTimingData(virtualPage, getPerformanceNow(0)));
-        extractChildData(data, true);
-      }
-
-      return data;
     }
 
     function sanitizeNaNs(data) {
@@ -868,6 +806,107 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     }
 
+    function createTimingPayload(data) {
+      return {
+        sessionId: self.sessionId,
+        requestId: self.requestId,
+        timestamp: new Date().toISOString(),
+        type: 'web_request_timing',
+        user: self.user,
+        version: self.version || 'Not supplied',
+        device: navigator.userAgent,
+        tags: self.tags,
+        data: data,
+      };
+    }
+
+    function createRequestId() {
+      self.requestId = randomKey(16);
+    }
+
+    function createCookie(name, value, hours, saveAsSecure) {
+      var expires;
+      var lastActivityTimestamp;
+
+      if (hours) {
+        var date = new Date();
+        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+        expires = '; expires=' + date.toGMTString();
+      } else {
+        expires = '';
+      }
+
+      lastActivityTimestamp = new Date().toISOString();
+
+      var secure = saveAsSecure ? '; secure' : '';
+
+      document.cookie =
+        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
+    }
+
+    function readSessionCookieElement(cookieString, element) {
+      var set = cookieString.split(/[|&]/);
+
+      if (element === 'id') {
+        return set[1];
+      } else if (element === 'timestamp') {
+        return set[3];
+      }
+    }
+
+    function readCookie(name) {
+      var nameEQ = name + '=';
+      var ca = document.cookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+          return c.substring(nameEQ.length, c.length);
+        }
+      }
+      return null;
+    }
+
+    function getSecondaryTimingType(timing) {
+      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === "fetch") {
+        return Timings.XHR;
+      } else if(isChildAsset(timing)) {
+        return getTypeForChildAsset(timing);
+      } else if(isChromeFetchCall(timing)) {
+        return Timings.XHR;
+      } else {
+        return getTypeForChildAsset(timing);
+      }
+    }
+
+    function isChromeFetchCall(timing) {
+      // Chrome doesn't report "initiatorType" as fetch
+      return typeof timing.initiatorType === "string" && timing.initiatorType === "";
+    }
+
+    function isChildAsset(timing) {
+      switch(timing.initiatorType) {
+        case "img":
+        case "css":
+        case "script":
+        case "link":
+        case "other":
+        case "use":
+          return true;
+      }
+      return false;
+    }
+
+    function getTypeForChildAsset(timing) {
+      if (timing.duration === 0) {
+        return Timings.CachedChildAsset;
+      } else {
+        return Timings.ChildAsset;
+      }
+    }
+
     /**
      * getCompareFunction() returns a predicate function to pass into the Array.sort() function
      * The predicate function checks for the property on each item being compared and returns the appropriate integer required by the sort function
@@ -875,7 +914,6 @@ var raygunRumFactory = function(window, $, Raygun) {
      * @param {string} property
      * @return {function} (a, b) => number
      */
-
     function getCompareFunction(property) {
       return function(a, b) {
         if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
@@ -903,7 +941,6 @@ var raygunRumFactory = function(window, $, Raygun) {
      * @param {string} property
      * @return {array} collection
      */
-
     function sortCollectionByProperty(collection, property) {
       return collection.sort(getCompareFunction(property));
     }
