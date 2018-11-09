@@ -1,3 +1,6 @@
+* v2.13.3
+  - Guard call to XMLHttpRequest.setRequestHeader as it is not present on IE8,9,10,11
+
 * v2.13.2
   - Typescript definitions removed, they are now maintained in @types/raygun4js
 

@@ -1017,7 +1017,9 @@ var raygunFactory = function(window, $, undefined) {
   // Make the actual CORS request.
   function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
     var xhr = createCORSRequest('POST', url, data);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    if (typeof xhr.setRequestHeader === 'function') {
+      xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    }
 
     if (typeof _beforeXHRCallback === 'function') {
       _beforeXHRCallback(xhr);
