@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.13.3 - 2018-11-05
+/*! Raygun4js - v2.13.3 - 2018-11-09
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -3411,7 +3411,9 @@ var raygunFactory = function(window, $, undefined) {
   // Make the actual CORS request.
   function makePostCorsRequest(url, data, _successCallback, _errorCallback) {
     var xhr = createCORSRequest('POST', url, data);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    if (typeof xhr.setRequestHeader === 'function') {
+      xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    }
 
     if (typeof _beforeXHRCallback === 'function') {
       _beforeXHRCallback(xhr);
