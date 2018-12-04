@@ -545,7 +545,6 @@ var raygunFactory = function(window, $, undefined) {
       for (var key in localStorage) {
         // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
         if (
-          key.substring(0, 9) === 'raygunjs=' ||
           key.substring(0, 33) === 'raygunjs+' + Raygun.Options._raygunApiKey
         ) {
           try {
