@@ -1,3 +1,6 @@
+* v2.13.4
+  - Fix offline errors not being sent with new API key format
+
 * v2.13.3
   - Guard call to XMLHttpRequest.setRequestHeader as it is not present on IE8,9,10,11
 

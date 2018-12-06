@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.13.3 - 2018-11-09
+/*! Raygun4js - v2.13.4 - 2018-12-05
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2018 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -2820,10 +2820,8 @@ var raygunFactory = function(window, $, undefined) {
   function sendSavedErrors() {
     if (Raygun.Utilities.localStorageAvailable()) {
       for (var key in localStorage) {
-        // TODO: Remove (0,9) substring after a given amount of time, only there for legacy reasons
         if (
-          key.substring(0, 9) === 'raygunjs=' ||
-          key.substring(0, 33) === 'raygunjs+' + Raygun.Options._raygunApiKey
+          key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1
         ) {
           try {
             var payload = JSON.parse(localStorage[key]);
@@ -3200,7 +3198,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.13.3',
+          Version: '2.13.4',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
