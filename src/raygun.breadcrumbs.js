@@ -440,7 +440,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       return;
     }
 
-    this.disableXHRLogging = Raygun.Utilities.enhance(
+    var disableXHRLogging = Raygun.Utilities.enhance(
       window.XMLHttpRequest.prototype,
       'open',
       self.wrapWithHandler(function() {
@@ -530,82 +530,96 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       })
     );
 
-    var originalFetch = window.fetch;
-    window.fetch = function() {
-      var url = arguments[0];
-      var options = arguments[1];
-      var method = (options && options.method) || 'GET';
+    var disableFetchLogging = function() {};
+    if (typeof window.fetch === 'function') {
+      var originalFetch = window.fetch;
+      window.fetch = function() {
+        var url = arguments[0];
+        var options = arguments[1];
+        var method = (options && options.method) || 'GET';
+        var initTime = new Date().getTime();
 
-      var promise = originalFetch.apply(null, arguments);
+        var promise = originalFetch.apply(null, arguments);
 
-      var initTime = new Date().getTime();
+        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
+          return promise;
+        }
 
-      if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-        return promise;
-      }
+        try {
+          var metadata = {
+            method: method,
+            requestURL: url,
+          };
 
-      var metadata = {
-        method: method,
-        requestURL: url,
-      };
-
-      if (options && options.body) {
-        metadata.requestText = Raygun.Utilities.truncate(options.body, 500);
-      }
-
-      self.recordBreadcrumb({
-        type: 'request',
-        message: 'Opening request to ' + url,
-        level: 'info',
-        metadata: metadata,
-      });
-
-      promise.then(
-        self.wrapWithHandler(function(response) {
-          var responseText = 'N/A when the fetch response does not support clone()';
-          var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
-
-          function recordBreadcrumb() {
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Finished request to ' + url,
-              level: 'info',
-              metadata: {
-                status: response.status,
-                requestURL: url,
-                responseURL: response.url,
-                responseText: responseText,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
+          if (options && options.body) {
+            metadata.requestText = Raygun.Utilities.truncate(options.body, 500);
           }
 
-          if (ourResponse) {
-              ourResponse.text().then(function(text) {
-                responseText = Raygun.Utilities.truncate(text, 500);
-
-                recordBreadcrumb();
-              });
-          } else {
-            recordBreadcrumb();
-          }
-        })
-      );
-      promise.catch(
-        self.wrapWithHandler(function(error) {
           self.recordBreadcrumb({
             type: 'request',
-            message: 'Failed request to ' + url,
+            message: 'Opening request to ' + url,
             level: 'info',
-            metadata: {
-              error: error.toString(),
-              duration: new Date().getTime() - initTime + 'ms',
-            },
+            metadata: metadata,
           });
-        })
-      );
 
-      return promise;
+          promise.then(
+            self.wrapWithHandler(function(response) {
+              var responseText = 'N/A when the fetch response does not support clone()';
+              var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
+
+              function recordBreadcrumb() {
+                self.recordBreadcrumb({
+                  type: 'request',
+                  message: 'Finished request to ' + url,
+                  level: 'info',
+                  metadata: {
+                    status: response.status,
+                    requestURL: url,
+                    responseURL: response.url,
+                    responseText: responseText,
+                    duration: new Date().getTime() - initTime + 'ms',
+                  },
+                });
+              }
+
+              if (ourResponse) {
+                ourResponse.text().then(function(text) {
+                  responseText = Raygun.Utilities.truncate(text, 500);
+
+                  recordBreadcrumb();
+                });
+              } else {
+                recordBreadcrumb();
+              }
+            })
+          );
+
+          promise.catch(
+            self.wrapWithHandler(function(error) {
+              self.recordBreadcrumb({
+                type: 'request',
+                message: 'Failed request to ' + url,
+                level: 'info',
+                metadata: {
+                  error: error.toString(),
+                  duration: new Date().getTime() - initTime + 'ms',
+                },
+              });
+            })
+          );
+        } catch(_e) {}
+
+        return promise;
+      };
+
+      disableFetchLogging = function() {
+        window.fetch = originalFetch;
+      };
+    }
+
+    this.disableXHRLogging = function() {
+      disableXHRLogging();
+      disableFetchLogging();
     };
   };
 
