@@ -537,10 +537,23 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
       var originalFetch = window.fetch;
       window.fetch = function() {
-        var url = arguments[0];
+        var fetchInput = arguments[0];
+        var url;
         var options = arguments[1];
         var method = (options && options.method) || 'GET';
         var initTime = new Date().getTime();
+
+        if (typeof fetchInput === 'string') {
+          url = fetchInput;
+        } else if (typeof window.Request !== 'undefined' && fetchInput instanceof window.Request) {
+          url = fetchInput.url;
+
+          if (fetchInput.method) {
+            method = fetchInput.method;
+          }
+        } else {
+          url = String(fetchInput);
+        }
 
         var promise = originalFetch.apply(null, arguments);
 
