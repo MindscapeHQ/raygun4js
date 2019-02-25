@@ -531,7 +531,10 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     );
 
     var disableFetchLogging = function() {};
-    if (typeof window.fetch === 'function') {
+    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
+    // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
+    // This results in doubled up breadcrumbs
+    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
       var originalFetch = window.fetch;
       window.fetch = function() {
         var url = arguments[0];
