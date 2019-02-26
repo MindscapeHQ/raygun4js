@@ -1,6 +1,6 @@
-/*! Raygun4js - v2.13.4 - 2018-12-05
+/*! Raygun4js - v2.13.4 - 2019-02-26
 * https://github.com/MindscapeHQ/raygun4js
-* Copyright (c) 2018 MindscapeHQ; Licensed MIT */
+* Copyright (c) 2019 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
 
 
@@ -2170,7 +2170,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       return;
     }
 
-    this.disableXHRLogging = Raygun.Utilities.enhance(
+    var disableXHRLogging = Raygun.Utilities.enhance(
       window.XMLHttpRequest.prototype,
       'open',
       self.wrapWithHandler(function() {
@@ -2259,6 +2259,114 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
         );
       })
     );
+
+    var disableFetchLogging = function() {};
+    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
+    // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
+    // This results in doubled up breadcrumbs
+    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
+      var originalFetch = window.fetch;
+      window.fetch = function() {
+        var fetchInput = arguments[0];
+        var url;
+        var options = arguments[1];
+        var method = (options && options.method) || 'GET';
+        var initTime = new Date().getTime();
+
+        if (typeof fetchInput === 'string') {
+          url = fetchInput;
+        } else if (typeof window.Request !== 'undefined' && fetchInput instanceof window.Request) {
+          url = fetchInput.url;
+
+          if (fetchInput.method) {
+            method = fetchInput.method;
+          }
+        } else {
+          url = String(fetchInput);
+        }
+
+        var promise = originalFetch.apply(null, arguments);
+
+        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
+          return promise;
+        }
+
+        try {
+          var metadata = {
+            method: method,
+            requestURL: url,
+          };
+
+          if (options && options.body) {
+            metadata.requestText = Raygun.Utilities.truncate(options.body, 500);
+          }
+
+          self.recordBreadcrumb({
+            type: 'request',
+            message: 'Opening request to ' + url,
+            level: 'info',
+            metadata: metadata,
+          });
+
+          promise.then(
+            self.wrapWithHandler(function(response) {
+              var responseText = 'N/A when the fetch response does not support clone()';
+              var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
+
+              function recordBreadcrumb() {
+                self.recordBreadcrumb({
+                  type: 'request',
+                  message: 'Finished request to ' + url,
+                  level: 'info',
+                  metadata: {
+                    status: response.status,
+                    requestURL: url,
+                    responseURL: response.url,
+                    responseText: responseText,
+                    duration: new Date().getTime() - initTime + 'ms',
+                  },
+                });
+              }
+
+              if (ourResponse) {
+                ourResponse.text().then(function(text) {
+                  responseText = Raygun.Utilities.truncate(text, 500);
+
+                  recordBreadcrumb();
+                });
+              } else {
+                recordBreadcrumb();
+              }
+            })
+          );
+
+          promise.catch(
+            self.wrapWithHandler(function(error) {
+              self.recordBreadcrumb({
+                type: 'request',
+                message: 'Failed request to ' + url,
+                level: 'info',
+                metadata: {
+                  error: error.toString(),
+                  duration: new Date().getTime() - initTime + 'ms',
+                },
+              });
+            })
+          );
+        } catch(_e) {}
+
+        return promise;
+      };
+
+      disableFetchLogging = function() {
+        window.fetch = originalFetch;
+      };
+    }
+
+    this.disableXHRLogging = function() {
+      disableXHRLogging();
+      disableFetchLogging();
+    };
   };
 
   Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
