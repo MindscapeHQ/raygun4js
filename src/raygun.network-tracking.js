@@ -82,7 +82,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               var body = 'N/A for non text responses';
 
               if (this.responseType === '' || this.responseType === 'text') {
-                body = Raygun.Utilities.truncate(this.responseText, 500);
+                body = this.responseText;
               }
 
               self.executeHandlers(self.responseHandlers, {
