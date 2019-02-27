@@ -99,7 +99,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
             'error',
             self.wrapWithHandler(function() {
               self.executeHandlers(self.errorHandlers, {
-                status: this.status,
                 requestURL: url,
                 responseURL: this.responseURL,
                 duration: new Date().getTime() - initTime,
