@@ -25,17 +25,19 @@
       rg4js('disableAutoBreadcrumbsNavigation');
 
       setTimeout(function() {
-        $.get('automatic.xhr.html').always(function() {
+        $.get('automatic.console.html').always(function() {
           var request = new XMLHttpRequest();
-          request.open('POST', 'automatic.xhr.html');
+          request.open('POST', 'automatic.navigation.html');
           request.responseType = 'document';
           request.send('{"foo": 1}', false);
+
+          $.get('/fixtures/breadcrumbs/automatic.xhr.html');
         });
 
         setTimeout(function() {
           throw new Error('Unhandled error');
-        }, 2000);
-      }, 500);
+        }, 300);
+      }, 100);
     </script>
 
   </body>

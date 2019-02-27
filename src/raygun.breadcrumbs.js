@@ -158,12 +158,8 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       var crumb = this.breadcrumbs[i];
 
       if (crumb && crumb.type === 'request' && !this.logXhrContents) {
-        if (crumb.metadata && crumb.metadata.responseText) {
-          crumb.metadata.responseText = 'Disabled';
-        }
-
-        if (crumb.metadata && crumb.metadata.requestText) {
-          crumb.metadata.requestText = undefined;
+        if (crumb.metadata && crumb.metadata.body) {
+          crumb.metadata.body = 'Disabled because logContentsOfXhrCalls has not been enabled';
         }
       }
 
@@ -435,208 +431,59 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
   Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
     var self = this;
 
-    if (!window.XMLHttpRequest.prototype.addEventListener) {
-      this.disableXHRLogging = function() {};
-      return;
-    }
+    var requestHandler = self.wrapWithHandler(function(request) {
+      if (urlMatchesIgnoredHosts(request.url, self.xhrIgnoredHosts)) {
+        return;
+      }
 
-    var disableXHRLogging = Raygun.Utilities.enhance(
-      window.XMLHttpRequest.prototype,
-      'open',
-      self.wrapWithHandler(function() {
-        var initTime = new Date().getTime();
-        var url = arguments[1] || 'Unknown';
-        var method = arguments[0];
+      if (request.body) {
+        request.body = Raygun.Utilities.truncate(request.body, 500);
+      }
 
-        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-          return;
-        }
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Opening request to ' + request.requestURL,
+        level: 'info',
+        metadata: request,
+      });
+    });
+    var responseHandler = self.wrapWithHandler(function(response) {
+      if (
+        urlMatchesIgnoredHosts(response.requestURL, self.xhrIgnoredHosts) ||
+        urlMatchesIgnoredHosts(response.responseURL, self.xhrIgnoredHosts)
+      ) {
+        return;
+      }
 
-        Raygun.Utilities.enhance(
-          this,
-          'send',
-          self.wrapWithHandler(function() {
-            var metadata = {
-              method: method,
-              requestURL: url,
-            };
+      if (response.body) {
+        response.body = Raygun.Utilities.truncate(response.body, 500);
+      }
 
-            if (arguments[0] && typeof arguments[0] === 'string') {
-              metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
-            }
+      response.duration = response.duration + 'ms';
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Finished request to ' + response.requestURL,
+        level: 'info',
+        metadata: response,
+      });
+    });
+    var errorHandler = self.wrapWithHandler(function(error) {
+      if (urlMatchesIgnoredHosts(error.requestURL, self.xhrIgnoredHosts)) {
+        return;
+      }
 
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Opening request to ' + url,
-              level: 'info',
-              metadata: metadata,
-            });
-          })
-        );
+      error.duration = error.duration + 'ms';
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Failed request to ' + error.requestUrl,
+        level: 'info',
+        metadata: error,
+      });
+    });
 
-        this.addEventListener(
-          'load',
-          self.wrapWithHandler(function() {
-            var responseText = 'N/A for non text responses';
-
-            if (this.responseType === '' || this.responseType === 'text') {
-              responseText = Raygun.Utilities.truncate(this.responseText, 500);
-            }
-
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Finished request to ' + url,
-              level: 'info',
-              metadata: {
-                status: this.status,
-                requestURL: url,
-                responseURL: this.responseURL,
-                responseText: responseText,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-        this.addEventListener(
-          'error',
-          self.wrapWithHandler(function() {
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Failed request to ' + url,
-              level: 'info',
-              metadata: {
-                status: this.status,
-                requestURL: url,
-                responseURL: this.responseURL,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-        this.addEventListener(
-          'abort',
-          self.wrapWithHandler(function() {
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Request to ' + url + 'aborted',
-              level: 'info',
-              metadata: {
-                requestURL: url,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-      })
-    );
-
-    var disableFetchLogging = function() {};
-    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
-    // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
-    // This results in doubled up breadcrumbs
-    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
-      var originalFetch = window.fetch;
-      window.fetch = function() {
-        var fetchInput = arguments[0];
-        var url;
-        var options = arguments[1];
-        var method = (options && options.method) || 'GET';
-        var initTime = new Date().getTime();
-
-        if (typeof fetchInput === 'string') {
-          url = fetchInput;
-        } else if (typeof window.Request !== 'undefined' && fetchInput instanceof window.Request) {
-          url = fetchInput.url;
-
-          if (fetchInput.method) {
-            method = fetchInput.method;
-          }
-        } else {
-          url = String(fetchInput);
-        }
-
-        var promise = originalFetch.apply(null, arguments);
-
-        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-          return promise;
-        }
-
-        try {
-          var metadata = {
-            method: method,
-            requestURL: url,
-          };
-
-          if (options && options.body) {
-            metadata.requestText = Raygun.Utilities.truncate(options.body, 500);
-          }
-
-          self.recordBreadcrumb({
-            type: 'request',
-            message: 'Opening request to ' + url,
-            level: 'info',
-            metadata: metadata,
-          });
-
-          promise.then(
-            self.wrapWithHandler(function(response) {
-              var responseText = 'N/A when the fetch response does not support clone()';
-              var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
-
-              function recordBreadcrumb() {
-                self.recordBreadcrumb({
-                  type: 'request',
-                  message: 'Finished request to ' + url,
-                  level: 'info',
-                  metadata: {
-                    status: response.status,
-                    requestURL: url,
-                    responseURL: response.url,
-                    responseText: responseText,
-                    duration: new Date().getTime() - initTime + 'ms',
-                  },
-                });
-              }
-
-              if (ourResponse) {
-                ourResponse.text().then(function(text) {
-                  responseText = Raygun.Utilities.truncate(text, 500);
-
-                  recordBreadcrumb();
-                });
-              } else {
-                recordBreadcrumb();
-              }
-            })
-          );
-
-          promise.catch(
-            self.wrapWithHandler(function(error) {
-              self.recordBreadcrumb({
-                type: 'request',
-                message: 'Failed request to ' + url,
-                level: 'info',
-                metadata: {
-                  error: error.toString(),
-                  duration: new Date().getTime() - initTime + 'ms',
-                },
-              });
-            })
-          );
-        } catch(_e) {}
-
-        return promise;
-      };
-
-      disableFetchLogging = function() {
-        window.fetch = originalFetch;
-      };
-    }
-
-    this.disableXHRLogging = function() {
-      disableXHRLogging();
-      disableFetchLogging();
-    };
+    Raygun.NetworkTracking.subscribeToRequest(requestHandler);
+    Raygun.NetworkTracking.subscribeToResponse(responseHandler);
+    Raygun.NetworkTracking.subscribeToError(errorHandler);
   };
 
   Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {
