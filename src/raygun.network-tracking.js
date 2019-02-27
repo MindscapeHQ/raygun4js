@@ -35,16 +35,32 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     this.attach();
   };
 
-  NetworkTracking.prototype.subscribeToRequest = function(handler) {
-    this.requestHandlers.push(handler);
+  NetworkTracking.prototype.on = function(type, handler) {
+    switch (type) {
+      case 'request':
+        this.requestHandlers.push(handler);
+        break;
+      case 'response':
+        this.responseHandlers.push(handler);
+        break;
+      case 'error':
+        this.errorHandlers.push(handler);
+        break;
+    }
   };
 
-  NetworkTracking.prototype.subscribeToResponse = function(handler) {
-    this.responseHandlers.push(handler);
-  };
-
-  NetworkTracking.prototype.subscribeToError = function(handler) {
-    this.errorHandlers.push(handler);
+  NetworkTracking.prototype.off = function(type, handler) {
+    switch (type) {
+      case 'request':
+        this.requestHandlers = Raygun.Utilities.removeFromArray(this.requestHandlers, handler);
+        break;
+      case 'response':
+        this.responseHandlers = Raygun.Utilities.removeFromArray(this.responseHandlers, handler);
+        break;
+      case 'error':
+        this.errorHandlers = Raygun.Utilities.removeFromArray(this.errorHandlers, handler);
+        break;
+    }
   };
 
   NetworkTracking.prototype.attach = function() {

@@ -481,9 +481,15 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       });
     });
 
-    Raygun.NetworkTracking.subscribeToRequest(requestHandler);
-    Raygun.NetworkTracking.subscribeToResponse(responseHandler);
-    Raygun.NetworkTracking.subscribeToError(errorHandler);
+    Raygun.NetworkTracking.on('request', requestHandler);
+    Raygun.NetworkTracking.on('response', responseHandler);
+    Raygun.NetworkTracking.on('error', errorHandler);
+
+    this.disableXHRLogging = function() {
+      Raygun.NetworkTracking.off('request', requestHandler);
+      Raygun.NetworkTracking.off('response', responseHandler);
+      Raygun.NetworkTracking.off('error', errorHandler);
+    };
   };
 
   Breadcrumbs.prototype.disableAutoBreadcrumbsXHR = function() {

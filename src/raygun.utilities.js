@@ -418,6 +418,17 @@ window.raygunUtilityFactory = function(window, Raygun) {
 
       return url;
     },
+    removeFromArray: function(array, item) {
+      var newArray = [];
+
+      for (var i = 0; i < array.length; i++) {
+        if (array[i] !== item) {
+          newArray.push(array[i]);
+        }
+      }
+
+      return newArray;
+    },
   };
 
   var _defaultReactNativeGlobalHandler;
