@@ -404,7 +404,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       }
     },
     resolveFullUrl: function(url) {
-      if (window.location.origin && window.location.pathname && url.indexOf('://') === -1) {
+      if (url && window.location.origin && window.location.pathname && url.indexOf('://') === -1) {
         if (url.indexOf('/') !== 0) {
           var pathname = window.location.pathname;
           var pathComponents = pathname.split('/');
