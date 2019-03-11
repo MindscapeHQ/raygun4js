@@ -1,3 +1,6 @@
+* v2.14.0
+  - Add fetch support to automatic XHR breadcrumbs
+
 * v2.13.4
   - Fix offline errors not being sent with new API key format
 
