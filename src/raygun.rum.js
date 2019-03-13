@@ -566,11 +566,11 @@ var raygunRumFactory = function(window, $, Raygun) {
         size: timing.decodedBodySize || 0,
       };
 
-      if (this.xhrStatusMap[originalUrl]) {
-        timingData.status = this.xhrStatusMap[originalUrl].shift().status;
+      if (this.xhrStatusMap[timing.name]) {
+        timingData.status = this.xhrStatusMap[timing.name].shift().status;
 
-        if (this.xhrStatusMap[originalUrl].length === 0) {
-          delete this.xhrStatusMap[originalUrl];
+        if (this.xhrStatusMap[timing.name].length === 0) {
+          delete this.xhrStatusMap[timing.name];
         }
       }
 
