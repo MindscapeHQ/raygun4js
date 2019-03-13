@@ -9,6 +9,7 @@
  * Copyright (c) 2018 MindscapeHQ
  * Licensed under the MIT license.
  */
+
 var raygunRumFactory = function(window, $, Raygun) {
   Raygun.RealUserMonitoring = function(
     apiKey,
@@ -61,6 +62,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.maxQueueItemsSent = 50;
     this.setCookieAsSecure = setCookieAsSecure;
 
+    this.xhrStatusMap = {};
+
     var Timings = {
       Page: 'p',
       VirtualPage: 'v',
@@ -102,6 +105,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
+
+      Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
     this.pageLoaded = function(isNewSession) {
@@ -192,7 +197,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
     }
 
-   function sendNewSessionStart() {
+    function sendNewSessionStart() {
       sendItemImmediately({
         sessionId: self.sessionId,
         timestamp: new Date().toISOString(),
@@ -512,8 +517,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    function getSecondaryTimingData(timing, fromZero) {
+    var getSecondaryTimingData = function(timing, fromZero) {
       var url = timing.name.split('?')[0];
+      var originalUrl = url;
 
       if (self.ignoreUrlCasing) {
         url = url.toLowerCase();
@@ -523,7 +529,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         url = url.substring(0, 800);
       }
 
-      return {
+      var timingData = {
         url: url,
         timing: getSecondaryEncodedTimingData(
           timing,
@@ -531,7 +537,13 @@ var raygunRumFactory = function(window, $, Raygun) {
         ),
         size: timing.decodedBodySize || 0,
       };
-    }
+
+      if (this.xhrStatusMap[originalUrl]) {
+        timingData.status = this.xhrStatusMap[originalUrl].shift().status;
+      }
+
+      return timingData;
+    }.bind(this);
 
     function getEncodedTimingData(timing, offset) {
       var data = {
@@ -735,6 +747,14 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
+    function xhrResponseHandler(response) {
+      if (!this.xhrStatusMap[response.responseURL]) {
+        this.xhrStatusMap[response.responseURL] = [];
+      }
+
+      this.xhrStatusMap[response.responseURL].push(response);
+    }
+
     function shouldIgnoreResource(name) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
@@ -841,7 +861,14 @@ var raygunRumFactory = function(window, $, Raygun) {
       var secure = saveAsSecure ? '; secure' : '';
 
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
+        name +
+        '=id|' +
+        value +
+        '&timestamp|' +
+        lastActivityTimestamp +
+        expires +
+        '; path=/' +
+        secure;
     }
 
     function readSessionCookieElement(cookieString, element) {
@@ -870,11 +897,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getSecondaryTimingType(timing) {
-      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === "fetch") {
+      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === 'fetch') {
         return Timings.XHR;
-      } else if(isChildAsset(timing)) {
+      } else if (isChildAsset(timing)) {
         return getTypeForChildAsset(timing);
-      } else if(isChromeFetchCall(timing)) {
+      } else if (isChromeFetchCall(timing)) {
         return Timings.XHR;
       } else {
         return getTypeForChildAsset(timing);
@@ -883,17 +910,17 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function isChromeFetchCall(timing) {
       // Chrome doesn't report "initiatorType" as fetch
-      return typeof timing.initiatorType === "string" && timing.initiatorType === "";
+      return typeof timing.initiatorType === 'string' && timing.initiatorType === '';
     }
 
     function isChildAsset(timing) {
-      switch(timing.initiatorType) {
-        case "img":
-        case "css":
-        case "script":
-        case "link":
-        case "other":
-        case "use":
+      switch (timing.initiatorType) {
+        case 'img':
+        case 'css':
+        case 'script':
+        case 'link':
+        case 'other':
+        case 'use':
           return true;
       }
       return false;
