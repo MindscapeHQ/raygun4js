@@ -547,7 +547,6 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     var getSecondaryTimingData = function(timing, fromZero) {
       var url = timing.name.split('?')[0];
-      var originalUrl = url;
 
       if (self.ignoreUrlCasing) {
         url = url.toLowerCase();
