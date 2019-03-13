@@ -1,3 +1,6 @@
+* v2.14.1
+  - Improve support for EmberJS
+
 * v2.14.0
   - Add fetch support to automatic XHR breadcrumbs
 
