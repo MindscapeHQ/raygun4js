@@ -29,15 +29,17 @@
   var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
 
-    for (var i in snippetOptions) {
-      var pair = snippetOptions[i];
-      if (pair) {
-        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
-          // Config pair, can execute immediately
-          executor(pair);
-        } else {
-          // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
-          delayedCommands.push(pair);
+    for (var i in snippetOptions) {  
+      if (snippetOptions.hasOwnProperty(i)) {  
+        var pair = snippetOptions[i];  
+        if (pair) {
+          if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
+            // Config pair, can execute immediately
+            executor(pair);
+          } else {
+            // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
+            delayedCommands.push(pair);
+          }
         }
       }
     }
@@ -246,7 +248,9 @@
     }
 
     for (var commandIndex in delayedCommands) {
-      executor(delayedCommands[commandIndex]);
+      if (delayedCommands.hasOwnProperty(commandIndex)) {
+        executor(delayedCommands[commandIndex]);
+      }
     }
 
     delayedCommands = [];
