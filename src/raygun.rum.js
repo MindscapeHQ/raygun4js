@@ -469,9 +469,37 @@ var raygunRumFactory = function(window, $, Raygun) {
           }
         }
 
+        addMissingWrtData(collection);
+
         self.offset = resources.length;
       } catch (e) {}
     }
+
+    /**
+     * This adds in the missing WRT data from non 2xx status code responses in Chrome/Safari
+     * This is to ensure we have full status code tracking support.
+     * It creates a fake WRT payload containing only the duration as that is the minimum
+     * required set of fields
+     */
+    var addMissingWrtData = function(collection) {
+      for (var url in this.xhrStatusMap) {
+        if (this.xhrStatusMap.hasOwnProperty(url)) {
+          var responses = this.xhrStatusMap[url];
+
+          do {
+            var response = responses.shift();
+
+            collection.push({
+              url: response.responseURL,
+              status: response.status,
+              timing: { du: response.duration },
+            });
+          } while (responses.length > 0);
+
+          delete this.xhrStatusMap[url];
+        }
+      }
+    }.bind(this);
 
     function getPrimaryTimingData() {
       var pathName = window.location.pathname;
@@ -540,6 +568,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       if (this.xhrStatusMap[originalUrl]) {
         timingData.status = this.xhrStatusMap[originalUrl].shift().status;
+
+        if (this.xhrStatusMap[originalUrl].length === 0) {
+          delete this.xhrStatusMap[originalUrl];
+        }
       }
 
       return timingData;
