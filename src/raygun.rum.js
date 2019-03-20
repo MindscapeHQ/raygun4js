@@ -565,7 +565,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         size: timing.decodedBodySize || 0,
       };
 
-      if (this.xhrStatusMap[timing.name]) {
+      var xhrStatusesForName = this.xhrStatusMap[timing.name];
+      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
         timingData.status = this.xhrStatusMap[timing.name].shift().status;
 
         if (this.xhrStatusMap[timing.name].length === 0) {
