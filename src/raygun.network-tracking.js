@@ -26,11 +26,11 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
       };
     };
 
-    this.executeHandlers = function(handlers, data) {
+    this.executeHandlers = this.wrapWithHandler(function(handlers, data) {
       for (var i = 0; i < handlers.length; i++) {
         handlers[i](JSON.parse(JSON.stringify(data)));
       }
-    };
+    });
 
     this.attach();
   };
