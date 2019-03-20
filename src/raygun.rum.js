@@ -486,15 +486,17 @@ var raygunRumFactory = function(window, $, Raygun) {
         if (this.xhrStatusMap.hasOwnProperty(url)) {
           var responses = this.xhrStatusMap[url];
 
-          do {
-            var response = responses.shift();
+          if (responses && responses.length > 0) {
+            do {
+              var response = responses.shift();
 
-            collection.push({
-              url: response.responseURL,
-              status: response.status,
-              timing: { du: response.duration },
-            });
-          } while (responses.length > 0);
+              collection.push({
+                url: response.responseURL,
+                status: response.status,
+                timing: { du: response.duration },
+              });
+            } while (responses.length > 0);
+          }
 
           delete this.xhrStatusMap[url];
         }
