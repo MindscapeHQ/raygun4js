@@ -32,6 +32,8 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
       }
     });
 
+    this.wrapPrototypeWithHandlers();
+
     this.attach();
   };
 
@@ -211,6 +213,16 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
       disableFetchLogging = function() {
         window.fetch = originalFetch;
       };
+    }
+  };
+
+  NetworkTracking.prototype.wrapPrototypeWithHandlers = function() {
+    var name, method;
+    for (name in NetworkTracking.prototype) {
+      method = NetworkTracking.prototype[name];
+      if (typeof method === 'function') {
+        NetworkTracking.prototype[name] = this.wrapWithHandler(method);
+      }
     }
   };
 
