@@ -403,6 +403,32 @@ window.raygunUtilityFactory = function(window, Raygun) {
         return text;
       }
     },
+    resolveFullUrl: function(url) {
+      if (url && window.location.origin && window.location.pathname && url.indexOf('://') === -1) {
+        if (url.indexOf('/') !== 0) {
+          var pathname = window.location.pathname;
+          var pathComponents = pathname.split('/');
+          pathComponents.pop();
+
+          return window.location.origin + pathComponents.join('/') + '/' + url;
+        } else {
+          return window.location.origin + url;
+        }
+      }
+
+      return url;
+    },
+    removeFromArray: function(array, item) {
+      var newArray = [];
+
+      for (var i = 0; i < array.length; i++) {
+        if (array[i] !== item) {
+          newArray.push(array[i]);
+        }
+      }
+
+      return newArray;
+    },
   };
 
   var _defaultReactNativeGlobalHandler;

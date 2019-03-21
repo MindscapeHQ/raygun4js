@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.14.1 - 2019-03-13
+/*! Raygun4js - v2.14.1 - 2019-03-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2019 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -1834,6 +1834,32 @@ window.raygunUtilityFactory = function(window, Raygun) {
         return text;
       }
     },
+    resolveFullUrl: function(url) {
+      if (url && window.location.origin && window.location.pathname && url.indexOf('://') === -1) {
+        if (url.indexOf('/') !== 0) {
+          var pathname = window.location.pathname;
+          var pathComponents = pathname.split('/');
+          pathComponents.pop();
+
+          return window.location.origin + pathComponents.join('/') + '/' + url;
+        } else {
+          return window.location.origin + url;
+        }
+      }
+
+      return url;
+    },
+    removeFromArray: function(array, item) {
+      var newArray = [];
+
+      for (var i = 0; i < array.length; i++) {
+        if (array[i] !== item) {
+          newArray.push(array[i]);
+        }
+      }
+
+      return newArray;
+    },
   };
 
   var _defaultReactNativeGlobalHandler;
@@ -2005,12 +2031,8 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       var crumb = this.breadcrumbs[i];
 
       if (crumb && crumb.type === 'request' && !this.logXhrContents) {
-        if (crumb.metadata && crumb.metadata.responseText) {
-          crumb.metadata.responseText = 'Disabled';
-        }
-
-        if (crumb.metadata && crumb.metadata.requestText) {
-          crumb.metadata.requestText = undefined;
+        if (crumb.metadata && crumb.metadata.body) {
+          crumb.metadata.body = 'Disabled because logContentsOfXhrCalls has not been enabled';
         }
       }
 
@@ -2282,207 +2304,64 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
   Breadcrumbs.prototype.enableAutoBreadcrumbsXHR = function() {
     var self = this;
 
-    if (!window.XMLHttpRequest.prototype.addEventListener) {
-      this.disableXHRLogging = function() {};
-      return;
-    }
+    var requestHandler = self.wrapWithHandler(function(request) {
+      if (urlMatchesIgnoredHosts(request.url, self.xhrIgnoredHosts)) {
+        return;
+      }
 
-    var disableXHRLogging = Raygun.Utilities.enhance(
-      window.XMLHttpRequest.prototype,
-      'open',
-      self.wrapWithHandler(function() {
-        var initTime = new Date().getTime();
-        var url = arguments[1] || 'Unknown';
-        var method = arguments[0];
+      if (request.body) {
+        request.body = Raygun.Utilities.truncate(request.body, 500);
+      }
 
-        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-          return;
-        }
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Opening request to ' + request.requestURL,
+        level: 'info',
+        metadata: request,
+      });
+    });
+    var responseHandler = self.wrapWithHandler(function(response) {
+      if (
+        urlMatchesIgnoredHosts(response.requestURL, self.xhrIgnoredHosts) ||
+        urlMatchesIgnoredHosts(response.responseURL, self.xhrIgnoredHosts)
+      ) {
+        return;
+      }
 
-        Raygun.Utilities.enhance(
-          this,
-          'send',
-          self.wrapWithHandler(function() {
-            var metadata = {
-              method: method,
-              requestURL: url,
-            };
+      if (response.body) {
+        response.body = Raygun.Utilities.truncate(response.body, 500);
+      }
 
-            if (arguments[0] && typeof arguments[0] === 'string') {
-              metadata.requestText = Raygun.Utilities.truncate(arguments[0], 500);
-            }
+      response.duration = response.duration + 'ms';
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Finished request to ' + response.requestURL,
+        level: 'info',
+        metadata: response,
+      });
+    });
+    var errorHandler = self.wrapWithHandler(function(error) {
+      if (urlMatchesIgnoredHosts(error.requestURL, self.xhrIgnoredHosts)) {
+        return;
+      }
 
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Opening request to ' + url,
-              level: 'info',
-              metadata: metadata,
-            });
-          })
-        );
+      error.duration = error.duration + 'ms';
+      self.recordBreadcrumb({
+        type: 'request',
+        message: 'Failed request to ' + error.requestUrl,
+        level: 'info',
+        metadata: error,
+      });
+    });
 
-        this.addEventListener(
-          'load',
-          self.wrapWithHandler(function() {
-            var responseText = 'N/A for non text responses';
-
-            if (this.responseType === '' || this.responseType === 'text') {
-              responseText = Raygun.Utilities.truncate(this.responseText, 500);
-            }
-
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Finished request to ' + url,
-              level: 'info',
-              metadata: {
-                status: this.status,
-                requestURL: url,
-                responseURL: this.responseURL,
-                responseText: responseText,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-        this.addEventListener(
-          'error',
-          self.wrapWithHandler(function() {
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Failed request to ' + url,
-              level: 'info',
-              metadata: {
-                status: this.status,
-                requestURL: url,
-                responseURL: this.responseURL,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-        this.addEventListener(
-          'abort',
-          self.wrapWithHandler(function() {
-            self.recordBreadcrumb({
-              type: 'request',
-              message: 'Request to ' + url + 'aborted',
-              level: 'info',
-              metadata: {
-                requestURL: url,
-                duration: new Date().getTime() - initTime + 'ms',
-              },
-            });
-          })
-        );
-      })
-    );
-
-    var disableFetchLogging = function() {};
-    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
-    // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
-    // This results in doubled up breadcrumbs
-    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
-      var originalFetch = window.fetch;
-      window.fetch = function() {
-        var fetchInput = arguments[0];
-        var url;
-        var options = arguments[1];
-        var method = (options && options.method) || 'GET';
-        var initTime = new Date().getTime();
-
-        if (typeof fetchInput === 'string') {
-          url = fetchInput;
-        } else if (typeof window.Request !== 'undefined' && fetchInput instanceof window.Request) {
-          url = fetchInput.url;
-
-          if (fetchInput.method) {
-            method = fetchInput.method;
-          }
-        } else {
-          url = String(fetchInput);
-        }
-
-        var promise = originalFetch.apply(null, arguments);
-
-        if (urlMatchesIgnoredHosts(url, self.xhrIgnoredHosts)) {
-          return promise;
-        }
-
-        try {
-          var metadata = {
-            method: method,
-            requestURL: url,
-          };
-
-          if (options && options.body) {
-            metadata.requestText = Raygun.Utilities.truncate(options.body, 500);
-          }
-
-          self.recordBreadcrumb({
-            type: 'request',
-            message: 'Opening request to ' + url,
-            level: 'info',
-            metadata: metadata,
-          });
-
-          promise.then(
-            self.wrapWithHandler(function(response) {
-              var responseText = 'N/A when the fetch response does not support clone()';
-              var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
-
-              function recordBreadcrumb() {
-                self.recordBreadcrumb({
-                  type: 'request',
-                  message: 'Finished request to ' + url,
-                  level: 'info',
-                  metadata: {
-                    status: response.status,
-                    requestURL: url,
-                    responseURL: response.url,
-                    responseText: responseText,
-                    duration: new Date().getTime() - initTime + 'ms',
-                  },
-                });
-              }
-
-              if (ourResponse) {
-                ourResponse.text().then(function(text) {
-                  responseText = Raygun.Utilities.truncate(text, 500);
-
-                  recordBreadcrumb();
-                });
-              } else {
-                recordBreadcrumb();
-              }
-            })
-          );
-
-          promise.catch(
-            self.wrapWithHandler(function(error) {
-              self.recordBreadcrumb({
-                type: 'request',
-                message: 'Failed request to ' + url,
-                level: 'info',
-                metadata: {
-                  error: error.toString(),
-                  duration: new Date().getTime() - initTime + 'ms',
-                },
-              });
-            })
-          );
-        } catch(_e) {}
-
-        return promise;
-      };
-
-      disableFetchLogging = function() {
-        window.fetch = originalFetch;
-      };
-    }
+    Raygun.NetworkTracking.on('request', requestHandler);
+    Raygun.NetworkTracking.on('response', responseHandler);
+    Raygun.NetworkTracking.on('error', errorHandler);
 
     this.disableXHRLogging = function() {
-      disableXHRLogging();
-      disableFetchLogging();
+      Raygun.NetworkTracking.off('request', requestHandler);
+      Raygun.NetworkTracking.off('response', responseHandler);
+      Raygun.NetworkTracking.off('error', errorHandler);
     };
   };
 
@@ -2512,11 +2391,12 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+  Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
 
   // Constants
@@ -2625,7 +2505,7 @@ var raygunFactory = function(window, $, undefined) {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
         }
 
-        if(typeof options.captureUnhandledRejections !== 'undefined') {
+        if (typeof options.captureUnhandledRejections !== 'undefined') {
           _captureUnhandledRejections = options.captureUnhandledRejections;
         }
 
@@ -2676,7 +2556,7 @@ var raygunFactory = function(window, $, undefined) {
         window.onerror = null;
       }
 
-      if  (_captureUnhandledRejections) {
+      if (_captureUnhandledRejections) {
         attachPromiseRejectionHandler();
       }
 
@@ -2930,13 +2810,13 @@ var raygunFactory = function(window, $, undefined) {
   // Callback for `unhandledrejection` event.
   function promiseRejectionHandler(event) {
     var error = event.reason;
-    if(!error && event.detail && event.detail.reason) {
+    if (!error && event.detail && event.detail.reason) {
       error = event.detail.reason;
     }
-    if(!(error instanceof Error) && event.reason && event.reason.error) {
+    if (!(error instanceof Error) && event.reason && event.reason.error) {
       error = event.reason.error;
     }
-    if(!error) {
+    if (!error) {
       error = event;
     }
     _publicRaygunFunctions.send(error, null, ['UnhandledPromiseRejection']);
@@ -2944,12 +2824,16 @@ var raygunFactory = function(window, $, undefined) {
 
   // Install global promise rejection handler.
   function attachPromiseRejectionHandler() {
-    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', promiseRejectionHandler);
+    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(
+      window,
+      'unhandledrejection',
+      promiseRejectionHandler
+    );
   }
 
   // Uninstall global promise rejection handler.
   function detachPromiseRejectionHandler() {
-    if(detachPromiseRejectionFunction) {
+    if (detachPromiseRejectionFunction) {
       detachPromiseRejectionFunction();
     }
   }
@@ -3045,9 +2929,7 @@ var raygunFactory = function(window, $, undefined) {
   function sendSavedErrors() {
     if (Raygun.Utilities.localStorageAvailable()) {
       for (var key in localStorage) {
-        if (
-          key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1
-        ) {
+        if (key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1) {
           try {
             var payload = JSON.parse(localStorage[key]);
             makePostCorsRequest(payload.url, payload.data);
@@ -3165,7 +3047,7 @@ var raygunFactory = function(window, $, undefined) {
         stackTrace: stackTrace,
         options: options,
         userTriggered: userTriggered,
-        error: error
+        error: error,
       });
       return;
     }
@@ -3371,7 +3253,7 @@ var raygunFactory = function(window, $, undefined) {
       finalMessage = stackTrace.message;
     } else if (options && options.status) {
       finalMessage = options.status;
-    } else if(typeof error === "string") {
+    } else if (typeof error === 'string') {
       finalMessage = error;
     }
 
@@ -3615,6 +3497,7 @@ window.__instantiatedRaygun = raygunFactory(window, window.jQuery);
  * Copyright (c) 2018 MindscapeHQ
  * Licensed under the MIT license.
  */
+
 var raygunRumFactory = function(window, $, Raygun) {
   Raygun.RealUserMonitoring = function(
     apiKey,
@@ -3667,6 +3550,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.maxQueueItemsSent = 50;
     this.setCookieAsSecure = setCookieAsSecure;
 
+    this.xhrStatusMap = {};
+
     var Timings = {
       Page: 'p',
       VirtualPage: 'v',
@@ -3708,6 +3593,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
+
+      Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
     this.pageLoaded = function(isNewSession) {
@@ -3798,7 +3685,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
     }
 
-   function sendNewSessionStart() {
+    function sendNewSessionStart() {
       sendItemImmediately({
         sessionId: self.sessionId,
         timestamp: new Date().toISOString(),
@@ -4070,9 +3957,39 @@ var raygunRumFactory = function(window, $, Raygun) {
           }
         }
 
+        addMissingWrtData(collection);
+
         self.offset = resources.length;
       } catch (e) {}
     }
+
+    /**
+     * This adds in the missing WRT data from non 2xx status code responses in Chrome/Safari
+     * This is to ensure we have full status code tracking support.
+     * It creates a fake WRT payload containing only the duration as that is the minimum
+     * required set of fields
+     */
+    var addMissingWrtData = function(collection) {
+      for (var url in this.xhrStatusMap) {
+        if (this.xhrStatusMap.hasOwnProperty(url)) {
+          var responses = this.xhrStatusMap[url];
+
+          if (responses && responses.length > 0) {
+            do {
+              var response = responses.shift();
+
+              collection.push({
+                url: response.responseURL,
+                status: response.status,
+                timing: { du: response.duration },
+              });
+            } while (responses.length > 0);
+          }
+
+          delete this.xhrStatusMap[url];
+        }
+      }
+    }.bind(this);
 
     function getPrimaryTimingData() {
       var pathName = window.location.pathname;
@@ -4118,7 +4035,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    function getSecondaryTimingData(timing, fromZero) {
+    var getSecondaryTimingData = function(timing, fromZero) {
       var url = timing.name.split('?')[0];
 
       if (self.ignoreUrlCasing) {
@@ -4129,7 +4046,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         url = url.substring(0, 800);
       }
 
-      return {
+      var timingData = {
         url: url,
         timing: getSecondaryEncodedTimingData(
           timing,
@@ -4137,7 +4054,18 @@ var raygunRumFactory = function(window, $, Raygun) {
         ),
         size: timing.decodedBodySize || 0,
       };
-    }
+
+      var xhrStatusesForName = this.xhrStatusMap[timing.name];
+      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
+        timingData.status = this.xhrStatusMap[timing.name].shift().status;
+
+        if (this.xhrStatusMap[timing.name].length === 0) {
+          delete this.xhrStatusMap[timing.name];
+        }
+      }
+
+      return timingData;
+    }.bind(this);
 
     function getEncodedTimingData(timing, offset) {
       var data = {
@@ -4341,6 +4269,14 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
+    function xhrResponseHandler(response) {
+      if (!this.xhrStatusMap[response.responseURL]) {
+        this.xhrStatusMap[response.responseURL] = [];
+      }
+
+      this.xhrStatusMap[response.responseURL].push(response);
+    }
+
     function shouldIgnoreResource(name) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
@@ -4447,7 +4383,14 @@ var raygunRumFactory = function(window, $, Raygun) {
       var secure = saveAsSecure ? '; secure' : '';
 
       document.cookie =
-        name + '=id|' + value + '&timestamp|' + lastActivityTimestamp + expires +'; path=/' + secure;
+        name +
+        '=id|' +
+        value +
+        '&timestamp|' +
+        lastActivityTimestamp +
+        expires +
+        '; path=/' +
+        secure;
     }
 
     function readSessionCookieElement(cookieString, element) {
@@ -4476,11 +4419,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getSecondaryTimingType(timing) {
-      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === "fetch") {
+      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === 'fetch') {
         return Timings.XHR;
-      } else if(isChildAsset(timing)) {
+      } else if (isChildAsset(timing)) {
         return getTypeForChildAsset(timing);
-      } else if(isChromeFetchCall(timing)) {
+      } else if (isChromeFetchCall(timing)) {
         return Timings.XHR;
       } else {
         return getTypeForChildAsset(timing);
@@ -4489,17 +4432,17 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function isChromeFetchCall(timing) {
       // Chrome doesn't report "initiatorType" as fetch
-      return typeof timing.initiatorType === "string" && timing.initiatorType === "";
+      return typeof timing.initiatorType === 'string' && timing.initiatorType === '';
     }
 
     function isChildAsset(timing) {
-      switch(timing.initiatorType) {
-        case "img":
-        case "css":
-        case "script":
-        case "link":
-        case "other":
-        case "use":
+      switch (timing.initiatorType) {
+        case 'img':
+        case 'css':
+        case 'script':
+        case 'link':
+        case 'other':
+        case 'use':
           return true;
       }
       return false;

@@ -10,11 +10,12 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+  Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
 
   // Constants
@@ -123,7 +124,7 @@ var raygunFactory = function(window, $, undefined) {
           _wrapAsynchronousCallbacks = options.wrapAsynchronousCallbacks;
         }
 
-        if(typeof options.captureUnhandledRejections !== 'undefined') {
+        if (typeof options.captureUnhandledRejections !== 'undefined') {
           _captureUnhandledRejections = options.captureUnhandledRejections;
         }
 
@@ -174,7 +175,7 @@ var raygunFactory = function(window, $, undefined) {
         window.onerror = null;
       }
 
-      if  (_captureUnhandledRejections) {
+      if (_captureUnhandledRejections) {
         attachPromiseRejectionHandler();
       }
 
@@ -428,13 +429,13 @@ var raygunFactory = function(window, $, undefined) {
   // Callback for `unhandledrejection` event.
   function promiseRejectionHandler(event) {
     var error = event.reason;
-    if(!error && event.detail && event.detail.reason) {
+    if (!error && event.detail && event.detail.reason) {
       error = event.detail.reason;
     }
-    if(!(error instanceof Error) && event.reason && event.reason.error) {
+    if (!(error instanceof Error) && event.reason && event.reason.error) {
       error = event.reason.error;
     }
-    if(!error) {
+    if (!error) {
       error = event;
     }
     _publicRaygunFunctions.send(error, null, ['UnhandledPromiseRejection']);
@@ -442,12 +443,16 @@ var raygunFactory = function(window, $, undefined) {
 
   // Install global promise rejection handler.
   function attachPromiseRejectionHandler() {
-    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(window, 'unhandledrejection', promiseRejectionHandler);
+    detachPromiseRejectionFunction = Raygun.Utilities.addEventHandler(
+      window,
+      'unhandledrejection',
+      promiseRejectionHandler
+    );
   }
 
   // Uninstall global promise rejection handler.
   function detachPromiseRejectionHandler() {
-    if(detachPromiseRejectionFunction) {
+    if (detachPromiseRejectionFunction) {
       detachPromiseRejectionFunction();
     }
   }
@@ -543,9 +548,7 @@ var raygunFactory = function(window, $, undefined) {
   function sendSavedErrors() {
     if (Raygun.Utilities.localStorageAvailable()) {
       for (var key in localStorage) {
-        if (
-          key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1
-        ) {
+        if (key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1) {
           try {
             var payload = JSON.parse(localStorage[key]);
             makePostCorsRequest(payload.url, payload.data);
@@ -663,7 +666,7 @@ var raygunFactory = function(window, $, undefined) {
         stackTrace: stackTrace,
         options: options,
         userTriggered: userTriggered,
-        error: error
+        error: error,
       });
       return;
     }
@@ -869,7 +872,7 @@ var raygunFactory = function(window, $, undefined) {
       finalMessage = stackTrace.message;
     } else if (options && options.status) {
       finalMessage = options.status;
-    } else if(typeof error === "string") {
+    } else if (typeof error === 'string') {
       finalMessage = error;
     }
 
