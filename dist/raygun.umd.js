@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.13.4 - 2019-03-20
+/*! Raygun4js - v2.14.1 - 2019-03-22
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2019 MindscapeHQ; Licensed MIT */
 // https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
@@ -3305,7 +3305,7 @@ var raygunFactory = function(window, $, undefined) {
         },
         Client: {
           Name: 'raygun-js',
-          Version: '2.13.4',
+          Version: '2.14.1',
         },
         UserCustomData: finalCustomData,
         Tags: options.tags,
@@ -4527,15 +4527,17 @@ raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
   var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
 
-    for (var i in snippetOptions) {
-      var pair = snippetOptions[i];
-      if (pair) {
-        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
-          // Config pair, can execute immediately
-          executor(pair);
-        } else {
-          // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
-          delayedCommands.push(pair);
+    for (var i in snippetOptions) {  
+      if (snippetOptions.hasOwnProperty(i)) {  
+        var pair = snippetOptions[i];  
+        if (pair) {
+          if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
+            // Config pair, can execute immediately
+            executor(pair);
+          } else {
+            // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
+            delayedCommands.push(pair);
+          }
         }
       }
     }
@@ -4744,7 +4746,9 @@ raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
     }
 
     for (var commandIndex in delayedCommands) {
-      executor(delayedCommands[commandIndex]);
+      if (delayedCommands.hasOwnProperty(commandIndex)) {
+        executor(delayedCommands[commandIndex]);
+      }
     }
 
     delayedCommands = [];
