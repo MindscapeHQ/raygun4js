@@ -5,13 +5,6 @@ node_js:
 cache:
   directories:
   - node_modules
-# addons:
-#   sauce_connect: true
 before_script:
-  # - cp wdio.conf.saucelabs.js wdio.conf.js
   - npm install -g grunt
-script: grunt
-env:
-  global:
-    - secure: ZyroxzvyhKPyYechsNvV84uvTT8mPHhNDzC1KUl9FG4gqP1UGwXCwrNzyGXriCt6MEgocpBZfJhx5bVRVVTx4I7nUXvTmVym8ksC+pI5ODIM99rNEAB4SJPNDIaTvk6SdELCc4C2u4CZP+7285Irv6oNltDW/712IkGul7ObVM4=
-    - secure: E+1Gpdx/0RIJsEZ8uZTUyXs2RBC/UtDOBVZyvIMra8AGCEvqArkoEA4ixW0G5lf0iCRt4BXk5vknpAwzXpGIjN5PYtlJeNYblV5M9aEtTNcxG9tSZkfAcKXKLzyzXHzR1b2taPiLByu8wFj96st6TplcdFnZWd2Dp8wmr33Iq58=
+script: grunt build && npm run test-local
