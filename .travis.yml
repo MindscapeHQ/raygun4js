@@ -5,6 +5,8 @@ node_js:
 cache:
   directories:
   - node_modules
+addons:
+  chrome: stable
 before_script:
   - npm install -g grunt
 script: grunt build && npm run test-local

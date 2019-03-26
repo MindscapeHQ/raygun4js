@@ -40,7 +40,7 @@ exports.config = {
     capabilities: RUN_LOCAL ? [{
         browserName: 'chrome',
         chromeOptions: {
-            args: ['headless']
+            args: ['headless', 'disable-gpu', 'no-sandbox']
         }
     }] : [
         {
