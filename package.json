@@ -21,6 +21,7 @@
     }
   ],
   "devDependencies": {
+    "chromedriver": "^2.46.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
@@ -31,6 +32,7 @@
     "grunt-webdriver": "^2.0.3",
     "phantomjs-prebuilt": "^2.1.14",
     "underscore": "^1.8.3",
+    "wdio-chromedriver-service": "0.1.5",
     "wdio-dot-reporter": "0.0.6",
     "wdio-jasmine-framework": "^0.2.19",
     "wdio-phantomjs-service": "^0.2.2",
@@ -39,6 +41,10 @@
     "wdio-static-server-service": "^1.0.1",
     "wdio-testingbot-service": "^0.1.7",
     "webdriverio": "^4.5.0"
+  },
+  "scripts": {
+    "test-local": "LOCAL=true node_modules/.bin/wdio wdio.conf.js",
+    "test": "node_modules/.bin/wdio wdio.conf.js"
   },
   "dependencies": {},
   "keywords": [
