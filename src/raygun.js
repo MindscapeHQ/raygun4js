@@ -1112,8 +1112,13 @@ var raygunFactory = function(window, $, undefined) {
   }
 
   function getFromStorage(callback) {
+    /**
+     * Attempt to get the value from local storage, 
+     * If that doesn't contain a value then try from a cookie as previous versions saved it here
+     */
+    var value;
     if(Raygun.Utilities.localStorageAvailable()) {
-      var value = localStorage.getItem(_userKey);
+      value = localStorage.getItem(_userKey);
 
       if(value !== null) {
         callback(value);
@@ -1121,7 +1126,7 @@ var raygunFactory = function(window, $, undefined) {
       }
     }
 
-    var value = Raygun.Utilities.readCookie(_userKey);
+    value = Raygun.Utilities.readCookie(_userKey);
 
     /**
      * If there was a cookie and localStorage is avaliable then  

@@ -877,18 +877,24 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getFromStorage() {
+      /**
+       * Attempt to get the value from session storage, 
+       * If that doesn't contain a value then try from a cookie as previous versions saved it here
+       */
+      var value; 
+
       if(Raygun.Utilities.sessionStorageAvailable()) {
-        var value = sessionStorage.getItem(self.cookieName);
+        value = sessionStorage.getItem(self.cookieName);
         if(value !== null) {
           return value;
         }
       }
 
-      var value = Raygun.Utilities.readCookie(self.cookieName);
+      value = Raygun.Utilities.readCookie(self.cookieName);
 
       /**
-       * If there was a cookie and localStorage is avaliable then  
-       * clear the cookie as localStorage will be the storage mechanism going forward
+       * If there was a cookie and sessionStorage is avaliable then  
+       * clear the cookie as sessionStorage will be the storage mechanism going forward
        */  
       if(value !== null && Raygun.Utilities.sessionStorageAvailable()) {
         Raygun.Utilities.clearCookie(self.cookieName);
