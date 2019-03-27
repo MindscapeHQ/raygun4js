@@ -229,7 +229,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         saveToStorage(self.sessionId);
         callback(true);
       } else {
-        var id = readStorageElement(storageItem, 'id');        
+        var id = readStorageElement(storageItem, 'id');   
+        saveToStorage(id); // Update the timestamp     
         self.sessionId = id;
         callback(false);
       }
