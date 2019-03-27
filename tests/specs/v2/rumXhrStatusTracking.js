@@ -1,6 +1,14 @@
-/* globals describe, it, expect, browser, window, fail */
+/* globals describe, it, expect, browser, window, fail, _ */
+
+var _ = require('underscore');
 
 describe("RUM status code tracking", function() {
+
+  function payloadsWithoutRaygunApi(payloads) {
+    return _.filter(payloads, function(payload) {
+      return payload.url.indexOf('raygun') === -1;
+    });
+  }
 
   it("attaches the status codes to xhr calls for XmlHttpRequest", function () {
     browser.url('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
@@ -15,7 +23,7 @@ describe("RUM status code tracking", function() {
       fail("test did not wait long enough for ajax requests to be sent to Raygun");
     }
 
-    var timingPayload = JSON.parse(requestPayloads[2].eventData[0].data);
+    var timingPayload = payloadsWithoutRaygunApi(JSON.parse(requestPayloads[2].eventData[0].data));
 
     var pairs = [
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'plan relative url'},
@@ -59,21 +67,16 @@ describe("RUM status code tracking", function() {
       fail("test did not wait long enough for ajax requests to be sent to Raygun");
     }
 
-    var timingPayload = JSON.parse(requestPayloads[1].eventData[0].data);
+    var timingPayload = payloadsWithoutRaygunApi(JSON.parse(requestPayloads[1].eventData[0].data));
 
     var pairs = [
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'plan relative url'},
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'relative url with query string'},
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'absolute url'},
-      undefined,
       {url: 'http://localhost:4567/fixtures/v2/foo.html', status: 404, type: 'relative url that does not exist'},
     ];
 
     for (var i = 0;i < pairs.length; i++) {
-      if (pairs[i] === undefined) {
-        continue;
-      }
-
       var payloadUrl = timingPayload[i].url;
       var payloadStatus = timingPayload[i].status;
       var pairUrl = pairs[i].url;
@@ -98,7 +101,7 @@ describe("RUM status code tracking", function() {
       fail("test did not wait long enough for ajax requests to be sent to Raygun");
     }
 
-    var timingPayload = JSON.parse(requestPayloads[1].eventData[0].data);
+    var timingPayload = payloadsWithoutRaygunApi(JSON.parse(requestPayloads[1].eventData[0].data));
 
     var pairs = [
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'plan relative url'},
