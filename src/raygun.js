@@ -1097,9 +1097,9 @@ var raygunFactory = function(window, $, undefined) {
   // Storage 
   function saveToStorage(value) {
     if(Raygun.Utilities.localStorageAvailable()) {
-      localStorage.setItem(_userKey, userIdentifier);
+      localStorage.setItem(_userKey, value);
     } else {
-      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31, _setCookieAsSecure);
+      Raygun.Utilities.createCookie(_userKey, value, 24 * 31, _setCookieAsSecure);
     }
   }
 
@@ -1121,17 +1121,18 @@ var raygunFactory = function(window, $, undefined) {
       }
     }
 
-    Raygun.Utilities.readCookie(_userKey, function(_error, value) {
-      /**
-       * If there was a cookie and localStorage is avaliable then  
-       * clear the cookie as localStorage will be the storage mechanism going forward
-       */  
-      if(value !== null && Raygun.Utilities.localStorageAvailable()) {
-        Raygun.Utilities.clearCookie(_userKey);
-      }
+    var value = Raygun.Utilities.readCookie(_userKey);
 
-      callback(value);
-    });
+    /**
+     * If there was a cookie and localStorage is avaliable then  
+     * clear the cookie as localStorage will be the storage mechanism going forward
+     */  
+    if(value !== null && Raygun.Utilities.localStorageAvailable()) {
+      Raygun.Utilities.clearCookie(_userKey);
+      localStorage.setItem(_userKey, value);
+    }
+    
+    callback(value);
   }
 
   if (!window.__raygunNoConflict) {
