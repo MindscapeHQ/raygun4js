@@ -532,7 +532,7 @@ As above for custom data, `withTags` can now also accept a callback function. Th
 
 ### Affected user tracking
 
-By default, Raygun4JS assigns a unique anonymous ID for the current user. This is stored in local storage and will default back to using a cookie if local storage is detected as being not supported. If the current user changes, to reset it and assign a new ID you can call:
+By default Raygun4JS assigns a unique anonymous ID for the current user. This is stored in local storage and will default back to using a cookie if local storage is not supported. You can remove the ID from storage by calling:
 
 ```js
 rg4js('getRaygunInstance').resetAnonymousUser();
