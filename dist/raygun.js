@@ -1,4 +1,4 @@
-/*! Raygun4js - v2.15.0 - 2019-03-27
+/*! Raygun4js - v2.15.0 - 2019-03-28
 * https://github.com/MindscapeHQ/raygun4js
 * Copyright (c) 2019 MindscapeHQ; Licensed MIT */
 (function(window, undefined) {
@@ -3938,7 +3938,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         saveToStorage(self.sessionId);
         callback(true);
       } else {
-        var id = readStorageElement(storageItem, 'id');        
+        var id = readStorageElement(storageItem, 'id');   
+        saveToStorage(id); // Update the timestamp     
         self.sessionId = id;
         callback(false);
       }
