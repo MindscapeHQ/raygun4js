@@ -198,7 +198,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `captureUnhandledRejections` - Automatically catch send errors relating to unhandled promise rejections. See [MDN for browser support](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
 
-`setCookieAsSecure` - Create cookies using the `; secure` thus cookies only work on HTTPS.
+`setCookieAsSecure` - If the cookies are being used (only used on browsers which don't support localStorage or sessionStorage) then they will be created using the `; secure` flag and thus cookies only work on HTTPS.
 
 An example:
 

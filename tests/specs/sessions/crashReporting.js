@@ -1,3 +1,5 @@
+var common = require("../common");
+
 describe("Crash Reporting Anonymous User Tracking", function() {
   afterEach(function() {
     browser.execute(function() {
