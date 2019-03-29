@@ -16,7 +16,7 @@ describe("Crash Reporting Anonymous User Tracking", function() {
       expect(result).not.toBe(null);
     });
 
-    it("retrieves user id from localStorage when one exist", function() {
+    it("retrieves user id from localStorage when one exists", function() {
       browser.execute(function() {
         localStorage.setItem('raygun4js-userid', 'abc123');
       });
