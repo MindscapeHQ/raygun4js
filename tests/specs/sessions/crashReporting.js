@@ -34,7 +34,7 @@ describe("Crash Reporting Anonymous User Tracking", function() {
 
       var result = common.getLocalStorageValue("raygun4js-userid");
       
-      expect(localStorageResult).toBe('xyz789');
+      expect(result).toBe('xyz789');
       expect(common.getCookieValue('raygun4js-userid')).toBeFalsy();
     });
   });
