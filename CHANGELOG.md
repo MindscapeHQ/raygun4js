@@ -1,6 +1,7 @@
 * v2.15.0
   - Use localStorage to persist user id for Crash Reporting instead of a cookie
   - Use sessionStorage to persist session id for RUM instead of a cookie 
+  - Start tracking XHR status codes with performance information 
 
 * v2.14.1
   - Improve support for EmberJS
