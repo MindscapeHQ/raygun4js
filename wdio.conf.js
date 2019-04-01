@@ -36,12 +36,13 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 2,
+    maxInstances: 4,
     capabilities: RUN_LOCAL ? [{
         browserName: 'chrome',
         chromeOptions: {
             args: ['headless', 'disable-gpu', 'no-sandbox']
-        }
+        },
+        maxInstances: 2,
     }] : [
         {
             browserName: 'internet explorer',
@@ -179,7 +180,7 @@ exports.config = {
     host: 'localhost',
 
     port: RUN_LOCAL ? 9515 : 4445,
-    path: RUN_LOCAL ? '/' : '/wd/hub/session',
+    path: RUN_LOCAL ? '/' : '/wd/hub',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -217,11 +218,11 @@ exports.config = {
     plugins: {
     },
 
-    services: [RUN_LOCAL ? 'chromedriver' : 'testingbot', 'static-server'],
+    services: [RUN_LOCAL ? 'chromedriver' : 'sauce', 'static-server'],
     chromeDriverArgs: ['--headless', '--disable-gpu'],
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
-    tbTunnel: true,
+    sauceConnect: true,
 
     //
     // Framework you want to run your specs with.
