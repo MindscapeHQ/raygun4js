@@ -48,104 +48,86 @@ exports.config = {
             browserName: 'internet explorer',
             platform: 'Windows 7',
             version: '9',
-            maxInstances: 1
         },
         {
             browserName: 'internet explorer',
             platform: 'Windows 7',
             version: '10',
-            maxInstances: 1
         },
         {
             browserName: 'internet explorer',
             platform: 'Windows 8.1',
             version: '11',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '16.16299',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '17.17134',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '18.17763',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '73.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '72.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '71.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '70.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '65.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '64.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '63.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '62.0',
-            maxInstances: 1
         },
-        // Does not work on sauce labs for some reason 🤔
-        // {
-        //     browserName: 'safari',
-        //     platform: 'macOS 10.14',
-        //     version: '12.0',
-        //     maxInstances: 1
-        // },
+        {
+            browserName: 'safari',
+            platform: 'macOS 10.14',
+            version: '12.0',
+        },
         {
             browserName: 'safari',
             platform: 'macOS 10.13',
             version: '11.1',
-            maxInstances: 1
         },
         {
             browserName: 'safari',
             platform: 'macOS 10.12',
             version: '10.1',
-            maxInstances: 1
         },
     ],
 
