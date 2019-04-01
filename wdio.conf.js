@@ -36,115 +36,98 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 2,
+    maxInstances: 4,
     capabilities: RUN_LOCAL ? [{
         browserName: 'chrome',
         chromeOptions: {
             args: ['headless', 'disable-gpu', 'no-sandbox']
-        }
+        },
+        maxInstances: 2,
     }] : [
         {
             browserName: 'internet explorer',
             platform: 'Windows 7',
             version: '9',
-            maxInstances: 1
         },
         {
             browserName: 'internet explorer',
             platform: 'Windows 7',
             version: '10',
-            maxInstances: 1
         },
         {
             browserName: 'internet explorer',
             platform: 'Windows 8.1',
             version: '11',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '16.16299',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '17.17134',
-            maxInstances: 1
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
             version: '18.17763',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '73.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '72.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '71.0',
-            maxInstances: 1
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
             version: '70.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '65.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '64.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '63.0',
-            maxInstances: 1
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
             version: '62.0',
-            maxInstances: 1
         },
-        // Does not work on sauce labs for some reason 🤔
-        // {
-        //     browserName: 'safari',
-        //     platform: 'macOS 10.14',
-        //     version: '12.0',
-        //     maxInstances: 1
-        // },
+        {
+            browserName: 'safari',
+            platform: 'macOS 10.14',
+            version: '12.0',
+        },
         {
             browserName: 'safari',
             platform: 'macOS 10.13',
             version: '11.1',
-            maxInstances: 1
         },
         {
             browserName: 'safari',
             platform: 'macOS 10.12',
             version: '10.1',
-            maxInstances: 1
         },
     ],
 
@@ -179,7 +162,7 @@ exports.config = {
     host: 'localhost',
 
     port: RUN_LOCAL ? 9515 : 4445,
-    path: RUN_LOCAL ? '/' : '/wd/hub/session',
+    path: RUN_LOCAL ? '/' : '/wd/hub',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -217,12 +200,11 @@ exports.config = {
     plugins: {
     },
 
-    services: [RUN_LOCAL ? 'chromedriver' : 'testingbot', 'static-server'],
+    services: [RUN_LOCAL ? 'chromedriver' : 'sauce', 'static-server'],
     chromeDriverArgs: ['--headless', '--disable-gpu'],
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
-    tbTunnel: true,
-
+    sauceConnect: true,
     //
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber

@@ -1,12 +1,13 @@
 sudo: false
 language: node_js
 node_js:
-  - '6'
+  - '8'
 cache:
+  yarn: true
   directories:
   - node_modules
 addons:
   chrome: stable
 before_script:
-  - npm install -g grunt
-script: grunt build && npm run test-local
+  - yarn global add grunt
+script: grunt build && yarn test-local
