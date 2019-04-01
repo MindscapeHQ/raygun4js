@@ -7,7 +7,7 @@ describe("Request ID tests", function() {
   it('has a unique request ID for each virtual page request', function() {
     browser.url('http://localhost:4567/fixtures/v2/requestId.html');
 
-    browser.pause(4000);
+    browser.pause(1000);
 
     var requestPayloads = browser.execute(function () {
       return window.__requestPayloads;

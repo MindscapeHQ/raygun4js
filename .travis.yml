@@ -7,4 +7,5 @@ cache:
   - node_modules
 before_script:
   - yarn install
-script: yarn test-local
+  - npm install -g grunt
+script: grunt build && yarn test-local
