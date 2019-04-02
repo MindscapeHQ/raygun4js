@@ -852,10 +852,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function log(message, data) {
       if (self.debugMode && window.console && window.console.log) {
-        window.console.log(message);
-
         if (data) {
-          window.console.log(data);
+          window.console.log(message, data);
+        } else {
+          window.console.log(message);
         }
       }
     }
