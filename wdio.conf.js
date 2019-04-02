@@ -62,63 +62,60 @@ exports.config = {
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
-            version: '16.16299',
+            version: 'latest',
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
-            version: '17.17134',
+            version: 'latest-1',
         },
         {
             browserName: 'MicrosoftEdge',
             platform: 'Windows 10',
-            version: '18.17763',
+            version: 'latest-2',
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
-            version: '73.0',
+            version: 'latest',
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
-            version: '72.0',
+            version: 'latest-1',
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
-            version: '71.0',
+            version: 'latest-2',
         },
         {
             browserName: 'chrome',
             platform: 'Windows 10',
-            version: '70.0',
+            version: 'latest-3',
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
-            version: '65.0',
+            version: 'latest',
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
-            version: '64.0',
+            version: 'latest-1',
         },
         {
             browserName: 'firefox',
             platform: 'Windows 10',
-            version: '63.0',
+            version: 'latest-2',
         },
-        {
-            browserName: 'firefox',
-            platform: 'Windows 10',
-            version: '62.0',
-        },
-        {
-            browserName: 'safari',
-            platform: 'macOS 10.14',
-            version: '12.0',
-        },
+        // Safari 12 will not load localhost without an error
+        // need to figure out a solution
+        // {
+        //     browserName: 'safari',
+        //     platform: 'macOS 10.14',
+        //     version: '12.0',
+        // },
         {
             browserName: 'safari',
             platform: 'macOS 10.13',
@@ -128,6 +125,11 @@ exports.config = {
             browserName: 'safari',
             platform: 'macOS 10.12',
             version: '10.1',
+            exclude: [
+                // Safari 10 does not support window.performance.getEntries
+                // This means it does not support the full RUM functionality
+                'tests/specs/v2/rumXhrStatusTracking.js'
+            ]
         },
     ],
 
