@@ -330,6 +330,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
 
       var errorCallback = function(response) {
+
         // Requeue:
         requeueItemsToFront(itemsToSend);
 
@@ -472,7 +473,9 @@ var raygunRumFactory = function(window, $, Raygun) {
         addMissingWrtData(collection);
 
         self.offset = resources.length;
-      } catch (e) {}
+      } catch (e) {
+        log(e);
+      }
     }
 
     /**
@@ -482,6 +485,8 @@ var raygunRumFactory = function(window, $, Raygun) {
      * required set of fields
      */
     var addMissingWrtData = function(collection) {
+      log('checking for missing WRT data', this.xhrStatusMap);
+
       for (var url in this.xhrStatusMap) {
         if (this.xhrStatusMap.hasOwnProperty(url)) {
           var responses = this.xhrStatusMap[url];
@@ -489,12 +494,17 @@ var raygunRumFactory = function(window, $, Raygun) {
           if (responses && responses.length > 0) {
             do {
               var response = responses.shift();
+              log('checking response', response);
 
-              collection.push({
-                url: response.responseURL,
-                status: response.status,
-                timing: { du: response.duration },
-              });
+              if (!shouldIgnoreResource(response.responseURL)) {
+                log('adding missing WRT data for url');
+
+                collection.push({
+                  url: response.responseURL,
+                  status: response.status,
+                  timing: { du: response.duration },
+                });
+              }
             } while (responses.length > 0);
           }
 
@@ -793,7 +803,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
       }
-      // Other ignored calls
       if (name.indexOf('favicon.ico') > 0) {
         return true;
       }
@@ -812,6 +821,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (name.indexOf('file://') === 0) {
         return true;
       }
+
       return false;
     }
 
