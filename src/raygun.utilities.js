@@ -403,16 +403,25 @@ window.raygunUtilityFactory = function(window, Raygun) {
         return text;
       }
     },
+    getOrigin: function() {
+      if (!window.location.origin) {
+        return window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+      }
+
+      return window.location.origin;
+    },
     resolveFullUrl: function(url) {
-      if (url && window.location.origin && window.location.pathname && url.indexOf('://') === -1) {
+      if (url && window.location.pathname && url.indexOf('://') === -1) {
+        var origin = this.getOrigin();
+
         if (url.indexOf('/') !== 0) {
           var pathname = window.location.pathname;
           var pathComponents = pathname.split('/');
           pathComponents.pop();
 
-          return window.location.origin + pathComponents.join('/') + '/' + url;
+          return origin + pathComponents.join('/') + '/' + url;
         } else {
-          return window.location.origin + url;
+          return origin + url;
         }
       }
 

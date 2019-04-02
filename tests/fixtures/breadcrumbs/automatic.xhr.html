@@ -20,9 +20,11 @@
       rg4js('apiKey', 'abcdef==');
       rg4js('enableCrashReporting', true);
       rg4js('options', {
-        allowInsecureSubmissions: true
+        allowInsecureSubmissions: true,
+        debugMode: true
       });
       rg4js('disableAutoBreadcrumbsNavigation');
+      rg4js('disableAutoBreadcrumbsConsole');
 
       setTimeout(function() {
         $.get('automatic.console.html').always(function() {
@@ -36,8 +38,8 @@
 
         setTimeout(function() {
           throw new Error('Unhandled error');
-        }, 300);
-      }, 100);
+        }, 800);
+      }, 500);
     </script>
 
   </body>

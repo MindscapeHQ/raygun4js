@@ -1,4 +1,4 @@
-/* globals describe, it, expect, browser, window, fail, _ */
+/* globals describe, it, expect, browser, window, fail */
 
 var _ = require('underscore');
 
