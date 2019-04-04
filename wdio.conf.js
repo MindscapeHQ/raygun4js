@@ -14,7 +14,7 @@ exports.config = {
     // Maintainers: this is a good way to specify single tests when debugging, alongside setting
     // maxInstances to 1 below
     specs: [
-        './tests/specs/**/*.js'
+        './tests/specs/v2/rumXhrStatusTracking.js'
     ],
     // Patterns to exclude.
     exclude: [
@@ -48,6 +48,11 @@ exports.config = {
             browserName: 'internet explorer',
             platform: 'Windows 7',
             version: '9',
+            exclude: [
+                // IE9 does not support window.performance.getEntries
+                // This means it does not support the full RUM functionality
+                'tests/specs/v2/rumXhrStatusTracking.js'
+            ]
         },
         {
             browserName: 'internet explorer',
