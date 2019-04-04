@@ -282,7 +282,7 @@ var raygunFactory = function(window, $, undefined) {
     },
 
     resetAnonymousUser: function() {
-      Raygun.Utilities.clearCookie('raygun4js-userid');
+      clearStorage();
     },
 
     setVersion: function(version) {
@@ -400,23 +400,18 @@ var raygunFactory = function(window, $, undefined) {
 
   function ensureUser() {
     if (!_user && !_disableAnonymousUserTracking) {
-      Raygun.Utilities.readCookie(_userKey, setUserComplete);
+      getFromStorage(setUserComplete);
     } else {
       bootRaygun();
     }
   }
 
-  function setUserComplete(error, userId) {
-    var userIdentifier;
-
-    if (error) {
-      userIdentifier = 'Unknown';
-    }
+  function setUserComplete(userId) {
+    var userIdentifier = "Unknown";
 
     if (!userId) {
       userIdentifier = Raygun.Utilities.getUuid();
-
-      Raygun.Utilities.createCookie(_userKey, userIdentifier, 24 * 31, _setCookieAsSecure);
+      saveToStorage(userIdentifier);
     } else {
       userIdentifier = userId;
     }
@@ -1097,6 +1092,52 @@ var raygunFactory = function(window, $, undefined) {
     }
 
     xhr.send(data);
+  }
+
+  // Storage 
+  function saveToStorage(value) {
+    if(Raygun.Utilities.localStorageAvailable()) {
+      localStorage.setItem(_userKey, value);
+    } else {
+      Raygun.Utilities.createCookie(_userKey, value, 24 * 31, _setCookieAsSecure);
+    }
+  }
+
+  function clearStorage() {
+    if(Raygun.Utilities.localStorageAvailable()) {
+      localStorage.removeItem(_userKey);
+    } else {
+      Raygun.Utilities.clearCookie(_userKey);
+    }
+  }
+
+  function getFromStorage(callback) {
+    /**
+     * Attempt to get the value from local storage, 
+     * If that doesn't contain a value then try from a cookie as previous versions saved it here
+     */
+    var value;
+    if(Raygun.Utilities.localStorageAvailable()) {
+      value = localStorage.getItem(_userKey);
+
+      if(value !== null) {
+        callback(value);
+        return;
+      }
+    }
+
+    value = Raygun.Utilities.readCookie(_userKey);
+
+    /**
+     * If there was a cookie and localStorage is avaliable then  
+     * clear the cookie as localStorage will be the storage mechanism going forward
+     */  
+    if(value !== null && Raygun.Utilities.localStorageAvailable()) {
+      Raygun.Utilities.clearCookie(_userKey);
+      localStorage.setItem(_userKey, value);
+    }
+    
+    callback(value);
   }
 
   if (!window.__raygunNoConflict) {
