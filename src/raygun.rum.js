@@ -496,11 +496,11 @@ var raygunRumFactory = function(window, $, Raygun) {
               var response = responses.shift();
               log('checking response', response);
 
-              if (!shouldIgnoreResource(response.responseURL)) {
+              if (!shouldIgnoreResource(response.baseUrl)) {
                 log('adding missing WRT data for url');
 
                 collection.push({
-                  url: response.responseURL,
+                  url: response.baseUrl,
                   status: response.status,
                   timing: { du: response.duration },
                 });
@@ -577,13 +577,18 @@ var raygunRumFactory = function(window, $, Raygun) {
         size: timing.decodedBodySize || 0,
       };
 
-      var xhrStatusesForName = this.xhrStatusMap[timing.name];
-      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        timingData.status = this.xhrStatusMap[timing.name].shift().status;
+      log('retrieving secondary timing data for', timing.name);
 
-        if (this.xhrStatusMap[timing.name].length === 0) {
-          delete this.xhrStatusMap[timing.name];
+      var xhrStatusesForName = this.xhrStatusMap[url];
+      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
+        timingData.status = this.xhrStatusMap[url].shift().status;
+
+        log('found status for timing', timingData.status);
+        if (this.xhrStatusMap[url].length === 0) {
+          delete this.xhrStatusMap[url];
         }
+      } else {
+        log('no status found for timing', this.xhrStatusMap);
       }
 
       return timingData;
@@ -792,11 +797,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function xhrResponseHandler(response) {
-      if (!this.xhrStatusMap[response.responseURL]) {
-        this.xhrStatusMap[response.responseURL] = [];
+      if (!this.xhrStatusMap[response.baseUrl]) {
+        this.xhrStatusMap[response.baseUrl] = [];
       }
 
-      this.xhrStatusMap[response.responseURL].push(response);
+      log('adding response to xhr status map', response);
+
+      this.xhrStatusMap[response.baseUrl].push(response);
     }
 
     function shouldIgnoreResource(name) {
