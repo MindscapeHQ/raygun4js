@@ -128,10 +128,11 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     }
 
     var disableFetchLogging = function() {};
-    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
     // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
     // This results in doubled up breadcrumbs
-    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
+    // Can't reliably detect when it has been polyfilled but no IE version supports fetch
+    // So if this is IE, don't hook into fetch
+    if (typeof window.fetch === 'function' && typeof window.fetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
       var originalFetch = window.fetch;
       window.fetch = function() {
         var fetchInput = arguments[0];

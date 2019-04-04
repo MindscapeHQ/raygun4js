@@ -438,6 +438,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
 
       return newArray;
     },
+    isIE: function() {
+      return window.navigator.userAgent.indexOf('Trident') > -1 || window.navigator.userAgent.indexOf('MSIE') > -1;
+    }
   };
 
   var _defaultReactNativeGlobalHandler;
