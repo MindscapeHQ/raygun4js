@@ -14,7 +14,7 @@ exports.config = {
     // Maintainers: this is a good way to specify single tests when debugging, alongside setting
     // maxInstances to 1 below
     specs: [
-        './tests/specs/v2/rumXhrStatusTracking.js'
+        './tests/specs/**/*.js'
     ],
     // Patterns to exclude.
     exclude: [
