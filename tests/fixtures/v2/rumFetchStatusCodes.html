@@ -1,11 +1,8 @@
+
 <!DOCTYPE html>
 <html>
   <head>
     <title>Raygun4JS with V2 API</title>
-    <script
-      src="https://code.jquery.com/jquery-3.2.1.min.js"
-      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-      crossorigin="anonymous"></script>
     <script src="/fixtures/common/instrumentXHRs.js"></script>
     <script type="text/javascript">
         !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
@@ -17,28 +14,22 @@
   </head>
   <body>
     <script type="text/javascript">
-      rg4js('apiKey', 'abcdef==');
-      rg4js('enableCrashReporting', true);
+      rg4js('apiKey', 'abcd==');
+      rg4js('enablePulse', true);
       rg4js('options', {
         allowInsecureSubmissions: true,
         debugMode: true
       });
-      rg4js('disableAutoBreadcrumbsNavigation');
-      rg4js('disableAutoBreadcrumbsConsole');
 
-      setTimeout(function() {
-        $.get('automatic.console.html').always(function() {
-          var request = new XMLHttpRequest();
-          request.open('POST', 'automatic.navigation.html');
-          request.responseType = 'document';
-          request.send('{"foo": 1}', false);
+      setTimeout(function () {
+        if (typeof window.fetch !== 'undefined') {
+          window.supportsFetch = true;
 
-          $.get('/fixtures/breadcrumbs/automatic.xhr.html');
-        });
-
-        setTimeout(function() {
-          throw new Error('Unhandled error');
-        }, 800);
+          fetch('rumXhrStatusCodes.html');
+          fetch('rumXhrStatusCodes.html?foo=bar');
+          fetch('foo.html');
+          fetch('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
+        }
       }, 500);
     </script>
 

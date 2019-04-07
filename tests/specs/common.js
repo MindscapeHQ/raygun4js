@@ -7,7 +7,7 @@ module.exports = {
            browser.desiredCapabilities.version === version;
   },
   isOldIE: function() {
-    return this.isIEVersion('8') || this.isIEVersion('9');
+    return this.isIEVersion('9') || this.isIEVersion('10');
   },
   inFlightXHRs: function() {
     return browser.execute(function() {

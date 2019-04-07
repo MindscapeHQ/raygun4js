@@ -16,7 +16,6 @@ describe("XHR tracking", function() {
 
     expect(breadcrumbs[1].type).toBe("request");
     expect(breadcrumbs[1].message).toContain("Finished request");
-    console.log(breadcrumbs);
   });
 
   it("works when the responseType is non text", function() {

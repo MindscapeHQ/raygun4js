@@ -318,6 +318,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
 
       var errorCallback = function(response) {
+
         // Requeue:
         requeueItemsToFront(itemsToSend);
 
@@ -460,7 +461,9 @@ var raygunRumFactory = function(window, $, Raygun) {
         addMissingWrtData(collection);
 
         self.offset = resources.length;
-      } catch (e) {}
+      } catch (e) {
+        log(e);
+      }
     }
 
     /**
@@ -470,6 +473,8 @@ var raygunRumFactory = function(window, $, Raygun) {
      * required set of fields
      */
     var addMissingWrtData = function(collection) {
+      log('checking for missing WRT data', this.xhrStatusMap);
+
       for (var url in this.xhrStatusMap) {
         if (this.xhrStatusMap.hasOwnProperty(url)) {
           var responses = this.xhrStatusMap[url];
@@ -477,12 +482,17 @@ var raygunRumFactory = function(window, $, Raygun) {
           if (responses && responses.length > 0) {
             do {
               var response = responses.shift();
+              log('checking response', response);
 
-              collection.push({
-                url: response.responseURL,
-                status: response.status,
-                timing: { du: response.duration },
-              });
+              if (!shouldIgnoreResource(response.baseUrl)) {
+                log('adding missing WRT data for url');
+
+                collection.push({
+                  url: response.baseUrl,
+                  status: response.status,
+                  timing: { du: response.duration },
+                });
+              }
             } while (responses.length > 0);
           }
 
@@ -555,13 +565,18 @@ var raygunRumFactory = function(window, $, Raygun) {
         size: timing.decodedBodySize || 0,
       };
 
-      var xhrStatusesForName = this.xhrStatusMap[timing.name];
-      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        timingData.status = this.xhrStatusMap[timing.name].shift().status;
+      log('retrieving secondary timing data for', timing.name);
 
-        if (this.xhrStatusMap[timing.name].length === 0) {
-          delete this.xhrStatusMap[timing.name];
+      var xhrStatusesForName = this.xhrStatusMap[url];
+      if (xhrStatusesForName && xhrStatusesForName.length > 0) {
+        timingData.status = this.xhrStatusMap[url].shift().status;
+
+        log('found status for timing', timingData.status);
+        if (this.xhrStatusMap[url].length === 0) {
+          delete this.xhrStatusMap[url];
         }
+      } else {
+        log('no status found for timing', this.xhrStatusMap);
       }
 
       return timingData;
@@ -770,18 +785,19 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function xhrResponseHandler(response) {
-      if (!this.xhrStatusMap[response.responseURL]) {
-        this.xhrStatusMap[response.responseURL] = [];
+      if (!this.xhrStatusMap[response.baseUrl]) {
+        this.xhrStatusMap[response.baseUrl] = [];
       }
 
-      this.xhrStatusMap[response.responseURL].push(response);
+      log('adding response to xhr status map', response);
+
+      this.xhrStatusMap[response.baseUrl].push(response);
     }
 
     function shouldIgnoreResource(name) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
       }
-      // Other ignored calls
       if (name.indexOf('favicon.ico') > 0) {
         return true;
       }
@@ -800,6 +816,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (name.indexOf('file://') === 0) {
         return true;
       }
+
       return false;
     }
 
@@ -840,10 +857,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function log(message, data) {
       if (self.debugMode && window.console && window.console.log) {
-        window.console.log(message);
-
         if (data) {
-          window.console.log(data);
+          window.console.log(message, data);
+        } else {
+          window.console.log(message);
         }
       }
     }

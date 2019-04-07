@@ -75,6 +75,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
         self.wrapWithHandler(function() {
           var initTime = new Date().getTime();
           var url = Raygun.Utilities.resolveFullUrl(arguments[1]) || 'Unknown';
+          var baseUrl = url.split('?')[0];
           var method = arguments[0];
 
           Raygun.Utilities.enhance(
@@ -84,6 +85,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               var metadata = {
                 method: method,
                 requestURL: url,
+                baseUrl: baseUrl,
               };
 
               if (arguments[0] && typeof arguments[0] === 'string') {
@@ -103,10 +105,12 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 body = this.responseText;
               }
 
+              Raygun.Utilities.log('tracking xhr response for', url);
               self.executeHandlers(self.responseHandlers, {
                 status: this.status,
                 requestURL: url,
                 responseURL: this.responseURL,
+                baseUrl: baseUrl,
                 body: body,
                 duration: new Date().getTime() - initTime,
               });
@@ -128,14 +132,15 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     }
 
     var disableFetchLogging = function() {};
-    // The presence of WHATWGFetch seems to be an indicator that fetch has been polyfilled
     // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
     // This results in doubled up breadcrumbs
-    if (typeof window.fetch === 'function' && typeof window.WHATWGFetch === 'undefined') {
+    // Can't reliably detect when it has been polyfilled but no IE version supports fetch
+    // So if this is IE, don't hook into fetch
+    if (typeof window.fetch === 'function' && typeof window.fetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
       var originalFetch = window.fetch;
       window.fetch = function() {
         var fetchInput = arguments[0];
-        var url;
+        var url, baseUrl;
         var options = arguments[1];
         var method = (options && options.method) || 'GET';
         var initTime = new Date().getTime();
@@ -152,6 +157,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
           url = String(fetchInput);
         }
         url = Raygun.Utilities.resolveFullUrl(url);
+        baseUrl = url.split('?')[0];
 
         var promise = originalFetch.apply(null, arguments);
 
@@ -159,6 +165,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
           var metadata = {
             method: method,
             requestURL: url,
+            baseUrl: baseUrl,
           };
 
           if (options && options.body) {
@@ -173,11 +180,13 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
 
               function executeHandlers() {
+                Raygun.Utilities.log('tracking fetch response for', url);
                 self.executeHandlers(self.responseHandlers, {
                   status: response.status,
                   requestURL: url,
                   responseURL: response.url,
                   body: body,
+                  baseUrl: baseUrl,
                   duration: new Date().getTime() - initTime,
                 });
               }
@@ -205,7 +214,9 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               });
             })
           );
-        } catch (_e) {}
+        } catch (e) {
+          Raygun.Utilities.log(e);
+        }
 
         return promise;
       };

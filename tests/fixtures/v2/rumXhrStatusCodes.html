@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -17,28 +18,18 @@
   </head>
   <body>
     <script type="text/javascript">
-      rg4js('apiKey', 'abcdef==');
-      rg4js('enableCrashReporting', true);
+      rg4js('apiKey', 'abcd==');
+      rg4js('enablePulse', true);
       rg4js('options', {
         allowInsecureSubmissions: true,
         debugMode: true
       });
-      rg4js('disableAutoBreadcrumbsNavigation');
-      rg4js('disableAutoBreadcrumbsConsole');
 
-      setTimeout(function() {
-        $.get('automatic.console.html').always(function() {
-          var request = new XMLHttpRequest();
-          request.open('POST', 'automatic.navigation.html');
-          request.responseType = 'document';
-          request.send('{"foo": 1}', false);
-
-          $.get('/fixtures/breadcrumbs/automatic.xhr.html');
-        });
-
-        setTimeout(function() {
-          throw new Error('Unhandled error');
-        }, 800);
+      setTimeout(function () {
+        $.get('rumXhrStatusCodes.html');
+        $.get('rumXhrStatusCodes.html?foo=bar');
+        $.get('foo.html');
+        $.get('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
       }, 500);
     </script>
 
