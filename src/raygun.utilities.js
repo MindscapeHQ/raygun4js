@@ -36,11 +36,9 @@ window.raygunUtilityFactory = function(window, Raygun) {
       document.cookie = name + '=' + value + expires + '; path=/' + secure;
     },
 
-    readCookie: function(name, doneCallback) {
+    readCookie: function(name) {
       if (this.isReactNative()) {
-        doneCallback(null, 'none');
-
-        return;
+        return 'none';
       }
 
       var nameEQ = name + '=';
@@ -51,15 +49,11 @@ window.raygunUtilityFactory = function(window, Raygun) {
           c = c.substring(1, c.length);
         }
         if (c.indexOf(nameEQ) === 0) {
-          var cookieValue = c.substring(nameEQ.length, c.length);
-
-          doneCallback(null, cookieValue);
-
-          return;
+          return c.substring(nameEQ.length, c.length);
         }
       }
 
-      doneCallback(null, null);
+      return null;
     },
 
     clearCookie: function(key) {
@@ -104,6 +98,14 @@ window.raygunUtilityFactory = function(window, Raygun) {
       try {
         return 'localStorage' in window && window['localStorage'] !== null;
       } catch (e) {
+        return false;
+      }
+    },
+
+    sessionStorageAvailable: function() {
+      try {
+        return 'sessionStorage' in window && window['sessionStorage'] !== null;
+      } catch(e) {
         return false;
       }
     },

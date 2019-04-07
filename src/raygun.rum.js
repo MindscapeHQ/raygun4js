@@ -84,7 +84,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       });
 
       var clickHandler = function() {
-        this.updateCookieTimestamp();
+        this.updateStorageTimestamp();
       }.bind(_private);
 
       var unloadHandler = function() {
@@ -94,7 +94,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var visibilityChangeHandler = function() {
         if (document.visibilityState === 'visible') {
-          this.updateCookieTimestamp();
+          this.updateStorageTimestamp();
         }
       }.bind(_private);
 
@@ -209,60 +209,48 @@ var raygunRumFactory = function(window, $, Raygun) {
       });
     }
 
+    function hasSessionExpired(storageItem) {
+      var existingTimestamp = new Date(readStorageElement(storageItem, 'timestamp'));
+      var halfHrAgo = new Date(new Date() - 30 * 60000);
+      return existingTimestamp < halfHrAgo;
+    }
+
     function getSessionId(callback) {
-      var existingCookie = readCookie(self.cookieName);
+      var storageItem = getFromStorage();
+      var nullValue = storageItem === null;
+      var expired = false;
 
-      var nullCookie = existingCookie === null;
-      var legacyCookie =
-        typeof exisitingCookie === 'string' &&
-        existingCookie.length > 0 &&
-        existingCookie.indexOf('timestamp') === -1;
-      var expiredCookie = null;
-
-      if (!nullCookie && !legacyCookie) {
-        var existingTimestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-        var halfHrAgo = new Date(new Date() - 30 * 60000);
-        expiredCookie = existingTimestamp < halfHrAgo;
+      if(!nullValue) {
+        expired = hasSessionExpired(storageItem);
       }
-
-      if (nullCookie || legacyCookie || expiredCookie) {
+      
+      if(nullValue || expired) {
         self.sessionId = randomKey(32);
-        createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
+        saveToStorage(self.sessionId);
         callback(true);
       } else {
-        var sessionCookie = readCookie(self.cookieName);
-        var id = readSessionCookieElement(sessionCookie, 'id');
-
-        if (id === 'undefined' || id === 'null') {
-          self.sessionId = randomKey(32);
-          createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
-          callback(true);
-        } else {
-          self.sessionId = id;
-          callback(false);
-        }
+        var id = readStorageElement(storageItem, 'id');   
+        saveToStorage(id); // Update the timestamp     
+        self.sessionId = id;
+        callback(false);
       }
     }
 
-    function updateCookieTimestamp() {
-      var existingCookie = readCookie(self.cookieName);
+    function updateStorageTimestamp() {
+      var storageItem = getFromStorage();
+      var expired = false;
 
-      var expiredCookie;
-      if (existingCookie) {
-        var timestamp = new Date(readSessionCookieElement(existingCookie, 'timestamp'));
-        var halfHrAgo = new Date(new Date() - 30 * 60000); // 30 mins
-        expiredCookie = timestamp < halfHrAgo;
-      } else {
-        expiredCookie = true;
+      if(storageItem) {
+        expired = hasSessionExpired(storageItem);
       }
-
-      if (expiredCookie) {
+      
+      if(expired || !storageItem){
         self.sessionId = randomKey(32);
       }
 
-      createCookie(self.cookieName, self.sessionId, undefined, self.setCookieAsSecure);
+      saveToStorage(self.sessionId);
 
-      if (expiredCookie) {
+      if (expired) {
         sendNewSessionStart();
       }
     }
@@ -895,34 +883,46 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.requestId = randomKey(16);
     }
 
-    function createCookie(name, value, hours, saveAsSecure) {
-      var expires;
-      var lastActivityTimestamp;
+    function saveToStorage(value) {
+      var lastActivityTimestamp = new Date().toISOString();
+      var updatedValue = 'id|' + value + '&timestamp|' + lastActivityTimestamp;
 
-      if (hours) {
-        var date = new Date();
-        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-        expires = '; expires=' + date.toGMTString();
+      if(Raygun.Utilities.sessionStorageAvailable()) {
+        sessionStorage.setItem(self.cookieName, updatedValue);
       } else {
-        expires = '';
+        Raygun.Utilities.createCookie(self.cookieName, updatedValue, null, self.setCookieAsSecure);
       }
-
-      lastActivityTimestamp = new Date().toISOString();
-
-      var secure = saveAsSecure ? '; secure' : '';
-
-      document.cookie =
-        name +
-        '=id|' +
-        value +
-        '&timestamp|' +
-        lastActivityTimestamp +
-        expires +
-        '; path=/' +
-        secure;
     }
 
-    function readSessionCookieElement(cookieString, element) {
+    function getFromStorage() {
+      /**
+       * Attempt to get the value from session storage, 
+       * If that doesn't contain a value then try from a cookie as previous versions saved it here
+       */
+      var value; 
+
+      if(Raygun.Utilities.sessionStorageAvailable()) {
+        value = sessionStorage.getItem(self.cookieName);
+        if(value !== null) {
+          return value;
+        }
+      }
+
+      value = Raygun.Utilities.readCookie(self.cookieName);
+
+      /**
+       * If there was a cookie and sessionStorage is avaliable then  
+       * clear the cookie as sessionStorage will be the storage mechanism going forward
+       */  
+      if(value !== null && Raygun.Utilities.sessionStorageAvailable()) {
+        Raygun.Utilities.clearCookie(self.cookieName);
+        sessionStorage.setItem(self.cookieName, value);
+      }
+
+      return value;
+    }
+
+    function readStorageElement(cookieString, element) {
       var set = cookieString.split(/[|&]/);
 
       if (element === 'id') {
@@ -930,21 +930,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else if (element === 'timestamp') {
         return set[3];
       }
-    }
-
-    function readCookie(name) {
-      var nameEQ = name + '=';
-      var ca = document.cookie.split(';');
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ') {
-          c = c.substring(1, c.length);
-        }
-        if (c.indexOf(nameEQ) === 0) {
-          return c.substring(nameEQ.length, c.length);
-        }
-      }
-      return null;
     }
 
     function getSecondaryTimingType(timing) {
@@ -1023,7 +1008,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return collection.sort(getCompareFunction(property));
     }
 
-    _private.updateCookieTimestamp = updateCookieTimestamp;
+    _private.updateStorageTimestamp = updateStorageTimestamp;
   };
 };
 

@@ -198,7 +198,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `captureUnhandledRejections` - Automatically catch send errors relating to unhandled promise rejections. See [MDN for browser support](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
 
-`setCookieAsSecure` - Create cookies using the `; secure` thus cookies only work on HTTPS.
+`setCookieAsSecure` - If the cookies are being used (only used on browsers which don't support localStorage or sessionStorage) then they will be created using the `; secure` flag and thus cookies only work on HTTPS.
 
 An example:
 
@@ -532,7 +532,7 @@ As above for custom data, `withTags` can now also accept a callback function. Th
 
 ### Affected user tracking
 
-By default, Raygun4JS assigns a unique anonymous ID for the current user. This is stored as a cookie. If the current user changes, to reset it and assign a new ID you can call:
+By default Raygun4JS assigns a unique anonymous ID for the current user. This is stored in local storage and will default back to using a cookie if local storage is not supported. You can remove the ID from storage by calling:
 
 ```js
 rg4js('getRaygunInstance').resetAnonymousUser();
