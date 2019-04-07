@@ -33,7 +33,6 @@ describe("RUM status code tracking", function() {
       {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'absolute url'},
     ];
 
-    console.log(timingPayload);
     for (var i = 0;i < expectedPairs.length; i++) {
       var payloadUrl = timingPayload[i].url;
       var payloadStatus = timingPayload[i].status;
