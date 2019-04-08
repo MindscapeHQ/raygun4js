@@ -1,3 +1,6 @@
+* v2.15.1
+  - Fix error in Raygun4JS UMD build with raygunNetworkTrackingFactory being undefined
+
 * v2.15.0
   - Use localStorage to persist user id for Crash Reporting instead of a cookie
   - Use sessionStorage to persist session id for RUM instead of a cookie 
