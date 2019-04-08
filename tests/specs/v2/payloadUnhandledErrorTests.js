@@ -22,6 +22,22 @@ describe("Payload functional validation tests for v2 automatic unhandled error s
     expect(didPerformRequest).toBe(true);
   });
 
+  it("performs an XHR to /entries when rg4js('send') is called when using the UMD build", function () {
+    browser.url('http://localhost:4567/fixtures/v2/unhandledErrorWithUmdBuild.html');
+
+    browser.pause(4000);
+
+    var inFlightXhrs = browser.execute(function () {
+      return window.__inFlightXHRs;
+    });
+
+    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+      return req.url.indexOf(_entriesEndpoint) === 0;
+    });
+
+    expect(didPerformRequest).toBe(true);
+  });
+
   it("doesn't performs an XHR to /entries when the API key isn't set", function () {
     browser.url('http://localhost:4567/fixtures/v2/unhandledErrorNoApiKey.html');
 
