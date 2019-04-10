@@ -1,5 +1,6 @@
 * v2.15.2
   - Include all dist files in npm package instead of just main file
+  - Don't run RUM in React Native to prevent a crash, RUM does not support React Native
 
 * v2.15.1
   - Fix error in Raygun4JS UMD build with raygunNetworkTrackingFactory being undefined
