@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <script type="text/javascript">
+      (function(wind, doc, scriptTag, url, obj, noConflict, s, n, o) {
+        wind['RaygunObject'] = obj;
+        wind[obj] = wind[obj] || function() {
+          (wind[obj].o = wind[obj].o || []).push(arguments)
+        },
+          s = doc.createElement(scriptTag),
+          n = doc.getElementsByTagName(scriptTag)[0];
+        s.async = 1;
+        s.src = url;
+        n.parentNode.insertBefore(s, n);
+
+        wind.__raygunNoConflict = noConflict;
+
+        o = wind.onerror;
+        wind.onerror = function (msg, url, line, col, err) {
+          if (o) {
+            o(msg, url, line, col, err);
+
+          }
+          if (!err) {
+            err = new Error(msg);
+          }
+
+          wind[obj].q = wind[obj].q || [];
+          wind[obj].q.push({e: err});
+        };
+      })(window, window.document, 'script', 'dist/raygun.js', 'rg4js');
+    </script>
+    <title>Raygun4JS Test Website</title>
+  </head>
+
+  <body>
+    <h2>das da stuff</h2>
+    <script type="text/javascript">
+
+      const emails = [
+        "foo@bar.com",
+        "bar@foo.com",
+        "baz@qux.com",
+        "qux@baz.com",
+        "foo@qux.com",
+        "baz@bar.com",
+        "bar@qux.com"
+      ];
+      rg4js('apiKey', 'PXE9AMDjAQdsXkIJbu0xA');
+      rg4js('enableCrashReporting', true);
+      rg4js('enablePulse', true);
+
+      setTimeout(() => {
+        rg4js('trackEvent', {
+          type: 'pageView',
+          path: '/menu'
+        });
+
+        setTimeout(() => {
+          rg4js('trackEvent', {
+            type: 'pageView',
+            path: '/order'
+          });
+
+          setTimeout(() => {
+            rg4js('trackEvent', {
+              type: 'pageView',
+              path: '/login'
+            });
+
+            rg4js('setUser', {
+              identifier: emails[Math.floor(Math.random() * (emails.length - 1))]
+            });
+
+            setTimeout(() => {
+              rg4js('trackEvent', {
+                type: 'pageView',
+                path: '/order'
+              });
+            }, 50);
+
+            setTimeout(() => {
+              rg4js('trackEvent', {
+                type: 'pageView',
+                path: '/success'
+              });
+            }, 250);
+          }, 250);
+        }, 250);
+      }, 250);
+    </script>
+    <div></div>
+  </body>
+</html>
