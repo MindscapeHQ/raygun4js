@@ -483,14 +483,18 @@ var raygunFactory = function(window, $, undefined) {
         _rum.attach();
       };
 
-      if (_loadedFrom === 'onLoad') {
-        startRum();
-      } else {
-        if (window.addEventListener) {
-          window.addEventListener('load', startRum);
+      if (!Raygun.Utilities.isReactNative()) {
+        if (_loadedFrom === 'onLoad') {
+          startRum();
         } else {
-          window.attachEvent('onload', startRum);
+          if (window.addEventListener) {
+            window.addEventListener('load', startRum);
+          } else {
+            window.attachEvent('onload', startRum);
+          }
         }
+      } else {
+        Raygun.Utilities.log('Not enabling RUM because Raygun4JS has detected a React Native environment, see #310 on Github');
       }
     }
 
