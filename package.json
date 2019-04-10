@@ -45,8 +45,7 @@
   },
   "scripts": {
     "test-local": "LOCAL=true node_modules/.bin/wdio wdio.conf.js",
-    "test": "node_modules/.bin/wdio wdio.conf.js",
-    "prepublish": "grunt build"
+    "test": "node_modules/.bin/wdio wdio.conf.js"
   },
   "dependencies": {},
   "keywords": [
