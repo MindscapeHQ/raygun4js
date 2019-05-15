@@ -27,17 +27,17 @@ describe("RUM status code tracking", function() {
     var timingPayload = payloadsWithoutRaygunApi(JSON.parse(requestPayloads[2].eventData[0].data));
 
     var expectedPairs = [
-      {url: 'http://localhost:4567/fixtures/v2/foo.html', status: 404, type: 'relative url that does not exist'},
-      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'plain relative url'},
-      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'relative url with query string'},
-      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', status: 200, type: 'absolute url'},
+      {url: 'http://localhost:4567/fixtures/v2/foo.html', statusCode: 404, type: 'relative url that does not exist'},
+      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', statusCode: 200, type: 'plain relative url'},
+      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', statusCode: 200, type: 'relative url with query string'},
+      {url: 'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html', statusCode: 200, type: 'absolute url'},
     ];
 
     for (var i = 0;i < expectedPairs.length; i++) {
       var payloadUrl = timingPayload[i].url;
-      var payloadStatus = timingPayload[i].status;
+      var payloadStatus = timingPayload[i].statusCode;
       var pairUrl = expectedPairs[i].url;
-      var pairStatus = expectedPairs[i].status;
+      var pairStatus = expectedPairs[i].statusCode;
       var pairType = expectedPairs[i].type;
 
       expect(payloadUrl).toBe(pairUrl, "failed for type: " + pairType);
