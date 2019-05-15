@@ -489,7 +489,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
                 collection.push({
                   url: response.baseUrl,
-                  status: response.status,
+                  statusCode: response.status,
                   timing: { du: response.duration },
                 });
               }
@@ -569,9 +569,9 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        timingData.status = this.xhrStatusMap[url].shift().status;
+        timingData.statusCode = this.xhrStatusMap[url].shift().status;
 
-        log('found status for timing', timingData.status);
+        log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
           delete this.xhrStatusMap[url];
         }
