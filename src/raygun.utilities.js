@@ -413,6 +413,10 @@ window.raygunUtilityFactory = function(window, Raygun) {
       return window.location.origin;
     },
     resolveFullUrl: function(url) {
+      if(url && url.indexOf('//') === 0) {
+        url = window.location.protocol + url;
+      }
+
       if (url && window.location.pathname && url.indexOf('://') === -1) {
         var origin = this.getOrigin();
 
