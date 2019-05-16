@@ -1,3 +1,7 @@
+* v2.15.3
+  - Change the key for the status code which gets sent to RUM to statusCode to match the API
+  - Prepend the protocol to the URL in the resolveFullUrl function to accommodate URLs without protocols
+
 * v2.15.2
   - Include all dist files in npm package instead of just main file
   - Don't run RUM in React Native to prevent a crash, RUM does not support React Native
