@@ -52,6 +52,8 @@ exports.config = {
                 // IE9 does not support window.performance.getEntries
                 // This means it does not support the full RUM functionality
                 'tests/specs/v2/rumXhrStatusTracking.js'
+                'tests/specs/v2/rumXhrStatusTracking.js',
+                'tests/specs/v2/rumXhrPerformanceTimings.js'
             ]
         },
         {
@@ -134,6 +136,8 @@ exports.config = {
                 // Safari 10 does not support window.performance.getEntries
                 // This means it does not support the full RUM functionality
                 'tests/specs/v2/rumXhrStatusTracking.js'
+                'tests/specs/v2/rumXhrStatusTracking.js',
+                'tests/specs/v2/rumXhrPerformanceTimings.js'
             ]
         },
     ],
