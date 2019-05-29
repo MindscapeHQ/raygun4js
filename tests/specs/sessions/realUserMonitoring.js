@@ -1,16 +1,6 @@
 var common = require("../common");
 
 describe("RUM Session Tracking", function() {
-
-  // Tests
-
-  // rum
-    // - persists session id into storage when it doesn't exist
-    // - retrieves session id from storage when it exists 
-    // - creates new session id if it has expired
-    // - retrieved session id timestamp is updated when it already exists 
-    // retrieves identifier from cookie and sets it in sessionStorage
-
   afterEach(function() {
     browser.execute(function() {
       sessionStorage.clear();
