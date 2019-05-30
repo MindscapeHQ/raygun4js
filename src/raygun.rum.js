@@ -970,6 +970,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getSecondaryTimingType(timing) {
       if (isXHRTiming(timing.initiatorType)) {
+      if (isXHRTiming(timing.initiatorType)) {
         return Timings.XHR;
       } else if (isChildAsset(timing)) {
         return getTypeForChildAsset(timing);
