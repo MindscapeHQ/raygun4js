@@ -41,6 +41,14 @@
           })
         });
         $.ajax({
+          type: 'PUT',
+          url: 'https://jsonplaceholder.typicode.com/posts/1', 
+          dataType: 'json',
+          data: JSON.stringify({
+            "foo": "bar"
+          })
+        });
+        $.ajax({
           type: "DELETE",
           url: 'https://jsonplaceholder.typicode.com/posts/1',
           dataType: 'json',

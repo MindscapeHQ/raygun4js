@@ -29,6 +29,7 @@ describe("RUM XHR performance timings", function() {
     var expectedPairs = [
       {url: 'https://jsonplaceholder.typicode.com/posts', type: 'XHR POST request to an external domain'},
       {url: 'https://jsonplaceholder.typicode.com/posts/1', type: 'XHR DELETE request to an external domain'},
+      {url: 'https://jsonplaceholder.typicode.com/posts/1', type: 'XHR PUT request to an external domain'},
       {url: 'https://jsonplaceholder.typicode.com/users', type: 'XHR GET request to an external domain'},
     ];
 
