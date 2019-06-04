@@ -449,9 +449,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       try {
-        var resources = window.performance.getEntries();
+        var resources = managePreflightXhrTimings(window.performance.getEntries());
 
-        for (var i = self.offset; i < resources.length; i++) {
+        for (var i = 0; i < resources.length; i++) {
           if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
           }
@@ -459,11 +459,94 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         addMissingWrtData(collection);
 
-        self.offset = resources.length;
       } catch (e) {
         log(e);
       }
     }
+
+    /**
+     * Manages additional web performance timings which are added in CORS PUT/DELETE requests 
+     * due to them tracking the extra preflight request in Chrome, Safari, and IE11.  
+     * This scans the resources for any matching XHRs and compares the responseEnd to the 
+     * fetchStart of the next. When it is within 2ms they are merged together. 
+     */
+    var managePreflightXhrTimings = function(resources) {
+      var results = [], mergedIndexs = [], currentResource, matchingResource, i, j;
+
+      function getMatchingResource() {
+        var proposedResource;
+        var timingDiff;
+        for(j = i + 1; j < resources.length; j++) {
+          proposedResource = resources[j];
+
+          if(!isXHRTiming(proposedResource.initiatorType) || proposedResource.name !== currentResource.name) {
+            continue;
+          }
+          
+          timingDiff = proposedResource.fetchStart - currentResource.responseEnd;
+
+          if(timingDiff > 0 && Math.floor(timingDiff) < 2) {
+            mergedIndexs.push(j);
+            return proposedResource;
+          }
+        }
+
+        return null;
+      }
+
+      for(i = self.offset; i < resources.length; i++) {
+        currentResource = resources[i];
+
+        if(!isXHRTiming(currentResource.initiatorType)) {
+          results.push(currentResource);
+          continue;
+        }
+
+        if(mergedIndexs.indexOf(i) > -1) { 
+          continue;
+        }
+        
+        matchingResource = getMatchingResource();
+
+        if(matchingResource != null) {
+          results.push(mergeResourceTimings(currentResource, matchingResource));
+        } else {
+          results.push(currentResource);
+        }
+      }
+
+      self.offset = resources.length;
+
+      return results;
+    }.bind(this);
+
+    window.__mergingInstances = [];
+
+    var mergeResourceTimings = function(a, b) {
+      
+      window.__mergingInstances.push({
+        a: a,
+        b: b
+      });
+
+      return {
+        name: a.name,
+        initiatorType: a.initiatorType,
+        entryType: a.entryType,
+        nextHopProtocol: a.nextHopProtocol, 
+        // Merge the duration timings as it should be for the whole request
+        duration: a.duration + b.duration,
+        // Mark the resource as starting to be fetched from the first request
+        fetchStart: Math.min(a.fetchStart, b.fetchStart),
+        startTime: Math.min(a.startTime, b.startTime),
+        // Mark other resource timings from the second, which would be the regular request and not the preflight
+        responseStart: Math.max(a.responseStart, b.responseStart), 
+        responseEnd: Math.max(a.responseEnd, b.responseEnd),
+        connectStart: Math.max(a.connectStart, b.connectStart), 
+        connectEnd: Math.max(a.connectEnd, b.connectEnd),
+        secureConnectionStart: Math.max(a.secureConnectionStart, b.secureConnectionStart),
+      };
+    }.bind(this);
 
     /**
      * This adds in the missing WRT data from non 2xx status code responses in Chrome/Safari
@@ -969,7 +1052,6 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getSecondaryTimingType(timing) {
-      if (isXHRTiming(timing.initiatorType)) {
       if (isXHRTiming(timing.initiatorType)) {
         return Timings.XHR;
       } else if (isChildAsset(timing)) {
