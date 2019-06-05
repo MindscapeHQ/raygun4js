@@ -485,7 +485,7 @@ var raygunRumFactory = function(window, $, Raygun) {
           
           timingDiff = proposedResource.fetchStart - currentResource.responseEnd;
 
-          if(timingDiff > 0 && Math.floor(timingDiff) < 2) {
+          if(timingDiff > 0 && Math.floor(timingDiff) < 3) {
             mergedIndexs.push(j);
             return proposedResource;
           }
@@ -497,7 +497,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       for(i = self.offset; i < resources.length; i++) {
         currentResource = resources[i];
 
-        if(!isXHRTiming(currentResource.initiatorType)) {
+        if(!isXHRTiming(currentResource.initiatorType) || !canBeCorsRequest(currentResource.name)) {
           results.push(currentResource);
           continue;
         }
@@ -520,15 +520,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return results;
     }.bind(this);
 
-    window.__mergingInstances = [];
-
     var mergeResourceTimings = function(a, b) {
-      
-      window.__mergingInstances.push({
-        a: a,
-        b: b
-      });
-
       return {
         name: a.name,
         initiatorType: a.initiatorType,
@@ -1070,6 +1062,11 @@ var raygunRumFactory = function(window, $, Raygun) {
         initiatorType === 'preflight' || // 'preflight' initatorType used by Edge for CORS POST/DELETE requests
         initiatorType === 'beacon' // for navigator.sendBeacon calls in Chrome/Edge. Safari doesn't record the timings and Firefox marks them as 'other' 
       ); 
+    }
+    
+    function canBeCorsRequest(name) {
+      // Quick check that the request could even flagged for CORS
+      return name.indexOf(window.location.origin) <= 0;
     }
 
     function isChromeFetchCall(timing) {
