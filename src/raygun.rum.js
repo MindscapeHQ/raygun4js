@@ -452,8 +452,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         var resources = window.performance.getEntries();
 
         for (var i = self.offset; i < resources.length; i++) {
-          var segment = resources[i].name.split('?')[0];
-          if (!shouldIgnoreResource(segment)) {
+          if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
           }
         }
@@ -484,7 +483,7 @@ var raygunRumFactory = function(window, $, Raygun) {
               var response = responses.shift();
               log('checking response', response);
 
-              if (!shouldIgnoreResource(response.baseUrl)) {
+              if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
 
                 collection.push({
@@ -825,7 +824,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       this.xhrStatusMap[response.baseUrl].push(response);
     }
 
-    function shouldIgnoreResource(name) {
+    function shouldIgnoreResource(resource) {
+      var name = resource.name.split('?')[0];
+
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint";
+    }
+
+    function shouldIgnoreResourceByName(name) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
       }
