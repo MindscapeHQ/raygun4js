@@ -659,13 +659,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       var firstPaint = window.performance.getEntriesByName('first-paint');
 
       if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
-        data.fp = firstPaint[0].startTime; 
+        data.fp = firstPaint[0].startTime.toFixed(2); 
       }
 
       var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
 
       if(firstContentfulPaint.length > 0 && firstContentfulPaint[0].startTime > 0) {
-        data.fcp = firstContentfulPaint[0].startTime; 
+        data.fcp = firstContentfulPaint[0].startTime.toFixed(2); 
       }
 
       return data;
