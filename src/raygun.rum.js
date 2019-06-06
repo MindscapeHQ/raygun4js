@@ -933,7 +933,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function getSecondaryTimingType(timing) {
-      if (timing.initiatorType === 'xmlhttprequest' || timing.initiatorType === 'fetch') {
+      if (isXHRTiming(timing.initiatorType)) {
         return Timings.XHR;
       } else if (isChildAsset(timing)) {
         return getTypeForChildAsset(timing);
@@ -942,6 +942,15 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else {
         return getTypeForChildAsset(timing);
       }
+    }
+
+    function isXHRTiming(initiatorType) {
+      return (
+        initiatorType === 'xmlhttprequest' || 
+        initiatorType === 'fetch' || 
+        initiatorType === 'preflight' || // 'preflight' initatorType used by Edge for CORS POST/DELETE requests
+        initiatorType === 'beacon' // for navigator.sendBeacon calls in Chrome/Edge. Safari doesn't record the timings and Firefox marks them as 'other' 
+      ); 
     }
 
     function isChromeFetchCall(timing) {
