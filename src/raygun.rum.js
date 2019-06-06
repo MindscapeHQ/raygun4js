@@ -660,6 +660,8 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
         data.fp = firstPaint[0].startTime.toFixed(2); 
+      } else if(window.performance.timing && !!window.performance.timing.msFirstPaint) {
+        data.fp = window.performance.timing.msFirstPaint.toFixed(2);
       }
 
       var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
