@@ -651,6 +651,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
+    /**
+     * Adds first-paint and first-contentful-paint timings onto the main page timing. 
+     * The performance API is used as it's a more standard method only supported in Chrome.
+     * The `msFirstPaint` is used for Edge/IE browsers.
+     */
     function addPaintTimings(data) {
       if(!performanceEntryExists('getEntriesByName', 'function')) {
         return data;
