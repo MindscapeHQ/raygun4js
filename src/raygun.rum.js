@@ -468,7 +468,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * Manages additional web performance timings which are added in CORS PUT/DELETE requests 
      * due to them tracking the extra preflight request in Chrome, Safari, and IE11.  
      * This scans the resources for any matching XHRs and compares the responseEnd to the 
-     * fetchStart of the next. When it is within 2ms they are merged together. 
+     * fetchStart of the next. When it is within 3ms they are merged together. 
      */
     var managePreflightXhrTimings = function(resources) {
       var results = [], mergedIndexs = [], currentResource, matchingResource, i, j;
@@ -485,7 +485,7 @@ var raygunRumFactory = function(window, $, Raygun) {
           
           timingDiff = proposedResource.fetchStart - currentResource.responseEnd;
 
-          if(timingDiff > 0 && Math.floor(timingDiff) < 3) {
+          if(timingDiff > 0 && Math.floor(timingDiff) <= 3) {
             mergedIndexs.push(j);
             return proposedResource;
           }
