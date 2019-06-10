@@ -192,11 +192,15 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               }
 
               if (ourResponse) {
-                ourResponse.text().then(function(text) {
-                  body = Raygun.Utilities.truncate(text, 500);
+                try {
+                  ourResponse.text().then(function(text) {
+                    body = Raygun.Utilities.truncate(text, 500);
 
+                    executeHandlers();
+                  });
+                } catch(_e) {
                   executeHandlers();
-                });
+                }
               } else {
                 executeHandlers();
               }
