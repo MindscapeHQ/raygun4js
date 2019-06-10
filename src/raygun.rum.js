@@ -452,8 +452,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         var resources = window.performance.getEntries();
 
         for (var i = self.offset; i < resources.length; i++) {
-          var segment = resources[i].name.split('?')[0];
-          if (!shouldIgnoreResource(segment)) {
+          if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
           }
         }
@@ -484,7 +483,7 @@ var raygunRumFactory = function(window, $, Raygun) {
               var response = responses.shift();
               log('checking response', response);
 
-              if (!shouldIgnoreResource(response.baseUrl)) {
+              if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
 
                 collection.push({
@@ -517,7 +516,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return {
         url: url,
         userAgent: navigator.userAgent,
-        timing: getEncodedTimingData(window.performance.timing, 0),
+        timing: getEncodedTimingData(),
         size: 0,
       };
     }
@@ -582,67 +581,98 @@ var raygunRumFactory = function(window, $, Raygun) {
       return timingData;
     }.bind(this);
 
-    function getEncodedTimingData(timing, offset) {
+    function getEncodedTimingData() {
+      var timing = window.performance.timing;
+
       var data = {
         du: timing.duration,
         t: Timings.Page,
       };
 
-      data.a = offset + timing.fetchStart;
+      data.a = timing.fetchStart;
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
-        data.b = offset + timing.domainLookupStart - data.a;
+        data.b = timing.domainLookupStart - data.a;
       }
 
       if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
-        data.c = offset + timing.domainLookupEnd - data.a;
+        data.c = timing.domainLookupEnd - data.a;
       }
 
       if (timing.connectStart && timing.connectStart > 0) {
-        data.d = offset + timing.connectStart - data.a;
+        data.d = timing.connectStart - data.a;
       }
 
       if (timing.connectEnd && timing.connectEnd > 0) {
-        data.e = offset + timing.connectEnd - data.a;
+        data.e = timing.connectEnd - data.a;
       }
 
       if (timing.responseStart && timing.responseStart > 0) {
-        data.f = offset + timing.responseStart - data.a;
+        data.f = timing.responseStart - data.a;
       }
 
       if (timing.responseEnd && timing.responseEnd > 0) {
-        data.g = offset + timing.responseEnd - data.a;
+        data.g = timing.responseEnd - data.a;
       }
 
       if (timing.domLoading && timing.domLoading > 0) {
-        data.h = offset + timing.domLoading - data.a;
+        data.h = timing.domLoading - data.a;
       }
 
       if (timing.domInteractive && timing.domInteractive > 0) {
-        data.i = offset + timing.domInteractive - data.a;
+        data.i = timing.domInteractive - data.a;
       }
 
       if (timing.domContentLoadedEventEnd && timing.domContentLoadedEventEnd > 0) {
-        data.j = offset + timing.domContentLoadedEventEnd - data.a;
+        data.j = timing.domContentLoadedEventEnd - data.a;
       }
 
       if (timing.domComplete && timing.domComplete > 0) {
-        data.k = maxFiveMinutes(offset + timing.domComplete - data.a);
+        data.k = maxFiveMinutes(timing.domComplete - data.a);
       }
 
       if (timing.loadEventStart && timing.loadEventStart > 0) {
-        data.l = offset + timing.loadEventStart - data.a;
+        data.l = timing.loadEventStart - data.a;
       }
 
       if (timing.loadEventEnd && timing.loadEventEnd > 0) {
-        data.m = offset + timing.loadEventEnd - data.a;
+        data.m = timing.loadEventEnd - data.a;
       }
 
       if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
-        data.n = offset + (timing.secureConnectionStart - timing.connectStart) - data.a;
+        data.n = (timing.secureConnectionStart - timing.connectStart) - data.a;
       }
 
       data = sanitizeNaNs(data);
+
+      data = addPaintTimings(data);
+
+      return data;
+    }
+
+    /**
+     * Adds first-paint and first-contentful-paint timings onto the main page timing. 
+     * The performance API is used as it's a more standard method only supported in Chrome.
+     * The `msFirstPaint` is used for Edge/IE browsers.
+     */
+    function addPaintTimings(data) {
+      if(!performanceEntryExists('getEntriesByName', 'function')) {
+        return data;
+      }
+
+      var firstPaint = window.performance.getEntriesByName('first-paint');
+
+      if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
+        data.fp = firstPaint[0].startTime.toFixed(2); 
+      } else if(window.performance.timing && !!window.performance.timing.msFirstPaint) {
+        data.fp = window.performance.timing.msFirstPaint.toFixed(2);
+      }
+
+      var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
+
+      if(firstContentfulPaint.length > 0 && firstContentfulPaint[0].startTime > 0) {
+        data.fcp = firstContentfulPaint[0].startTime.toFixed(2); 
+      }
 
       return data;
     }
@@ -794,7 +824,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       this.xhrStatusMap[response.baseUrl].push(response);
     }
 
-    function shouldIgnoreResource(name) {
+    function shouldIgnoreResource(resource) {
+      var name = resource.name.split('?')[0];
+
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint";
+    }
+
+    function shouldIgnoreResourceByName(name) {
       if (name.indexOf(self.apiUrl) === 0) {
         return true;
       }
