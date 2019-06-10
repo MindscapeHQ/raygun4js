@@ -1,3 +1,7 @@
+* v2.16.0
+  - Add paint timings to RUM page load metrics using the performance api & msFirstPaint
+  - Wrap response code get 'text' in a try catch 
+
 * v2.15.3
   - Change the key for the status code which gets sent to RUM to statusCode to match the API
   - Prepend the protocol to the URL in the resolveFullUrl function to accommodate URLs without protocols
