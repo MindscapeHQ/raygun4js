@@ -1,6 +1,9 @@
+* v2.16.1
+  - Fix promise rejection errors when trying to retrieve fetch response text in network-tracking module
+
 * v2.16.0
   - Add paint timings to RUM page load metrics using the performance api & msFirstPaint
-  - Wrap response code get 'text' in a try catch 
+  - Wrap response code get 'text' in a try catch
 
 * v2.15.3
   - Change the key for the status code which gets sent to RUM to statusCode to match the API
@@ -15,8 +18,8 @@
 
 * v2.15.0
   - Use localStorage to persist user id for Crash Reporting instead of a cookie
-  - Use sessionStorage to persist session id for RUM instead of a cookie 
-  - Start tracking XHR status codes with performance information 
+  - Use sessionStorage to persist session id for RUM instead of a cookie
+  - Start tracking XHR status codes with performance information
 
 * v2.14.1
   - Improve support for EmberJS
