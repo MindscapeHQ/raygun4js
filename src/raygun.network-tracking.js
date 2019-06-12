@@ -197,7 +197,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                     body = Raygun.Utilities.truncate(text, 500);
 
                     executeHandlers();
-                  });
+                  }).catch(function() { executeHandlers(); });
                 } catch(_e) {
                   executeHandlers();
                 }
