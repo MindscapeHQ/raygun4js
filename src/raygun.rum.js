@@ -1066,7 +1066,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     
     function canBeCorsRequest(name) {
       // Quick check that the request could even flagged for CORS
-      return name.indexOf(window.location.origin) <= 0;
+      return name.indexOf(window.location.origin) === -1;
     }
 
     function isChromeFetchCall(timing) {
