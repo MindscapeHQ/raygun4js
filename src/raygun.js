@@ -66,6 +66,7 @@ var raygunFactory = function(window, $, undefined) {
     $document,
     _captureUnhandledRejections = true,
     _setCookieAsSecure = false,
+    _clientIp,
     detachPromiseRejectionFunction;
 
   var rand = Math.random();
@@ -143,6 +144,10 @@ var raygunFactory = function(window, $, undefined) {
 
         if (options.from) {
           _loadedFrom = options.from;
+        }
+
+        if(options.clientIp) {
+          _clientIp = options.clientIp;
         }
       }
 
@@ -362,6 +367,11 @@ var raygunFactory = function(window, $, undefined) {
         }
       }
     },
+
+    setClientIp: function(ip) {
+      _clientIp = ip;
+    },
+
     recordBreadcrumb: function() {
       _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
     },
@@ -1019,6 +1029,10 @@ var raygunFactory = function(window, $, undefined) {
     var xhr = createCORSRequest('POST', url, data);
     if (typeof xhr.setRequestHeader === 'function') {
       xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+
+      if(typeof _clientIp !== "undefined") {
+        xhr.setRequestHeader('X-Remote-Address', _clientIp);
+      }
     }
 
     if (typeof _beforeXHRCallback === 'function') {
