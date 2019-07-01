@@ -192,6 +192,8 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
+`clientIp` - A string containing the client's IP address. RUM requests will be associated to this IP address when set. Particularally useful when proxying payloads to the Raygun API using the `apiEndpoint` option and maintaining RUM's geographic lookup feature.
+
 `pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes).
 
 `pulseIgnoreUrlCasing` - Ignore URL casing when sending data to Pulse.

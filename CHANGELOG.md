@@ -1,3 +1,6 @@
+* v2.17.0
+  - Add inital support for users to set the client IP address
+
 * v2.16.1
   - Fix promise rejection errors when trying to retrieve fetch response text in network-tracking module
 
