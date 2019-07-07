@@ -19,6 +19,10 @@
   };
 
   XMLHttpRequest.prototype.getRequestHeader = function() {
+    if(!this.__headers) {
+      this.__headers = {};
+    }
+
     var header = arguments[0];
     return this.__headers[header] || null;
   };
