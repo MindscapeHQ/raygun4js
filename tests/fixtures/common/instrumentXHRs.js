@@ -2,9 +2,30 @@
   window.__requestPayloads = [];
   window.__inFlightXHRs = [];
   window.__completedXHRs = [];
+  window.__sentXHRs = [];
 
   var origOpen = XMLHttpRequest.prototype.open;
   var origSend = XMLHttpRequest.prototype.send;
+  
+  var origSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+  XMLHttpRequest.prototype.setRequestHeader = function() {
+    if(!this.__headers) {
+      this.__headers = {};
+    }
+    this.__headers[arguments[0]] = arguments[1];
+
+    origSetRequestHeader.apply(this, arguments);
+  };
+
+  XMLHttpRequest.prototype.getRequestHeader = function() {
+    if(!this.__headers) {
+      this.__headers = {};
+    }
+
+    var header = arguments[0];
+    return this.__headers[header] || null;
+  };
 
   XMLHttpRequest.prototype.open = function() {
 
@@ -29,8 +50,13 @@
         window.__requestPayloads.push(json);
     }
 
+    window.__sentXHRs.push({
+      xhr: this,
+      clientIp: this.getRequestHeader('X-Remote-Address')
+    });
+
     origSend.apply(this, arguments);
-  }
+  };
 
   if (window.XDomainRequest) {
     var origXOpen = XDomainRequest.prototype.open;
@@ -58,6 +84,6 @@
       window.__requestPayloads.push(JSON.parse(arguments[0]));
 
       origXSend.apply(this, arguments);
-    }
+    };
   }
 })()

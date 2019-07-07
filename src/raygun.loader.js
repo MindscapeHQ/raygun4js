@@ -195,6 +195,9 @@
         case 'logContentsOfXhrCalls':
           rg.setBreadcrumbOption('logXhrContents', pair[1]);
           break;
+        case 'clientIp':
+          rg.setClientIp(value);
+          break;
         case 'captureUnhandledRejections':
           captureUnhandledRejections = value;
           break;
