@@ -923,8 +923,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       var lastActivityTimestamp = new Date().toISOString();
       var updatedValue = 'id|' + value + '&timestamp|' + lastActivityTimestamp;
 
-      if(Raygun.Utilities.sessionStorageAvailable()) {
-        sessionStorage.setItem(self.cookieName, updatedValue);
+      if(Raygun.Utilities.localStorageAvailable()) {
+        localStorage.setItem(self.cookieName, updatedValue);
       } else {
         Raygun.Utilities.createCookie(self.cookieName, updatedValue, null, self.setCookieAsSecure);
       }
@@ -932,14 +932,22 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getFromStorage() {
       /**
-       * Attempt to get the value from session storage, 
+       * Attempt to get the value from local storage, 
        * If that doesn't contain a value then try from a cookie as previous versions saved it here
        */
       var value; 
 
+      if(Raygun.Utilities.localStorageAvailable()) {
+        value = localStorage.getItem(self.cookieName);
+        if(value !== null) {
+          return value;
+        }
+      }
+
       if(Raygun.Utilities.sessionStorageAvailable()) {
         value = sessionStorage.getItem(self.cookieName);
         if(value !== null) {
+          saveToStorage(value);
           return value;
         }
       }
@@ -947,12 +955,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       value = Raygun.Utilities.readCookie(self.cookieName);
 
       /**
-       * If there was a cookie and sessionStorage is avaliable then  
+       * If there was a cookie and localStorage is avaliable then  
        * clear the cookie as sessionStorage will be the storage mechanism going forward
        */  
-      if(value !== null && Raygun.Utilities.sessionStorageAvailable()) {
+      if(value !== null && Raygun.Utilities.localStorageAvailable()) {
         Raygun.Utilities.clearCookie(self.cookieName);
-        sessionStorage.setItem(self.cookieName, value);
+        localStorage.setItem(self.cookieName, value);
       }
 
       return value;
