@@ -1,3 +1,6 @@
+* v2.17.1
+  - Fix regression and use localStorage to persist RUM sessions instead of sessionStorage
+
 * v2.17.0
   - Add inital support for users to set the client IP address
 
