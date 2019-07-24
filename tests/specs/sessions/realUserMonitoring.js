@@ -49,7 +49,7 @@ describe("RUM Session Tracking", function() {
     expect(newTimestampIsGreater).toBe(true);
   });
   
-  it("retrieves session id from a cookie and sets it in sessionStorage", function() {
+  it("retrieves session id from a cookie and sets it in localStorage", function() {
     var sessionValue = 'cookieId';
     var timestamp = new Date(new Date() - 60000).toISOString();
     var cookieValue = 'id|' + sessionValue + '&timestamp|' + timestamp;
