@@ -36,7 +36,7 @@ module.exports = {
   },
   getSessionStorageValue: function(key) {
     return browser.execute(function (name) {
-      return sessionStorage.getItem(name);
+      return localStorage.getItem(name);
     }, key).value;
   },
   setCookieValue: function(key, value) {

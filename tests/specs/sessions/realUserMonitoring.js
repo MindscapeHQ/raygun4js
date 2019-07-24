@@ -13,14 +13,14 @@ describe("RUM Session Tracking", function() {
 
   afterEach(function() {
     browser.execute(function() {
-      sessionStorage.clear();
+      localStorage.clear();
     });
   });
 
   it("persists a session id into storage when one doesn't exist", function() {
     browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
-    var result = common.getSessionStorageValue("raygun4js-sid");
+    var result = common.getLocalStorageValue("raygun4js-sid");
     expect(result).not.toBe(null);
   });
 
@@ -31,12 +31,12 @@ describe("RUM Session Tracking", function() {
       var sessionValue = 'abc123';
       
       var sessionString = 'id|' + sessionValue + '&timestamp|' + timestamp;
-      sessionStorage.setItem('raygun4js-sid', sessionString);
+      localStorage.setItem('raygun4js-sid', sessionString);
     }, oneMinuteAgoTimestamp);
 
     browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
-    var result = common.getSessionStorageValue("raygun4js-sid")
+    var result = common.getLocalStorageValue("raygun4js-sid")
 
     const set = result.split(/[|&]/);
 
@@ -58,7 +58,7 @@ describe("RUM Session Tracking", function() {
 
     browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
-    var result = common.getSessionStorageValue("raygun4js-sid")
+    var result = common.getLocalStorageValue("raygun4js-sid")
 
     const set = result.split(/[|&]/);
 
@@ -75,12 +75,12 @@ describe("RUM Session Tracking", function() {
         var sessionValue = 'expiredId';
         var oneHourAgoTimestamp = new Date(new Date() - 60 * 60000).toISOString();
         var sessionString = 'id|' + sessionValue + '&timestamp|' + oneHourAgoTimestamp;
-        sessionStorage.setItem('raygun4js-sid', sessionString);
+        localStorage.setItem('raygun4js-sid', sessionString);
       });
 
       browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
-      var result = common.getSessionStorageValue("raygun4js-sid")
+      var result = common.getLocalStorageValue("raygun4js-sid")
 
       expect(result.indexOf('id|expiredId')).toBe(-1);
       expect(result.split('&')[0]).not.toBe('id|expiredId');
@@ -88,12 +88,12 @@ describe("RUM Session Tracking", function() {
 
     it("creates a new session id if value stored is null", function() {
       browser.execute(function() {
-        sessionStorage.setItem('raygun4js-sid', null);
+        localStorage.setItem('raygun4js-sid', null);
       });
 
       browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
-      var result = common.getSessionStorageValue("raygun4js-sid")
+      var result = common.getLocalStorageValue("raygun4js-sid")
       expect(result).not.toBe(null);
     });
   });
