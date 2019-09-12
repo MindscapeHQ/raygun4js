@@ -105,7 +105,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 body = this.responseText;
               }
 
-              Raygun.Utilities.log('tracking xhr response for', url);
+              Raygun.Utilities.log('Tracking XHR response for', url);
               self.executeHandlers(self.responseHandlers, {
                 status: this.status,
                 requestURL: url,
