@@ -65,7 +65,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
     },
 
     log: function(message, data) {
-      if (window.console && window.console.log && Raygun.Options._debugMode) {
+      if (Raygun.Options._debugMode && window.console && window.console.log) {
         window.console.log(message);
 
         if (data) {

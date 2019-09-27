@@ -468,7 +468,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     /**
      * This adds in the missing WRT data from non 2xx status code responses in Chrome/Safari
      * This is to ensure we have full status code tracking support.
-     * It creates a fake WRT payload containing only the duration as that is the minimum
+     * It creates a fake WRT payload containing only the duration & XHR type as those are the minimum
      * required set of fields
      */
     var addMissingWrtData = function(collection) {
@@ -489,7 +489,7 @@ var raygunRumFactory = function(window, $, Raygun) {
                 collection.push({
                   url: response.baseUrl,
                   statusCode: response.status,
-                  timing: { du: response.duration },
+                  timing: { du: response.duration, t: Timings.XHR },
                 });
               }
             } while (responses.length > 0);
