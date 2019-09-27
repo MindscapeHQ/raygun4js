@@ -1,3 +1,6 @@
+* v2.17.2
+  - Fixes an issue where the XHR data type was not attached to statusCode calls
+
 * v2.17.1
   - Fix regression and use localStorage to persist RUM sessions instead of sessionStorage
 
