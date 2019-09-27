@@ -24,7 +24,7 @@
     }
   ],
   "devDependencies": {
-    "chromedriver": "^2.46.0",
+    "chromedriver": "^77.0.0",
     "cross-env": "^5.2.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",
