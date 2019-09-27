@@ -36,12 +36,15 @@ describe("RUM status code tracking", function() {
     for (var i = 0;i < expectedPairs.length; i++) {
       var payloadUrl = timingPayload[i].url;
       var payloadStatus = timingPayload[i].statusCode;
+      var payloadDataType = timingPayload[i].timing.t;
+
       var pairUrl = expectedPairs[i].url;
       var pairStatus = expectedPairs[i].statusCode;
       var pairType = expectedPairs[i].type;
 
       expect(payloadUrl).toBe(pairUrl, "failed for type: " + pairType);
       expect(payloadStatus).toBe(pairStatus, "failed for type: " + pairType);
+      expect(payloadDataType).toBe(payloadDataType, "XHR data type missing for: " + pairType);
     }
   }
 
