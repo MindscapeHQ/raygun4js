@@ -489,7 +489,10 @@ var raygunRumFactory = function(window, $, Raygun) {
                 collection.push({
                   url: response.baseUrl,
                   statusCode: response.status,
-                  timing: { du: response.duration, t: Timings.XHR },
+                  timing: { 
+                    du: maxFiveMinutes(response.duration).toFixed(2), 
+                    t: Timings.XHR 
+                  },
                 });
               }
             } while (responses.length > 0);
