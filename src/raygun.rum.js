@@ -449,15 +449,16 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       try {
+        var offset = fromVirtualPage ? 0 : window.performance.timing.navigationStart;
         var resources = window.performance.getEntries();
 
         for (var i = self.offset; i < resources.length; i++) {
           if (!shouldIgnoreResource(resources[i])) {
-            collection.push(getSecondaryTimingData(resources[i], fromVirtualPage));
+            collection.push(getSecondaryTimingData(resources[i], offset));
           }
         }
 
-        addMissingWrtData(collection);
+        addMissingWrtData(collection, offset);
 
         self.offset = resources.length;
       } catch (e) {
@@ -471,7 +472,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * It creates a fake WRT payload containing only the duration & XHR type as those are the minimum
      * required set of fields
      */
-    var addMissingWrtData = function(collection) {
+    var addMissingWrtData = function(collection, offset) {
       log('checking for missing WRT data', this.xhrStatusMap);
 
       for (var url in this.xhrStatusMap) {
@@ -491,6 +492,7 @@ var raygunRumFactory = function(window, $, Raygun) {
                   statusCode: response.status,
                   timing: { 
                     du: maxFiveMinutes(response.duration).toFixed(2), 
+                    a: offset.toFixed(2),
                     t: Timings.XHR 
                   },
                 });
@@ -547,7 +549,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    var getSecondaryTimingData = function(timing, fromZero) {
+    var getSecondaryTimingData = function(timing, offset) {
       var url = timing.name.split('?')[0];
 
       if (self.ignoreUrlCasing) {
@@ -562,7 +564,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         url: url,
         timing: getSecondaryEncodedTimingData(
           timing,
-          fromZero ? 0 : window.performance.timing.navigationStart
+          offset
         ),
         size: timing.decodedBodySize || 0,
       };
