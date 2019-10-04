@@ -137,8 +137,18 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     // Can't reliably detect when it has been polyfilled but no IE version supports fetch
     // So if this is IE, don't hook into fetch
     if (typeof window.fetch === 'function' && typeof window.fetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
-      var originalFetch = window.fetch;
-      window.fetch = function() {
+
+      /**
+       * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
+       * These are used to intercept the original fetch method before a reference to it can be made.
+       * Because if a stored reference to the fetch method is made, we cannot get the status code from that point onwards. 
+       * 
+       * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
+       * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called 
+       */
+      var originalFetch = window.__raygunOriginalFetch || window.fetch;
+      
+      var processFetch = function() {
         var fetchInput = arguments[0];
         var url, baseUrl;
         var options = arguments[1];
@@ -225,8 +235,12 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
         return promise;
       };
 
+      window.fetch = processFetch;
+      window.__raygunFetchCallback = processFetch;
+
       disableFetchLogging = function() {
         window.fetch = originalFetch;
+        delete window.__raygunFetchCallback;
       };
     }
   };

@@ -48,7 +48,8 @@ module.exports = function(grunt) {
         },
         files:{
           'dist/snippet/minified.js':['src/snippet/unminified.js'],
-          'dist/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js']
+          'dist/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js'],
+          'dist/snippet/minified.fetchhandler.js':['src/snippet/unminified.fetchhandler.js']
         }
       }
     },
