@@ -75,7 +75,7 @@ describe("RUM status code tracking", function() {
     checkStatusCodes();
   });
 
-  describe('with the global window.fetch objects saved as a reference')
+  describe('with the global window.fetch objects saved as a reference', () => {
     describe('and using the minified.fetchhandler.js code snippet', () => {
       it('attaches status codes to requests', () => {
         browser.url('http://localhost:4567/fixtures/v2/rumReferencedFetchWithFetchSnippet.html');

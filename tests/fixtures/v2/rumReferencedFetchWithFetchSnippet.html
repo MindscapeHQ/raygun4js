@@ -5,16 +5,49 @@
     <title>Raygun4JS with V2 API</title>
     <script src="/fixtures/common/instrumentXHRs.js"></script>
     <script type="text/javascript">
-        !function(a,b,c,d,e,f,g,h,i,j){a.RaygunObject=e,a[e]=a[e]||function(){
-        (a[e].o=a[e].o||[]).push(arguments)},g=b.createElement(c),h=b.getElementsByTagName(c)[0],
-        g.async=1,g.src=d,a.__raygunNoConflict=!!f,h.parentNode.insertBefore(g,h),i=a.onerror,
-        a.onerror=function(b,c,d,f,g){i&&i(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],
-        a[e].q.push({e:g})},j=a.fetch,j&&(a.__raygunOriginalFetch=j,a.fetch=function(){
-        return a.__raygunFetchCallback?a.__raygunFetchCallback.apply(null,arguments):j.apply(null,arguments);
-        })}(window,document,"script","/dist/raygun.js","rg4js");
-    </script>
-    <script>
-      var referencedFetch = window.fetch;
+        (function(wind, doc, scriptTag, url, obj, noConflict, s, n, o, f) {
+          wind['RaygunObject'] = obj;
+          wind[obj] = wind[obj] || function() {
+              (wind[obj].o = wind[obj].o || []).push(arguments)
+          },
+          s = doc.createElement(scriptTag),
+          n = doc.getElementsByTagName(scriptTag)[0];
+          s.async = 1;
+          s.src = url;
+
+          wind.__raygunNoConflict = !!noConflict;
+
+          n.parentNode.insertBefore(s, n);
+
+          o = wind.onerror;
+          wind.onerror = function (msg, url, line, col, err) {
+            if (o) {
+              o(msg, url, line, col, err);
+            }
+
+            if (!err) {
+              err = new Error(msg);
+            }
+
+            wind[obj].q = wind[obj].q || [];
+            wind[obj].q.push({e: err});
+          };
+
+          f = wind.fetch;
+
+          if(!!f) {
+            wind.__raygunOriginalFetch = f;
+            wind.fetch = function() {
+              if(!!wind.__raygunFetchCallback) {
+                return wind.__raygunFetchCallback.apply(null, arguments); 
+              }
+
+              return f.apply(null, arguments);
+            };
+          }
+      })(window,document,"script","/dist/raygun.js","rg4js");
+
+        var referencedFetch = window.fetch;
     </script>
   </head>
   <body>
