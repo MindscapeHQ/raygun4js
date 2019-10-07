@@ -13,12 +13,14 @@ describe("Unhandled promise rejection", function() {
         }).value;
 
         if(supportsUnHandledRejections) {
-          var requestPayloads = browser.execute(function () {
-              return window.__requestPayloads;
-          }).value;
-          var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
+            browser.pause(10000);
 
-          expect(unhandledPromise).toBe(true);
+            var requestPayloads = browser.execute(function () {
+                return window.__requestPayloads;
+            }).value;
+            var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
+
+            expect(unhandledPromise).toBe(true);
         }
     });
 });
