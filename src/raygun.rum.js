@@ -62,6 +62,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.maxQueueItemsSent = 50;
     this.setCookieAsSecure = setCookieAsSecure;
 
+    this.xhrRequestMap = {};
     this.xhrStatusMap = {};
 
     var Timings = {
@@ -106,6 +107,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         document.attachEvent('onclick', clickHandler);
       }
 
+      Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
@@ -819,14 +821,36 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function xhrResponseHandler(response) {
-      if (!this.xhrStatusMap[response.baseUrl]) {
-        this.xhrStatusMap[response.baseUrl] = [];
+    function xhrRequestHandler(request) {
+      if(!this.xhrRequestMap[request]) {
+        this.xhrRequestMap[request.baseUrl] = [];
       }
 
-      log('adding response to xhr status map', response);
+      log('adding request to xhr request map', request);
 
-      this.xhrStatusMap[response.baseUrl].push(response);
+      this.xhrRequestMap[request].push(request);
+    }
+
+    function xhrResponseHandler(response) {
+      var request = this.xhrRequestMap[response.baseUrl];
+      
+      if(request && request.length > 0) {
+        this.xhrRequestMap[response.baseUrl].shift();
+        
+        if(this.xhrRequestMap[response.baseUrl].length === 0) {
+          delete this.xhrRequestMap[response.baseUrl];
+        }
+
+        if (!this.xhrStatusMap[response.baseUrl]) {
+          this.xhrStatusMap[response.baseUrl] = [];
+        }
+
+        log('adding response to xhr status map', response);
+
+        this.xhrStatusMap[response.baseUrl].push(response);
+      } else {
+        log('response fired from non-handled request');
+      }
     }
 
     function shouldIgnoreResource(resource) {
