@@ -279,7 +279,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       var data = [];
-      extractChildData(data);
+      extractChildData(data, undefined, forceSend);
       addPerformanceTimingsToQueue(data, forceSend);
     }
 
@@ -445,7 +445,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage) {
+    function extractChildData(collection, fromVirtualPage, forceSend) {
       if (!performanceEntryExists('getEntries', 'function')) {
         return;
       }
@@ -455,14 +455,15 @@ var raygunRumFactory = function(window, $, Raygun) {
         var resources = window.performance.getEntries();
 
         for (var i = self.offset; i < resources.length; i++) {
-          if (!shouldIgnoreResource(resources[i])) {
+          if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
+            break;
+          } else if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], offset));
           }
+          self.offset = i + 1;
         }
 
         addMissingWrtData(collection, offset);
-
-        self.offset = resources.length;
       } catch (e) {
         log(e);
       }
@@ -551,7 +552,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    var getSecondaryTimingData = function(timing, offset) {
+    function getTimingUrl(timing) {
       var url = timing.name.split('?')[0];
 
       if (self.ignoreUrlCasing) {
@@ -561,6 +562,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (url.length > 800) {
         url = url.substring(0, 800);
       }
+
+      return url;
+    }
+
+    var getSecondaryTimingData = function(timing, offset) {
+      var url = getTimingUrl(timing);
 
       var timingData = {
         url: url,
@@ -655,6 +662,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       data = addPaintTimings(data);
 
       return data;
+    }
+
+    function waitingForResourceToFinishLoading(timing) {
+      var url = getTimingUrl(timing);
+      var request = this.xhrRequestMap[url];
+
+      return request && request.length > 0;
     }
 
     /**
@@ -833,7 +847,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function xhrResponseHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
-      
+
       if(request && request.length > 0) {
         this.xhrRequestMap[response.baseUrl].shift();
         
