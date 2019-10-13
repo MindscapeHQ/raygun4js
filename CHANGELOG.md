@@ -1,3 +1,8 @@
+* v2.17.3
+  - Set the maximum duration of missing XHR calls to 5 minutes
+  - Add offset timings to missing XHR calls
+  - Support for tracking fetch methods which might be referenced locally    
+
 * v2.17.2
   - Fixes an issue where the XHR data type was not attached to statusCode calls
 
