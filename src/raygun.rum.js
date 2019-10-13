@@ -108,6 +108,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
+      Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
@@ -843,6 +844,15 @@ var raygunRumFactory = function(window, $, Raygun) {
       log('adding request to xhr request map', request);
 
       this.xhrRequestMap[request.baseUrl].push(request);
+    }
+
+    function xhrErrorHandler(response) {
+      var request = this.xhrRequestMap[response.baseUrl];
+      
+      if(request && request.length > 0) {
+        this.xhrRequestMap[response.baseUrl].shift();
+        log('request errored out', response);
+      }
     }
 
     function xhrResponseHandler(response) {
