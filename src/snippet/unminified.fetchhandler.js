@@ -1,21 +1,21 @@
-(function(wind, doc, scriptTag, url, obj, noConflict, s, n, o, f) {
+(function(wind, doc, scriptTag, url, obj, noConflict, script, firstScriptElement, onErrorHandler, fetchObject) {
     wind['RaygunObject'] = obj;
     wind[obj] = wind[obj] || function() {
         (wind[obj].o = wind[obj].o || []).push(arguments)
     },
-    s = doc.createElement(scriptTag),
-    n = doc.getElementsByTagName(scriptTag)[0];
-    s.async = 1;
-    s.src = url;
+    script = doc.createElement(scriptTag),
+    firstScriptElement = doc.getElementsByTagName(scriptTag)[0];
+    script.async = 1;
+    script.src = url;
 
     wind.__raygunNoConflict = !!noConflict;
 
-    n.parentNode.insertBefore(s, n);
+    firstScriptElement.parentNode.insertBefore(script, firstScriptElement);
 
-    o = wind.onerror;
+    onErrorHandler = wind.onerror;
     wind.onerror = function (msg, url, line, col, err) {
-      if (o) {
-        o(msg, url, line, col, err);
+      if (onErrorHandler) {
+        onErrorHandler(msg, url, line, col, err);
       }
 
       if (!err) {
@@ -26,16 +26,16 @@
       wind[obj].q.push({e: err});
     };
 
-    f = wind.fetch;
+    fetchObject = wind.fetch;
 
-    if(!!f) {
-      wind.__raygunOriginalFetch = f;
+    if(!!fetchObject) {
+      wind.__raygunOriginalFetch = fetchObject;
       wind.fetch = function() {
         if(!!wind.__raygunFetchCallback) {
           return wind.__raygunFetchCallback.apply(null, arguments); 
         }
 
-        return f.apply(null, arguments);
+        return fetchObject.apply(null, arguments);
       };
     }
 
