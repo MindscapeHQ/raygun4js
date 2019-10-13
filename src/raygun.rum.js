@@ -836,13 +836,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function xhrRequestHandler(request) {
-      if(!this.xhrRequestMap[request]) {
+      if(!this.xhrRequestMap[request.baseUrl]) {
         this.xhrRequestMap[request.baseUrl] = [];
       }
 
       log('adding request to xhr request map', request);
 
-      this.xhrRequestMap[request].push(request);
+      this.xhrRequestMap[request.baseUrl].push(request);
     }
 
     function xhrResponseHandler(response) {
