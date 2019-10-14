@@ -574,6 +574,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       return url;
     };
 
+    /**
+     * Stops sending through timing information if a XHR request has been made by the response handler hasn't been fired. 
+     * This is to prevent issues where multiple timings for the same asset can be sen. 
+     * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
+     */
     var waitingForResourceToFinishLoading = function(timing) {
       var url = getTimingUrl(timing);
       var request = this.xhrRequestMap[url];

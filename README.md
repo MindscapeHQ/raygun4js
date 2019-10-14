@@ -202,7 +202,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `setCookieAsSecure` - If the cookies are being used (only used on browsers which don't support localStorage or sessionStorage) then they will be created using the `; secure` flag and thus cookies only work on HTTPS.
 
-`captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all 2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default as the accuracy of these timings is not as good as the 
+`captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all non-2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default because the accuracy of these timings is not as good as the performance API. 
 
 An example:
 
