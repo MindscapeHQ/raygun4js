@@ -459,15 +459,17 @@ var raygunRumFactory = function(window, $, Raygun) {
       try {
         var offset = fromVirtualPage ? 0 : window.performance.timing.navigationStart;
         var resources = window.performance.getEntries();
+        var i;
 
-        for (var i = self.offset; i < resources.length; i++) {
+        for (i = self.offset; i < resources.length; i++) {
           if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
             break;
           } else if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], offset));
           }
-          self.offset = i + 1;
         }
+        
+        self.offset = i;
 
         if(this._captureMissingRequests) {
           addMissingWrtData(collection, offset);
