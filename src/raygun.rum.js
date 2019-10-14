@@ -848,6 +848,10 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
+    /**
+     * Add to the requestMap. This marks the request as being in "flight" 
+     * and stops collecting metrics until this request has completed. 
+     */
     function xhrRequestHandler(request) {
       if(!this.xhrRequestMap[request.baseUrl]) {
         this.xhrRequestMap[request.baseUrl] = [];
@@ -858,6 +862,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       this.xhrRequestMap[request.baseUrl].push(request);
     }
     
+    /**
+     * Removes the request from the requestMap so that metric collection can be resumed. 
+     */
     function xhrErrorHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
 
@@ -867,6 +874,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       }	      
     }
 
+    /**
+     * Removes the asset from the requestMap if found and adds the response to the 
+     * statusMap so that the status code can be associated with the request. 
+     * 
+     * If the 'captureMissingRequests' option is enabled and the timing metric is missing 
+     * the duration will also be used to create a new XHR timing.    
+     */
     function xhrResponseHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
 
