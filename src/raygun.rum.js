@@ -62,7 +62,6 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.maxQueueItemsSent = 50;
     this.setCookieAsSecure = setCookieAsSecure;
 
-    this.xhrRequestMap = {};
     this.xhrStatusMap = {};
 
     var Timings = {
@@ -107,8 +106,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         document.attachEvent('onclick', clickHandler);
       }
 
-      Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
-      Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
@@ -280,7 +277,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       var data = [];
-      extractChildData(data, undefined, forceSend);
+      extractChildData(data);
       addPerformanceTimingsToQueue(data, forceSend);
     }
 
@@ -446,7 +443,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage, forceSend) {
+    function extractChildData(collection, fromVirtualPage) {
       if (!performanceEntryExists('getEntries', 'function')) {
         return;
       }
@@ -456,15 +453,14 @@ var raygunRumFactory = function(window, $, Raygun) {
         var resources = window.performance.getEntries();
 
         for (var i = self.offset; i < resources.length; i++) {
-          if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
-            break;
-          } else if (!shouldIgnoreResource(resources[i])) {
+          if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], offset));
           }
-          self.offset = i + 1;
         }
 
         addMissingWrtData(collection, offset);
+
+        self.offset = resources.length;
       } catch (e) {
         log(e);
       }
@@ -665,13 +661,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function waitingForResourceToFinishLoading(timing) {
-      var url = getTimingUrl(timing);
-      var request = this.xhrRequestMap[url];
-
-      return request && request.length > 0;
-    }
-
     /**
      * Adds first-paint and first-contentful-paint timings onto the main page timing. 
      * The performance API is used as it's a more standard method only supported in Chrome.
@@ -836,45 +825,14 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function xhrRequestHandler(request) {
-      if(!this.xhrRequestMap[request.baseUrl]) {
-        this.xhrRequestMap[request.baseUrl] = [];
+    function xhrResponseHandler(response) {      
+      if (!this.xhrStatusMap[response.baseUrl]) {
+        this.xhrStatusMap[response.baseUrl] = [];
       }
 
-      log('adding request to xhr request map', request);
+      log('adding response to xhr status map', response);
 
-      this.xhrRequestMap[request.baseUrl].push(request);
-    }
-
-    function xhrErrorHandler(response) {
-      var request = this.xhrRequestMap[response.baseUrl];
-      
-      if(request && request.length > 0) {
-        this.xhrRequestMap[response.baseUrl].shift();
-        log('request errored out', response);
-      }
-    }
-
-    function xhrResponseHandler(response) {
-      var request = this.xhrRequestMap[response.baseUrl];
-
-      if(request && request.length > 0) {
-        this.xhrRequestMap[response.baseUrl].shift();
-        
-        if(this.xhrRequestMap[response.baseUrl].length === 0) {
-          delete this.xhrRequestMap[response.baseUrl];
-        }
-
-        if (!this.xhrStatusMap[response.baseUrl]) {
-          this.xhrStatusMap[response.baseUrl] = [];
-        }
-
-        log('adding response to xhr status map', response);
-
-        this.xhrStatusMap[response.baseUrl].push(response);
-      } else {
-        log('response fired from non-handled request');
-      }
+      this.xhrStatusMap[response.baseUrl].push(response);
     }
 
     function shouldIgnoreResource(resource) {
