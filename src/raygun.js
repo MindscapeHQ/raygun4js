@@ -371,7 +371,11 @@ var raygunFactory = function(window, $, undefined) {
     setClientIp: function(ip) {
       _clientIp = ip;
     },
-
+    captureMissingRequests: function(val) {
+      if (Raygun.RealUserMonitoring !== undefined && _rum) {
+        _rum.captureMissingRequests(val);
+      }
+    },
     recordBreadcrumb: function() {
       _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
     },

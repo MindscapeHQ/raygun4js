@@ -58,7 +58,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatInterval = null;
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
-    this.captureMissingRequests = captureMissingRequests || false;
+    this._captureMissingRequests = false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
@@ -179,6 +179,10 @@ var raygunRumFactory = function(window, $, Raygun) {
           sendQueuedPerformancePayloads();
         }
       }
+    };
+
+    this.captureMissingRequests = function(val) {
+      this._captureMissingRequests = val;
     };
 
     // ================================================================================
@@ -460,7 +464,7 @@ var raygunRumFactory = function(window, $, Raygun) {
           }
         }
 
-        if(this.captureMissingRequests) {
+        if(this._captureMissingRequests) {
           addMissingWrtData(collection, offset);
         } else {
           clearMissingWrtData();
