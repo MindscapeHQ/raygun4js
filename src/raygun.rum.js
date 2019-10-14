@@ -25,7 +25,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     ignoreUrlCasing,
     customTimingsEnabled,
     beforeSendCb,
-    setCookieAsSecure
+    setCookieAsSecure,
+    captureMissingRequests
   ) {
     var self = this;
     var _private = {};
@@ -57,6 +58,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatInterval = null;
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
+    this.captureMissingRequests = captureMissingRequests || false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
@@ -458,7 +460,11 @@ var raygunRumFactory = function(window, $, Raygun) {
           }
         }
 
-        addMissingWrtData(collection, offset);
+        if(this.captureMissingRequests) {
+          addMissingWrtData(collection, offset);
+        } else {
+          clearMissingWrtData();
+        }
 
         self.offset = resources.length;
       } catch (e) {
@@ -500,6 +506,14 @@ var raygunRumFactory = function(window, $, Raygun) {
             } while (responses.length > 0);
           }
 
+          delete this.xhrStatusMap[url];
+        }
+      }
+    }.bind(this);
+
+    var clearMissingWrtData = function() {
+      for (var url in this.xhrStatusMap) {
+        if (this.xhrStatusMap.hasOwnProperty(url)) {
           delete this.xhrStatusMap[url];
         }
       }
@@ -825,7 +839,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function xhrResponseHandler(response) {      
+    function xhrResponseHandler(response) {
       if (!this.xhrStatusMap[response.baseUrl]) {
         this.xhrStatusMap[response.baseUrl] = [];
       }
