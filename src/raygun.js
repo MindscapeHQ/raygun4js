@@ -67,6 +67,7 @@ var raygunFactory = function(window, $, undefined) {
     _captureUnhandledRejections = true,
     _setCookieAsSecure = false,
     _clientIp,
+    _captureMissingRequests = false,
     detachPromiseRejectionFunction;
 
   var rand = Math.random();
@@ -116,6 +117,7 @@ var raygunFactory = function(window, $, undefined) {
         _pulseIgnoreUrlCasing = options.pulseIgnoreUrlCasing || false;
         _pulseCustomLoadTimeEnabled = options.pulseCustomLoadTimeEnabled || false;
         _setCookieAsSecure = options.setCookieAsSecure || false;
+        _captureMissingRequests = options.captureMissingRequests || false;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -148,7 +150,7 @@ var raygunFactory = function(window, $, undefined) {
 
         if(options.clientIp) {
           _clientIp = options.clientIp;
-        }
+        }        
       }
 
       ensureUser();
@@ -492,7 +494,8 @@ var raygunFactory = function(window, $, undefined) {
           _pulseIgnoreUrlCasing,
           _pulseCustomLoadTimeEnabled,
           _beforeSendRumCallback,
-          _setCookieAsSecure
+          _setCookieAsSecure,
+          _captureMissingRequests
         );
         _rum.attach();
       };

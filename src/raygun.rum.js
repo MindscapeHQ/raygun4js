@@ -25,7 +25,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     ignoreUrlCasing,
     customTimingsEnabled,
     beforeSendCb,
-    setCookieAsSecure
+    setCookieAsSecure,
+    captureMissingRequests
   ) {
     var self = this;
     var _private = {};
@@ -57,7 +58,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatInterval = null;
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
-    this._captureMissingRequests = false;
+    this._captureMissingRequests = captureMissingRequests || false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
