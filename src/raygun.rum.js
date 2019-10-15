@@ -468,7 +468,7 @@ var raygunRumFactory = function(window, $, Raygun) {
             collection.push(getSecondaryTimingData(resources[i], offset));
           }
         }
-        
+
         self.offset = i;
 
         if(this._captureMissingRequests) {
@@ -578,7 +578,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     /**
      * Stops sending through timing information if a XHR request has been made by the response handler hasn't been fired. 
-     * This is to prevent issues where multiple timings for the same asset can be sen. 
+     * This is to prevent issues where multiple timings for the same asset can be sent. 
      * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
      */
     var waitingForResourceToFinishLoading = function(timing) {
