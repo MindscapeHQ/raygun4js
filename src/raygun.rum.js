@@ -574,7 +574,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       return url;
-    };
+    }.bind(this);;
 
     /**
      * Stops sending through timing information if a XHR request has been made by the response handler hasn't been fired. 
@@ -586,7 +586,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var request = this.xhrRequestMap[url];
 
       return request && request.length > 0;
-    };
+    }.bind(this);
 
     var getSecondaryTimingData = function(timing, offset) {
       var url = getTimingUrl(timing);
