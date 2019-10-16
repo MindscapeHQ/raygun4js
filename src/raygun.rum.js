@@ -25,7 +25,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     ignoreUrlCasing,
     customTimingsEnabled,
     beforeSendCb,
-    setCookieAsSecure
+    setCookieAsSecure,
+    captureMissingRequests
   ) {
     var self = this;
     var _private = {};
@@ -57,11 +58,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatInterval = null;
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
+    this._captureMissingRequests = captureMissingRequests || false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
     this.setCookieAsSecure = setCookieAsSecure;
 
+    this.xhrRequestMap = {};
     this.xhrStatusMap = {};
 
     var Timings = {
@@ -106,6 +109,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         document.attachEvent('onclick', clickHandler);
       }
 
+      Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
+      Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
@@ -177,6 +182,10 @@ var raygunRumFactory = function(window, $, Raygun) {
           sendQueuedPerformancePayloads();
         }
       }
+    };
+
+    this.captureMissingRequests = function(val) {
+      this._captureMissingRequests = val;
     };
 
     // ================================================================================
@@ -277,7 +286,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
 
       var data = [];
-      extractChildData(data);
+      extractChildData(data, undefined, forceSend);
       addPerformanceTimingsToQueue(data, forceSend);
     }
 
@@ -443,7 +452,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage) {
+    function extractChildData(collection, fromVirtualPage, forceSend) {
       if (!performanceEntryExists('getEntries', 'function')) {
         return;
       }
@@ -451,16 +460,21 @@ var raygunRumFactory = function(window, $, Raygun) {
       try {
         var offset = fromVirtualPage ? 0 : window.performance.timing.navigationStart;
         var resources = window.performance.getEntries();
+        var i;
 
-        for (var i = self.offset; i < resources.length; i++) {
-          if (!shouldIgnoreResource(resources[i])) {
+        for (i = self.offset; i < resources.length; i++) {
+          if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
+            break;
+          } else if (!shouldIgnoreResource(resources[i])) {
             collection.push(getSecondaryTimingData(resources[i], offset));
           }
         }
 
-        addMissingWrtData(collection, offset);
+        self.offset = i;
 
-        self.offset = resources.length;
+        if(this._captureMissingRequests) {
+          addMissingWrtData(collection, offset);
+        }
       } catch (e) {
         log(e);
       }
@@ -549,7 +563,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    var getSecondaryTimingData = function(timing, offset) {
+    var getTimingUrl = function(timing) {
       var url = timing.name.split('?')[0];
 
       if (self.ignoreUrlCasing) {
@@ -559,6 +573,24 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (url.length > 800) {
         url = url.substring(0, 800);
       }
+
+      return url;
+    }.bind(this);
+
+    /**
+     * Stops sending through timing information if a XHR request has been made by the response handler hasn't been fired. 
+     * This is to prevent issues where multiple timings for the same asset can be sent. 
+     * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
+     */
+    var waitingForResourceToFinishLoading = function(timing) {
+      var url = getTimingUrl(timing);
+      var request = this.xhrRequestMap[url];
+
+      return request && request.length > 0;
+    }.bind(this);
+
+    var getSecondaryTimingData = function(timing, offset) {
+      var url = getTimingUrl(timing);
 
       var timingData = {
         url: url,
@@ -819,15 +851,59 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function xhrResponseHandler(response) {
-      if (!this.xhrStatusMap[response.baseUrl]) {
-        this.xhrStatusMap[response.baseUrl] = [];
+    /**
+     * Add to the requestMap. This marks the request as being in "flight" 
+     * and stops collecting metrics until this request has completed. 
+     */
+    function xhrRequestHandler(request) {
+      if(!this.xhrRequestMap[request.baseUrl]) {
+        this.xhrRequestMap[request.baseUrl] = [];
       }
 
-      log('adding response to xhr status map', response);
+      log('adding request to xhr request map', request);
 
-      this.xhrStatusMap[response.baseUrl].push(response);
+      this.xhrRequestMap[request.baseUrl].push(request);
     }
+    
+    /**
+     * Removes the request from the requestMap so that metric collection can be resumed. 
+     */
+    function xhrErrorHandler(response) {
+      var request = this.xhrRequestMap[response.baseUrl];
+
+      if(request && request.length > 0) {
+        this.xhrRequestMap[response.baseUrl].shift();
+        log('request encountered an error', response);
+      }	      
+    }
+
+    /**
+     * Removes the asset from the requestMap if found and adds the response to the 
+     * statusMap so that the status code can be associated with the request. 
+     * 
+     * If the 'captureMissingRequests' option is enabled and the timing metric is missing 
+     * the duration will also be used to create a new XHR timing.    
+     */
+    function xhrResponseHandler(response) {
+      var request = this.xhrRequestMap[response.baseUrl];
+
+      if(request && request.length > 0) {
+        this.xhrRequestMap[response.baseUrl].shift();
+
+        if(this.xhrRequestMap[response.baseUrl].length === 0) {
+          delete this.xhrRequestMap[response.baseUrl];
+        }
+
+        if (!this.xhrStatusMap[response.baseUrl]) {
+          this.xhrStatusMap[response.baseUrl] = [];
+        }
+
+        log('adding response to xhr status map', response);
+        this.xhrStatusMap[response.baseUrl].push(response);
+      } else {
+        log('response fired from non-handled request');
+      }
+    }	    
 
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];

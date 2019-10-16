@@ -1,3 +1,9 @@
+* v2.18.0
+  - Missing XHR timings are no longer tracked by default. Instead a configuration option exists to enable these via 'captureMissingRequests'
+  - Set the maximum duration of missing XHR calls to 5 minutes
+  - Add offset timings to missing XHR calls
+  - Support for tracking fetch methods which might be referenced locally    
+
 * v2.17.2
   - Fixes an issue where the XHR data type was not attached to statusCode calls
 

@@ -198,6 +198,9 @@
         case 'clientIp':
           rg.setClientIp(value);
           break;
+        case 'captureMissingRequests': 
+          rg.captureMissingRequests(value);
+          break;
         case 'captureUnhandledRejections':
           captureUnhandledRejections = value;
           break;
