@@ -136,7 +136,9 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     // This results in doubled up breadcrumbs
     // Can't reliably detect when it has been polyfilled but no IE version supports fetch
     // So if this is IE, don't hook into fetch
-    if (typeof window.fetch === 'function' && typeof window.fetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
+    var originalFetch = window.__raygunOriginalFetch || window.fetch;
+
+    if (typeof originalFetch === 'function' && typeof originalFetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
 
       /**
        * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
@@ -146,7 +148,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
        * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
        * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called 
        */
-      var originalFetch = window.__raygunOriginalFetch || window.fetch;
       
       var processFetch = function() {
         var fetchInput = arguments[0];
@@ -235,8 +236,11 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
         return promise;
       };
 
-      window.fetch = processFetch;
-      window.__raygunFetchCallback = processFetch;
+      if(!!window.__raygunOriginalFetch) {
+        window.__raygunFetchCallback = processFetch;
+      } else {
+        window.fetch = processFetch;
+      }
 
       disableFetchLogging = function() {
         window.fetch = originalFetch;
