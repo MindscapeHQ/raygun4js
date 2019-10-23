@@ -1,3 +1,6 @@
+* v2.18.1
+  - Fixes an issue with how the network tracking util integrates with the fetch snippet 
+
 * v2.18.0
   - Missing XHR timings are no longer tracked by default. Instead a configuration option exists to enable these via 'captureMissingRequests'
   - Set the maximum duration of missing XHR calls to 5 minutes
