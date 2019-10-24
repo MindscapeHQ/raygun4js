@@ -47,7 +47,25 @@
           }
       })(window,document,"script","/dist/raygun.js","rg4js");
 
-        var referencedFetch = window.fetch;
+      /**
+       * Overrides the fetch method to assert that once raygun4js has loaded, 
+       * subsequent overrides to the window.fetch method still work
+       */
+      window.__completedCalls = [];
+
+      if (typeof window.fetch !== 'undefined') {
+        var originalFetch = window.fetch;
+
+        window.fetch = function() {
+          var url = arguments[0];
+
+          return originalFetch.apply(null, arguments).then(function() {
+            completedCalls.push(url);
+          });
+        };
+      }
+
+      var referencedFetch = window.fetch;
     </script>
   </head>
   <body>
