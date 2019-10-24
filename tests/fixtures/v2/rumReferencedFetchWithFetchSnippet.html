@@ -60,7 +60,7 @@
           var url = arguments[0];
 
           return originalFetch.apply(null, arguments).then(function() {
-            completedCalls.push(url);
+            window.__completedCalls.push(url);
           });
         };
       }
