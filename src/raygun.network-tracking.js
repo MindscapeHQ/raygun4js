@@ -132,22 +132,23 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     }
 
     var disableFetchLogging = function() {};
+    
+    /**
+     * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
+     * These are used to intercept the original fetch method before a reference to it can be made.
+     * Because if a stored reference to the fetch method is made, we cannot get the status code from that point onwards. 
+     * 
+     * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
+     * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called 
+     */
+    var originalFetch = window.__raygunOriginalFetch || window.fetch;
+
     // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
     // This results in doubled up breadcrumbs
     // Can't reliably detect when it has been polyfilled but no IE version supports fetch
     // So if this is IE, don't hook into fetch
-    var originalFetch = window.__raygunOriginalFetch || window.fetch;
-
     if (typeof originalFetch === 'function' && typeof originalFetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
 
-      /**
-       * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
-       * These are used to intercept the original fetch method before a reference to it can be made.
-       * Because if a stored reference to the fetch method is made, we cannot get the status code from that point onwards. 
-       * 
-       * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
-       * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called 
-       */
       
       var processFetch = function() {
         var fetchInput = arguments[0];
