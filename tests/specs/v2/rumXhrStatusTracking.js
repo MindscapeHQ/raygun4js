@@ -129,7 +129,7 @@ describe("RUM status code tracking", function() {
           var url = expectedCalls[i];
           expect(completedCalls.indexOf(url)).not.toBe(-1);
         }
-      }
+      });
     });
   });
 
