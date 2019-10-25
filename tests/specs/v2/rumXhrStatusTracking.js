@@ -94,6 +94,42 @@ describe("RUM status code tracking", function() {
 
         checkStatusCodes();
       });
+
+      it('overriden fetch methods are stilled called', () => {
+        browser.url('http://localhost:4567/fixtures/v2/rumReferencedFetchWithFetchSnippet.html');
+
+        browser.pause(1000);
+    
+        var supportsFetch = browser.execute(function() {
+          return window.supportsFetch;
+        }).value;
+    
+        if (!supportsFetch) {
+          return;
+        }
+
+        browser.pause(34000);
+
+        var completedCalls = browser.execute(function () {
+          return window.__completedCalls;
+        }).value;
+    
+        if (completedCalls.length < 4) {
+          fail("test did not wait long enough for ajax requests to be sent to Raygun");
+        }
+    
+        var expectedCalls = [
+          'foo.html',
+          'rumXhrStatusCodes.html', 
+          'rumXhrStatusCodes.html?foo=bar', 
+          'http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html'
+        ];
+
+        for (var i = 0; i < expectedCalls.length; i++) {
+          var url = expectedCalls[i];
+          expect(completedCalls.indexOf(url)).not.toBe(-1);
+        }
+      });
     });
   });
 
