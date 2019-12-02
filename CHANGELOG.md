@@ -1,3 +1,6 @@
+* v2.18.2
+  - Fixes an issue with first-paint being calculated incorrectly for Edge/IE browsers
+
 * v2.18.1
   - Fixes an issue with how the network tracking util integrates with the fetch snippet 
 

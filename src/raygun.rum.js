@@ -690,7 +690,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     /**
      * Adds first-paint and first-contentful-paint timings onto the main page timing. 
      * The performance API is used as it's a more standard method only supported in Chrome.
-     * The `msFirstPaint` is used for Edge/IE browsers.
+     * `msFirstPaint` is used for Edge/IE browsers and returns a Unix timestamp. We calculate 
+     * the difference between 'msFirstPaint' and 'connectStart' to get first-paint for Edge/IE.
      */
     function addPaintTimings(data) {
       if(!performanceEntryExists('getEntriesByName', 'function')) {
@@ -702,7 +703,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
         data.fp = firstPaint[0].startTime.toFixed(2); 
       } else if(window.performance.timing && !!window.performance.timing.msFirstPaint) {
-        data.fp = window.performance.timing.msFirstPaint.toFixed(2);
+        data.fp = (window.performance.timing.msFirstPaint - window.performance.timing.fetchStart).toFixed(2);
       }
 
       var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
