@@ -187,6 +187,23 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
+    this.trackCustomTimings = function(customTimings) {
+      if(typeof customTimings === "object") {
+        var newTimings = [], key, timing;
+        for(key in customTimings) {
+          timing = customTimings[key];
+
+          if(typeof timing === "number") {
+            newTimings.push(createCustomTimingMeasurement(key, customTimings[key]));
+          } else {
+            log('Raygun4JS: Custom timing "' + key + '" is not a number');
+          }
+        }
+
+        addPerformanceTimingsToQueue(newTimings, false);
+      }
+    };
+
     this.captureMissingRequests = function(val) {
       this._captureMissingRequests = val;
     };
