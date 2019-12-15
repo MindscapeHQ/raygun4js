@@ -74,6 +74,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       XHR: 'x',
       CachedChildAsset: 'e',
       ChildAsset: 'c',
+      CustomTiming: 't'
     };
 
     // ================================================================================
