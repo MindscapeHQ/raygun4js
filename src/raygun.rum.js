@@ -466,11 +466,14 @@ var raygunRumFactory = function(window, $, Raygun) {
         var i;
 
         for (i = self.offset; i < resources.length; i++) {
-          if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
+          var resource = resources[i]
+          if(!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
-          } else if (!shouldIgnoreResource(resources[i])) {
-            collection.push(getSecondaryTimingData(resources[i], offset));
-          }
+          } else if (isCustomTimingMeasurement(resource)) {
+            collection.push(getCustomTimingMeasurement(resource));
+          } else if (!shouldIgnoreResource(resource)) {
+            collection.push(getSecondaryTimingData(resource, offset));
+          } 
         }
 
         self.offset = i;
@@ -862,6 +865,35 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                  Utilities                                   =
     // =                                                                              =
     // ================================================================================
+
+    /**
+     * Returns true if the resources entry type is set to "measure"
+     */
+    function isCustomTimingMeasurement(resource) {
+      return resource && resource.entryType === "measure";
+    }    
+
+    /**
+     * Creates a custom timing measurement from a ResourceMeasure value passed.
+     * The ResourceMeasure object passed in should be retrieved from the window.performance API
+     */
+    function getCustomTimingMeasurement(resource) {
+      return createCustomTimingMeasurement(resource.name, resource.duration);
+    }
+
+    /**
+     * Creates a custom timing measurement for a name and duration passed.
+     * This can be used to create custom timings seperate to the window.performance API
+     */
+    function createCustomTimingMeasurement(name, duration) {
+      return {
+        t: Timings.CustomTiming,
+        url: name,
+        timing: {
+          du: duration.toFixed(2)
+        }
+      };
+    }
 
     /**
      * Add to the requestMap. This marks the request as being in "flight" 
