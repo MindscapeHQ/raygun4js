@@ -483,7 +483,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         var i;
 
         for (i = self.offset; i < resources.length; i++) {
-          var resource = resources[i]
+          var resource = resources[i];
           if(!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
           } else if (isCustomTimingMeasurement(resource)) {
