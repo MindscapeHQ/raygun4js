@@ -259,7 +259,19 @@ $scope.$on('$routeChangeSuccess', function () {
 
 #### Tracking custom timings
 
-You can override the time when Raygun4JS considers your page to be loaded at, as well as send up to 10 custom timings of your choosing, with the Custom Timings capability. For documentation on this, see https://raygun.com/docs/pulse/customtimings.
+Custom timings allow you to track custom performance measurements across your website and application. For example, you can track the time it takes for a video to play after the user clicks a button or the time for a component to mount. 
+
+```javascript
+  rg4js('trackEvent', {
+      type: 'timings',
+      timings: {
+        firstInput: 1200,
+        timeToInteractive: 1000
+      }
+  });
+```
+
+You can read more about custom timings on it's [documentation page here](https://raygun.com/documentation/product-guides/real-user-monitoring/for-web/custom-timings/).
 
 ### Breadcrumbs API
 
