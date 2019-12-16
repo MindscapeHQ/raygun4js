@@ -963,7 +963,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
 
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation";
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation" || resource.entryType === "mark";
     }
 
     function shouldIgnoreResourceByName(name) {
