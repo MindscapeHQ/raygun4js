@@ -263,11 +263,9 @@ Custom timings allow you to track custom performance measurements across your we
 
 ```javascript
   rg4js('trackEvent', {
-      type: 'timings',
-      timings: {
-        firstInput: 1200,
-        timeToInteractive: 1000
-      }
+      type: 'customTiming',
+      name: 'firstInput',
+      duration: 1200,
   });
 ```
 

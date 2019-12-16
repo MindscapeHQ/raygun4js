@@ -187,20 +187,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
-    this.trackCustomTimings = function(customTimings) {
-      if(typeof customTimings === "object") {
-        var newTimings = [], key, timing;
-        for(key in customTimings) {
-          timing = customTimings[key];
-
-          if(typeof timing === "number") {
-            newTimings.push(createCustomTimingMeasurement(key, customTimings[key]));
-          } else {
-            log('Raygun4JS: Custom timing "' + key + '" is not a number');
-          }
-        }
-
+    this.trackCustomTiming = function(name, duration, offset) {
+      if(typeof duration === "number") {
+        var newTimings = [];
+        newTimings.push(createCustomTimingMeasurement(name, duration, offset));
         addPerformanceTimingsToQueue(newTimings, false);
+      } else {
+        log('Raygun4JS: Custom timing "' + name + '" duration is value is not a number');
       }
     };
 
@@ -895,19 +888,20 @@ var raygunRumFactory = function(window, $, Raygun) {
      * The ResourceMeasure object passed in should be retrieved from the window.performance API
      */
     function getCustomTimingMeasurement(resource) {
-      return createCustomTimingMeasurement(resource.name, resource.duration);
+      return createCustomTimingMeasurement(resource.name, resource.duration, resource.startTime);
     }
 
     /**
      * Creates a custom timing measurement for a name and duration passed.
      * This can be used to create custom timings seperate to the window.performance API
      */
-    function createCustomTimingMeasurement(name, duration) {
+    function createCustomTimingMeasurement(name, duration, offset) {
       return {
         t: Timings.CustomTiming,
         url: name,
         timing: {
-          du: duration.toFixed(2)
+          du: duration.toFixed(2),
+          a: (offset || 0).toFixed(2)
         }
       };
     }
