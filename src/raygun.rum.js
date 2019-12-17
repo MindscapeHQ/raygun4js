@@ -897,9 +897,9 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function createCustomTimingMeasurement(name, duration, offset) {
       return {
-        t: Timings.CustomTiming,
         url: name,
         timing: {
+          t: Timings.CustomTiming,
           du: duration.toFixed(2),
           a: (offset || 0).toFixed(2)
         }
