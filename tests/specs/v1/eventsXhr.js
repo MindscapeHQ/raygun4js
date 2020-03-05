@@ -2,7 +2,7 @@
 var _ = require('underscore');
 var common = require('../common');
 
-var _eventsEndpoint = 'https://api.raygun.io/events';
+var _eventsEndpoint = 'https://api.raygun.com/events';
 
 describe("XHR functional tests for /events with V1", function() {
 
