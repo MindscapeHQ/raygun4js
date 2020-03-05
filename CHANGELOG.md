@@ -26,10 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Unused normalize.css file
+  
 
 -->
 
-## [Unreleased]
+## 2.26.2
 
 ### Fixed
 
@@ -40,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the Raygun url to send events to preferred ingestion endpoint
 
-## v2.26.1 - 2023-07-12
+## v2.26.1 
 
 ### Fixed
 
