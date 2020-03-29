@@ -91,6 +91,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }.bind(_private);
 
       var unloadHandler = function() {
+        window.__raygunIsUnloading = true;
         sendChildAssets(true);
         sendQueuedItems();
       }.bind(_private);
