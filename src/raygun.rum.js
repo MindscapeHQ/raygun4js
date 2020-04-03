@@ -59,7 +59,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
-    this.pageIsUnloading = true;
+    this.pageIsUnloading = false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
