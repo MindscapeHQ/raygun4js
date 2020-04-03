@@ -145,10 +145,6 @@ rg4js('options', {
 
 ## Documentation
 
-### Legacy V1 documentation
-
-The old documentation for the V1 API (`Raygun.send()` etc) is [available here](V1Documentation.md).
-
 ### Initialization Options
 
 To configure the provider, call this and pass in an options object:
