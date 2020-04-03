@@ -1,3 +1,6 @@
+* v2.18.3
+  - Use navigator.sendBeacon when avaliable to send the last request as XHR requests can be cancelled
+
 * v2.18.2
   - Fixes an issue with first-paint being calculated incorrectly for Edge/IE browsers
 
