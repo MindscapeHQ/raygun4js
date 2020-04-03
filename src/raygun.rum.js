@@ -59,6 +59,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
+    this.pageIsUnloading = true;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
@@ -91,7 +92,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }.bind(_private);
 
       var unloadHandler = function() {
-        window.__raygunIsUnloading = true;
+        self.pageIsUnloading = true;
         sendChildAssets(true);
         sendQueuedItems();
       }.bind(_private);
@@ -844,7 +845,15 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       }
 
-      makePostCorsRequest(url, JSON.stringify(payload), successCallback, errorCallback);
+      var stringifiedPayload = JSON.stringify(payload);
+
+      // When the document is unloading, all inflight XHR requests will be canceled. Try sendBeacon instead.
+      if (self.pageIsUnloading && navigator.sendBeacon) {
+        navigator.sendBeacon(url, stringifiedPayload);
+        return;
+      } 
+
+      makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
     }
 
     // ================================================================================

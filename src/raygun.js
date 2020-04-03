@@ -1116,12 +1116,6 @@ var raygunFactory = function(window, $, undefined) {
       xhr.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
     }
 
-    // When the document is unloading, all inflight XHR requests will be canceled. Try sendBeacon instead.
-    if (window.__raygunIsUnloading && navigator.sendBeacon) {
-      navigator.sendBeacon(url, data);
-      return;
-    }
-
     xhr.send(data);
   }
 
