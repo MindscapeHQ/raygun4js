@@ -39,12 +39,6 @@ This will configure the provider to send to your Raygun app, and to automaticall
 
 That's it for the basic setup! See **Usage** below for more info on how to send errors.
 
-## Alternative setup options
-
-Note: This library can now be interacted with in two ways, the V1 API and the V2 API. The V1 API is available as 'public' functions on the global Raygun object, and is intended to be used to control the provider during runtime. Legacy setup methods remain on this API for backwards compatibility with 1.x releases. The V2 API is made available when using the snippet (above), and is used to asynchronously configure the provider during onLoad. This is the recommended approach for new setups.
-
-If you are installing the provider locally using a package manager or manually, you can either use the V2 API by adding the snippet and replace the second-last parameter with the URL of your hosted version of the script, or use the V1 API. The snippet/V2 approach does not support the script being bundled with other vendor scripts, but the V1 API does.
-
 **Snippet without page load error handler**
 
 If you do not want errors to be caught while the page is loading, [use this snippet here][nohandler].
@@ -151,10 +145,6 @@ rg4js('options', {
 
 ## Documentation
 
-### Legacy V1 documentation
-
-The old documentation for the V1 API (`Raygun.send()` etc) is [available here](V1Documentation.md).
-
 ### Initialization Options
 
 To configure the provider, call this and pass in an options object:
@@ -192,7 +182,9 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
-`clientIp` - A string containing the client's IP address. RUM requests will be associated to this IP address when set. Particularally useful when proxying payloads to the Raygun API using the `apiEndpoint` option and maintaining RUM's geographic lookup feature.
+`clientIp` - A string containing the client's IP address. RUM requests will be associated to this IP address when set. Particularly useful when proxying payloads to the Raygun API using the `apiEndpoint` option and maintaining RUM's geographic lookup feature. 
+
+_Note: navigator.sendBeacon is used to send RUM payloads when a page is unloading. As such the `clientIp` feature will not associate this last payload._
 
 `pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes).
 
@@ -458,6 +450,8 @@ rg4js('onBeforeXHR', function (xhr) {
 Call this function when you want control over the XmlHttpRequest object that is used to send error payloads to the API. Pass in a callback that receives one parameter (which is the XHR object). Your callback will be called after the XHR object is `open`ed, immediately before it is sent.
 
 For instance, you can use this to add custom HTTP headers.
+
+_Note: `navigator.sendBeacon` is used to send RUM payloads when a page is unloading. In these cases the `onBeforeXHR` method will not be executed as there is no XHR to reference and no additional headers can be attached._
 
 ### Custom error grouping
 
