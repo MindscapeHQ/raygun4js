@@ -4,7 +4,8 @@
 
 [rayguncom]: https://raygun.com
 
-[![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js)
+<!-- todo: re-enable pill after dep refresh -->
+<!-- [![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js) -->
 
 ## Getting Started
 
