@@ -1,5 +1,6 @@
 /* globals describe, beforeEach, it, expect, browser, window */
 
+var _ = require('underscore');
 var common = require("../common");
 
 describe("XHR tracking", function() {
@@ -44,6 +45,16 @@ describe("XHR tracking", function() {
     var breadcrumbs = common.getBreadcrumbs();
 
     expect(breadcrumbs[3].CustomData.requestURL).toBe("http://localhost:4567/fixtures/breadcrumbs/automatic.xhr.html");
+  });
+
+  it('does not record requests to raygun domains', function() {
+    var breadcrumbs = common.getBreadcrumbs();
+
+    var doesNotContainRaygun = _.every(breadcrumbs, function (crumb) {
+      return crumb.CustomData.requestURL.indexOf('raygun') === -1
+    });
+
+    expect(doesNotContainRaygun).toBe(true);
   });
 
   it("does not log bodies when logXhrContents is false", function() {
