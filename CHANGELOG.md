@@ -1,3 +1,7 @@
+* v2.18.4
+  - Fixes an issue where we record the "navigation" entryTypes as cached child assets
+  - Fixes an issue with `setAutoBreadcrumbsXHRIgnoredHosts` not being applied when requests are opened
+
 * v2.18.3
   - Use navigator.sendBeacon when avaliable to send the last request as XHR requests can be cancelled
 
