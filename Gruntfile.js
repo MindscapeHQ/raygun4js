@@ -68,9 +68,13 @@ module.exports = function(grunt) {
         src: ['src/**/*.js']
       }
     },
-    webdriver: {
-      test: {
-        configFile: './wdio.conf.js'
+    run: {
+      webdriver: {
+        cmd: 'npm',
+        args: [
+          'run',
+          'test',
+        ]
       }
     },
     watch: {
@@ -127,9 +131,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-string-replace');
-  grunt.loadNpmTasks('grunt-webdriver');
+  grunt.loadNpmTasks('grunt-run');
 
-  grunt.registerTask('test', ['webdriver']);
+  grunt.registerTask('test', ['run:webdriver']);
 
   grunt.registerTask('compile', ['jshint', 'clean', 'concat', 'uglify:dist']);
 
