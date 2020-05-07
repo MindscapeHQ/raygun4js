@@ -273,14 +273,8 @@ exports.config = {
      * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      */
-    onPrepare: function (config, capabilities) {
-        if (process.env.TRAVIS) {
-            for (var i = 0;i < capabilities.length; i++) {
-                capabilities[i]['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
-                capabilities[i].build = process.env.TRAVIS_BUILD_NUMBER;
-            }
-        }
-    },
+    // onPrepare: function (config, capabilities) {
+    // },
     /**
      * Gets executed before a worker process is spawned and can be used to initialise specific service
      * for that worker as well as modify runtime environments in an async fashion.
