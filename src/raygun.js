@@ -68,6 +68,7 @@ var raygunFactory = function(window, $, undefined) {
     _setCookieAsSecure = false,
     _clientIp,
     _captureMissingRequests = false,
+    _hasDetachedSnippetErrorHandler = false,
     detachPromiseRejectionFunction;
 
   var rand = Math.random();
@@ -178,8 +179,16 @@ var raygunFactory = function(window, $, undefined) {
         return Raygun;
       }
 
-      if (window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
+      if (!_hasDetachedSnippetErrorHandler && window.RaygunObject && window[window.RaygunObject] && window[window.RaygunObject].q) {
+        /**
+         * From what I can tell this is to remove the code snippets `onerror` handler
+         * that way ensuring we aren't accidentially logging errors twice. 
+         * 
+         * The `_hasDetachedSnippetErrorHandler` is to ensure this condition is only ever called once. 
+         * Otherwise it can override _traceKits error subscription 
+         */
         window.onerror = null;
+        _hasDetachedSnippetErrorHandler = true;
       }
 
       if (_captureUnhandledRejections) {
