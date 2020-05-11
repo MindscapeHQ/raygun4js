@@ -432,7 +432,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
     var self = this;
 
     var requestHandler = self.wrapWithHandler(function(request) {
-      if (urlMatchesIgnoredHosts(request.url, self.xhrIgnoredHosts)) {
+      if (urlMatchesIgnoredHosts(request.requestURL, self.xhrIgnoredHosts)) {
         return;
       }
 
