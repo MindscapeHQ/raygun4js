@@ -18,7 +18,10 @@
     noConflict,
     captureUnhandledRejections;
 
-  var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
+  var snippetOnErrorSignatures = [
+    ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'],
+    ['function(b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'],
+  ];
 
   var rg = Raygun;
 
@@ -214,6 +217,24 @@
     globalExecutorInstalled = true;
   };
 
+  var detachGlobalSnippetHandler = function() {
+    /**
+     * Detaches the global `window.onerror` handler if
+     * it matches our snippets error signature 
+     */
+    var onerrorSignature = window.onerror.toString();
+
+    for(var i = 0; i < snippetOnErrorSignatures.length; i++) {
+      if (
+        onerrorSignature.indexOf(snippetOnErrorSignature[i][0]) !== -1 &&
+        onerrorSignature.indexOf(snippetOnErrorSignature[i][1]) !== -1
+      ) {
+        window.onerror = null;
+        break;
+      }
+    }
+  };
+
   var onLoadHandler = function() {
     parseSnippetOptions();
 
@@ -235,20 +256,16 @@
     }
 
     if (attach) {
+      detachGlobalSnippetHandler();
       rg.attach();
 
       errorQueue = window[window['RaygunObject']].q;
       for (var j in errorQueue) {
         rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
       }
+      window[window['RaygunObject']].q = [];
     } else if (typeof window.onerror === 'function') {
-      var onerrorSignature = window.onerror.toString();
-      if (
-        onerrorSignature.indexOf(snippetOnErrorSignature[0]) !== -1 &&
-        onerrorSignature.indexOf(snippetOnErrorSignature[1]) !== -1
-      ) {
-        window.onerror = null;
-      }
+      detachGlobalSnippetHandler();
     }
 
     for (var commandIndex in delayedCommands) {
@@ -262,8 +279,6 @@
     if (!globalExecutorInstalled) {
       installGlobalExecutor();
     }
-
-    window[window['RaygunObject']].q = errorQueue;
   };
 
   if (!Raygun.Utilities.isReactNative()) {
