@@ -10,7 +10,6 @@
   var snippetOptions = window[window['RaygunObject']].o;
   var hasLoaded = false,
     globalExecutorInstalled = false,
-    errorQueue,
     delayedCommands = [],
     apiKey,
     options,
@@ -21,7 +20,6 @@
 
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
-  errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
   var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
