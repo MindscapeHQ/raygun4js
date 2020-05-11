@@ -226,13 +226,24 @@
 
     for(var i = 0; i < snippetOnErrorSignatures.length; i++) {
       if (
-        onerrorSignature.indexOf(snippetOnErrorSignature[i][0]) !== -1 &&
-        onerrorSignature.indexOf(snippetOnErrorSignature[i][1]) !== -1
+        onerrorSignature.indexOf(snippetOnErrorSignatures[i][0]) !== -1 &&
+        onerrorSignature.indexOf(snippetOnErrorSignatures[i][1]) !== -1
       ) {
         window.onerror = null;
         break;
       }
     }
+  };
+
+  var sendAndResetErrorsFromGlobalErrorQueue = function() {
+    /**
+     * Errors 
+     */
+    var errorQueue = window[window['RaygunObject']] && window[window['RaygunObject']].q;
+    for (var j in errorQueue) {
+      rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
+    }
+    window[window['RaygunObject']].q = [];
   };
 
   var onLoadHandler = function() {
@@ -258,12 +269,7 @@
     if (attach) {
       detachGlobalSnippetHandler();
       rg.attach();
-
-      errorQueue = window[window['RaygunObject']].q;
-      for (var j in errorQueue) {
-        rg.send(errorQueue[j].e, { handler: 'From Raygun4JS snippet global error handler' });
-      }
-      window[window['RaygunObject']].q = [];
+      sendAndResetErrorsFromGlobalErrorQueue();
     } else if (typeof window.onerror === 'function') {
       detachGlobalSnippetHandler();
     }
