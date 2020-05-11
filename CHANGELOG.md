@@ -1,3 +1,7 @@
+* v2.18.5
+  - Fixes an issue where the global snippets error handler would not be reset 
+  - Fixes an issue where calling the `boot` method after the library has already loaded would unattach any error handlers 
+
 * v2.18.4
   - Fixes an issue where we record the "navigation" entryTypes as cached child assets
   - Fixes an issue with `setAutoBreadcrumbsXHRIgnoredHosts` not being applied when requests are opened
