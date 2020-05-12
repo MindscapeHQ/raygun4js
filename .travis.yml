@@ -10,4 +10,4 @@ addons:
   chrome: stable
 before_script:
   - yarn global add grunt
-script: grunt build && yarn test-local
+script: grunt build && yarn test

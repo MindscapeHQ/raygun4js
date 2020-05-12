@@ -46,7 +46,6 @@
     "wdio-chromedriver-service": "^6.0.3"
   },
   "scripts": {
-    "test-local": "cross-env LOCAL=true node_modules/.bin/wdio wdio.conf.js",
     "test": "cross-env node_modules/.bin/wdio wdio.conf.js"
   },
   "dependencies": {},

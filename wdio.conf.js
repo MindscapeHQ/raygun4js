@@ -1,5 +1,3 @@
-var RUN_LOCAL = process.env.LOCAL === "true";
-
 exports.config = {
     //
     // ====================
@@ -47,116 +45,13 @@ exports.config = {
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
     // https://docs.saucelabs.com/reference/platforms-configurator
     //
-    capabilities: RUN_LOCAL ? [{
-    
-        // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-        // grid with only 5 firefox instances available you can make sure that not more than
-        // 5 instances get started at a time.
-        maxInstances: 2,
-        //
+    capabilities: [{
+        maxInstances: 4,
         browserName: 'chrome',
-        //
         'goog:chromeOptions': {
             args: ['headless', 'disable-gpu', 'no-sandbox']
         },
-        // If outputDir is provided WebdriverIO can capture driver session logs
-        // it is possible to configure which logTypes to include/exclude.
-        // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
-        // excludeDriverLogs: ['bugreport', 'server'],
-    }] : [
-        {
-            browserName: 'internet explorer',
-            platform: 'Windows 7',
-            version: '9',
-            exclude: [
-                // IE9 does not support window.performance.getEntries
-                // This means it does not support the full RUM functionality
-                'tests/specs/v2/rumXhrStatusTracking.js'
-            ]
-        },
-        {
-            browserName: 'internet explorer',
-            platform: 'Windows 7',
-            version: '10',
-        },
-        {
-            browserName: 'internet explorer',
-            platform: 'Windows 8.1',
-            version: '11',
-        },
-        {
-            browserName: 'MicrosoftEdge',
-            platform: 'Windows 10',
-            version: 'latest',
-        },
-        {
-            browserName: 'MicrosoftEdge',
-            platform: 'Windows 10',
-            version: 'latest-1',
-        },
-        {
-            browserName: 'MicrosoftEdge',
-            platform: 'Windows 10',
-            version: 'latest-2',
-        },
-        {
-            browserName: 'chrome',
-            platform: 'Windows 10',
-            version: 'latest',
-        },
-        {
-            browserName: 'chrome',
-            platform: 'Windows 10',
-            version: 'latest-1',
-        },
-        {
-            browserName: 'chrome',
-            platform: 'Windows 10',
-            version: 'latest-2',
-        },
-        {
-            browserName: 'chrome',
-            platform: 'Windows 10',
-            version: 'latest-3',
-        },
-        {
-            browserName: 'firefox',
-            platform: 'Windows 10',
-            version: 'latest',
-        },
-        {
-            browserName: 'firefox',
-            platform: 'Windows 10',
-            version: 'latest-1',
-        },
-        {
-            browserName: 'firefox',
-            platform: 'Windows 10',
-            version: 'latest-2',
-        },
-        // Safari 12 will not load localhost without an error
-        // need to figure out a solution
-        {
-            browserName: 'safari',
-            platform: 'macOS 10.14',
-            version: '12.0',
-        },
-        {
-            browserName: 'safari',
-            platform: 'macOS 10.13',
-            version: '11.1',
-        },
-        {
-            browserName: 'safari',
-            platform: 'macOS 10.12',
-            version: '10.1',
-            exclude: [
-                // Safari 10 does not support window.performance.getEntries
-                // This means it does not support the full RUM functionality
-                'tests/specs/v2/rumXhrStatusTracking.js'
-            ]
-        },
-    ],
+    }],
     //
     // ===================
     // Test Configurations
@@ -192,9 +87,9 @@ exports.config = {
     //
     host: 'localhost',
     //
-    port: RUN_LOCAL ? 9515 : 4445,
+    port: 9515,
     //
-    path: RUN_LOCAL ? '/' : '/wd/hub',
+    path: '/',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -250,9 +145,9 @@ exports.config = {
         // The Jasmine framework allows interception of each assertion in order to log the state of the application
         // or website depending on the result. For example, it is pretty handy to take a screenshot every time
         // an assertion fails.
-        expectationResultHandler: function(passed, assertion) {
-            // do something
-        }
+        // expectationResultHandler: function(passed, assertion) {
+        //     // do something
+        // }
     },
     //
     // =====
