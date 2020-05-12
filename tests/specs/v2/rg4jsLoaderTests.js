@@ -14,7 +14,7 @@ describe("Functional tests for rg4js() calls to ensure they are executed by the 
       return window.didPerformOnBeforeSend;
     });
 
-    expect(didPerformOnBeforeSend.value).toEqual(['beforesendcalled', 'the_scope', 'object']);
+    expect(didPerformOnBeforeSend).toEqual(['beforesendcalled', 'the_scope', 'object']);
   });
 
   it("sets onBeforeSend when it is called after library is loaded", function () {
@@ -26,7 +26,7 @@ describe("Functional tests for rg4js() calls to ensure they are executed by the 
       return window.didPerformOnBeforeSend;
     });
 
-    expect(didPerformOnBeforeSend.value).toEqual(['beforesendcalled', 'the_scope', 'object']);
+    expect(didPerformOnBeforeSend).toEqual(['beforesendcalled', 'the_scope', 'object']);
   });
 
 });

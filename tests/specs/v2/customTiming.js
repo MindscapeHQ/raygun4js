@@ -15,7 +15,7 @@ describe("Custom Timing tests", function() {
   it('sends custom timing events', function () {
     var customTimingData = browser.execute(function () {
       return window.__requestPayloads[1];
-    }).value;
+    });
 
     expect(JSON.parse(customTimingData.eventData[0].data)[0].customTiming).toEqual({
       custom1: 100,

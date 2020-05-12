@@ -16,7 +16,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
     });
 
@@ -32,7 +32,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
     });
 
@@ -48,7 +48,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.Message === 'Manual send' || payload.Details.Error.Message === 'Script error';
     });
 
@@ -64,7 +64,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.Message === 'Manual send' || payload.Details.Error.Message === 'Script error';
     });
 
@@ -80,7 +80,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.ClassName === 'Error';
     });
 
@@ -100,7 +100,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       var stackTrace = payload.Details.Error.StackTrace[0];
       return stackTrace && stackTrace.FileName === pageUrl;
     });
@@ -121,7 +121,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Tags[0] === 'my_tag';
     });
 
@@ -139,7 +139,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.UserCustomData.myCustomKey === 'myCustomValue';
     });
 
@@ -157,7 +157,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.User.Identifier === 'user_email_address@localhost.local' &&
         payload.Details.User.IsAnonymous === false &&
         payload.Details.User.FirstName === 'Foo' &&
@@ -179,7 +179,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.any(requestPayloads.value, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Version === '1.0.0.0';
     });
 
@@ -195,11 +195,11 @@ describe("Payload functional validation tests for V2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = _.every(requestPayloads.value, function (payload) {
+    var passes = _.every(requestPayloads, function (payload) {
       return payload.Details.Error.Message === 'Manual send';
     });
 
-    expect(requestPayloads.value.length).toBe(2)
+    expect(requestPayloads.length).toBe(2)
     expect(passes).toBe(true);
   });
 

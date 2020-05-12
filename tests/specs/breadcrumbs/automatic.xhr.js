@@ -62,7 +62,7 @@ describe("XHR tracking", function() {
       window.rg4js('logContentsOfXhrCalls', true);
 
       return window.rg4js('getRaygunInstance').getBreadcrumbs();
-    }).value;
+    });
 
     expect(breadcrumbs[1].CustomData.body).toContain("Disabled");
   });

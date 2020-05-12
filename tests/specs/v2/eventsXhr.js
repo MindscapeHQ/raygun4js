@@ -16,7 +16,7 @@ describe("XHR functional tests for /events with V2", function() {
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = _.any(inFlightXhrs.value, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_eventsEndpoint) === 0;
     });
 

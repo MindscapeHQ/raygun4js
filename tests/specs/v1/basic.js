@@ -15,7 +15,7 @@ describe("Basic Raygun4JS V1 API tests", function() {
       return typeof Raygun;
     });
 
-    expect(result.value).toBe('object');
+    expect(result).toBe('object');
   });
 
   it('has CR sending function', function () {
@@ -23,7 +23,7 @@ describe("Basic Raygun4JS V1 API tests", function() {
       return typeof Raygun.send === 'function';
     });
 
-    expect(result.value).toBe(true);
+    expect(result).toBe(true);
   });
 
   it('has Pulse trackEvent function', function () {
@@ -31,6 +31,6 @@ describe("Basic Raygun4JS V1 API tests", function() {
       return typeof Raygun.trackEvent === 'function';
     });
 
-    expect(result.value).toBe(true);
+    expect(result).toBe(true);
   });
 });
