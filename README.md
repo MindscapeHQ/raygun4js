@@ -355,7 +355,11 @@ secondRaygun.init('apikey');
 secondRaygun.send(...);
 ```
 
-Only one Raygun object can be attached as the window.onerror handler at one time, as *onerror* can only be bound to one function at once. Whichever Raygun object had `attach()` called on it last will handle the unhandle errors for the page. Note that you should use the V1 API to send using the second Raygun object, and it should be created and called once the page is loaded (for instance in an `onload` callback).
+Each Raygun object can listen for and send unhandled error by calling the `attach()` method. This means that each error tracked will result two error instances sent. 
+
+Notes: 
+1. The V1 API should be used for the second Raygun object. This is because the global `rg4js` variable will always point to the first Raygun instance.
+2. You should only call the `constructNewRaygun` method once the page is loaded (or at least the raygun4js script) has loaded.
 
 ### NoConflict mode
 
