@@ -19,10 +19,12 @@ module.exports = {
       return window.__requestPayloads;
     });
   },
-  getBreadcrumbs: function() {
-    var crumbs = browser.execute(function() {
-      return window.__requestPayloads[0].Details.Breadcrumbs;
-    });
+  getBreadcrumbs: function(pulseEnabled = false) {
+    var crumbs = browser.execute(function(pulseEnabled) {
+      return pulseEnabled ?
+        window.__requestPayloads[(window.__requestPayloads.length - 1)].Details.Breadcrumbs :
+        window.__requestPayloads[0].Details.Breadcrumbs ;
+    }, pulseEnabled);
 
     return crumbs;
   },
