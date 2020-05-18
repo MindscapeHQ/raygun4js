@@ -11,7 +11,7 @@ describe('onBeforeSendRUM callback', function() {
 
     var modifiedPayload = browser.execute(function () {
       return window.__requestPayloads[0];
-    }).value;
+    });
 
     expect(modifiedPayload.eventData[0].version).toBe('1.0.0');
   });
@@ -23,7 +23,7 @@ describe('onBeforeSendRUM callback', function() {
 
     var firstPayload = browser.execute(function () {
       return window.__requestPayloads[0];
-    }).value;
+    });
 
     var typeOfData = typeof firstPayload.eventData[0].data;
     expect(typeOfData === "string").toBe(true);
@@ -36,7 +36,7 @@ describe('onBeforeSendRUM callback', function() {
 
     var allPayloads = browser.execute(function () {
       return window.__requestPayloads;
-    }).value;
+    });
 
     expect(allPayloads.length).toBe(1);
   });

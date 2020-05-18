@@ -3,8 +3,8 @@ var _ = require('underscore');
 
 module.exports = {
   isIEVersion: function(version) {
-    return browser.desiredCapabilities.browserName === 'internet explorer' &&
-           browser.desiredCapabilities.version === version;
+    return browser.capabilities.browserName === 'internet explorer' &&
+           browser.capabilities.browserVersion === version;
   },
   isOldIE: function() {
     return this.isIEVersion('9') || this.isIEVersion('10');
@@ -12,17 +12,19 @@ module.exports = {
   inFlightXHRs: function() {
     return browser.execute(function() {
       return window.__inFlightXHRs;
-    }).value;
+    });
   },
   sentPayloads: function() {
     return browser.execute(function() {
       return window.__requestPayloads;
-    }).value;
+    });
   },
-  getBreadcrumbs: function() {
-    var crumbs = browser.execute(function() {
-      return window.__requestPayloads[0].Details.Breadcrumbs;
-    }).value;
+  getBreadcrumbs: function(pulseEnabled = false) {
+    var crumbs = browser.execute(function(pulseEnabled) {
+      return pulseEnabled ?
+        window.__requestPayloads[(window.__requestPayloads.length - 1)].Details.Breadcrumbs :
+        window.__requestPayloads[0].Details.Breadcrumbs ;
+    }, pulseEnabled);
 
     return crumbs;
   },
@@ -32,12 +34,12 @@ module.exports = {
   getLocalStorageValue: function(key) {
     return browser.execute(function (name) {
       return localStorage.getItem(name);
-    }, key).value;
+    }, key);
   },
   getSessionStorageValue: function(key) {
     return browser.execute(function (name) {
       return localStorage.getItem(name);
-    }, key).value;
+    }, key);
   },
   setCookieValue: function(key, value) {
     browser.execute(function(cookieName, cookieValue) {
@@ -58,7 +60,7 @@ module.exports = {
           }
         }
         return null;
-    }, key).value;
+    }, key);
 
     return cookieResult;
   }

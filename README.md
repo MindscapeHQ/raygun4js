@@ -4,6 +4,8 @@
 
 [rayguncom]: https://raygun.com
 
+[![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js)
+
 ## Getting Started
 
 **Step 1**

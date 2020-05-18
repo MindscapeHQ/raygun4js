@@ -1658,14 +1658,14 @@ function pad(str, len) {
 function errorDiff(err, type, escape) {
   return diff['diff' + type](err.actual, err.expected).map(function(str){
     if (escape) {
-      str.value = str.value
+      str = str
         .replace(/\t/g, '<tab>')
         .replace(/\r/g, '<CR>')
         .replace(/\n/g, '<LF>\n');
     }
-    if (str.added) return colorLines('diff added', str.value);
-    if (str.removed) return colorLines('diff removed', str.value);
-    return str.value;
+    if (str.added) return colorLines('diff added', str);
+    if (str.removed) return colorLines('diff removed', str);
+    return str;
   }).join('');
 }
 

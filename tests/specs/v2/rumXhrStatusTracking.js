@@ -5,7 +5,7 @@ var _ = require('underscore');
 describe("RUM status code tracking", function() {
 
   afterEach(function() {
-    browser.reload();
+    browser.reloadSession();
   });
 
   function payloadsWithoutRaygunApi(payloads) {
@@ -18,7 +18,7 @@ describe("RUM status code tracking", function() {
   function checkStatusCodes() {
     var requestPayloads = browser.execute(function () {
       return window.__requestPayloads;
-    }).value;
+    });
 
     if (requestPayloads.length < 3) {
       fail("test did not wait long enough for ajax requests to be sent to Raygun");
@@ -64,13 +64,13 @@ describe("RUM status code tracking", function() {
 
     var supportsFetch = browser.execute(function() {
       return window.supportsFetch;
-    }).value;
+    });
 
     if (!supportsFetch) {
       return;
     }
 
-    browser.pause(34000);
+    browser.pause(35000);
 
     checkStatusCodes();
   });
@@ -84,13 +84,13 @@ describe("RUM status code tracking", function() {
     
         var supportsFetch = browser.execute(function() {
           return window.supportsFetch;
-        }).value;
+        });
     
         if (!supportsFetch) {
           return;
         }
 
-        browser.pause(34000);
+        browser.pause(35000);
 
         checkStatusCodes();
       });
@@ -102,17 +102,17 @@ describe("RUM status code tracking", function() {
     
         var supportsFetch = browser.execute(function() {
           return window.supportsFetch;
-        }).value;
+        });
     
         if (!supportsFetch) {
           return;
         }
 
-        browser.pause(34000);
+        browser.pause(35000);
 
         var completedCalls = browser.execute(function () {
           return window.__completedCalls;
-        }).value;
+        });
     
         if (completedCalls.length < 4) {
           fail("test did not wait long enough for ajax requests to be sent to Raygun");

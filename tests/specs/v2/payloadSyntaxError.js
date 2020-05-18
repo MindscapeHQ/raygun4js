@@ -14,7 +14,7 @@ describe("Payload functional validation tests for V2 syntax error caught with th
       return window.__requestPayloads;
     });
 
-    var doesHaveLineNumbersAndColumnNumbers = _.any(requestPayloads.value, function (req) {
+    var doesHaveLineNumbersAndColumnNumbers = _.any(requestPayloads, function (req) {
       console.log('[stacktrace]');
       var stackTracesToCheck = req.Details.Error.StackTrace.slice(0, 2);
       return _.every(stackTracesToCheck, function(trace) {

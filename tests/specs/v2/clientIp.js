@@ -13,7 +13,7 @@ describe("ClientIp", function() {
       return window.__sentXHRs;
     });
 
-    var remoteAddressIsUndefined = _.every(sentXhrs.value, function (req) {
+    var remoteAddressIsUndefined = _.every(sentXhrs, function (req) {
       return req.clientIp === null;
     });
 
@@ -29,7 +29,7 @@ describe("ClientIp", function() {
       return window.__sentXHRs;
     });
 
-    var remoteAddressIsSet = _.every(sentXhrs.value, function (req) {
+    var remoteAddressIsSet = _.every(sentXhrs, function (req) {
       return req.clientIp === "192.168.0.12";
     });
 

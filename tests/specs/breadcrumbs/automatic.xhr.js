@@ -10,7 +10,7 @@ describe("XHR tracking", function() {
   });
 
   it("tracks XHR start and end events", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     expect(breadcrumbs[0].type).toBe("request");
     expect(breadcrumbs[0].message).toContain("Opening request");
@@ -20,7 +20,7 @@ describe("XHR tracking", function() {
   });
 
   it("works when the responseType is non text", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     expect(breadcrumbs[2].type).toBe("request");
     expect(breadcrumbs[2].message).toContain("Opening request");
@@ -30,25 +30,25 @@ describe("XHR tracking", function() {
   });
 
   it("records the correct message with the URL", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     expect(breadcrumbs[0].message).toBe("Opening request to http://localhost:4567/fixtures/breadcrumbs/automatic.console.html");
   });
 
   it("records the correct requestURL", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     expect(breadcrumbs[0].CustomData.requestURL).toBe("http://localhost:4567/fixtures/breadcrumbs/automatic.console.html");
   });
 
   it("records the correct requestURL for absolute paths", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     expect(breadcrumbs[3].CustomData.requestURL).toBe("http://localhost:4567/fixtures/breadcrumbs/automatic.xhr.html");
   });
 
   it('does not record requests to raygun domains', function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = common.getBreadcrumbs(true);
 
     var doesNotContainRaygun = _.every(breadcrumbs, function (crumb) {
       return crumb.CustomData.requestURL.indexOf('raygun') === -1
@@ -62,7 +62,7 @@ describe("XHR tracking", function() {
       window.rg4js('logContentsOfXhrCalls', true);
 
       return window.rg4js('getRaygunInstance').getBreadcrumbs();
-    }).value;
+    });
 
     expect(breadcrumbs[1].CustomData.body).toContain("Disabled");
   });

@@ -11,7 +11,7 @@ describe("Request ID tests", function() {
 
     var requestPayloads = browser.execute(function () {
       return window.__requestPayloads;
-    }).value;
+    });
 
     // If this fails because eventData is undefined it's probably
     // because the virtual pages aren't being sent
