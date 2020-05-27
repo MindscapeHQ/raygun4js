@@ -1,15 +1,12 @@
 var webdriverio = require('webdriverio');
 
 describe("Custom Timing tests", function() {
-
-  afterEach(function() {
+  beforeEach(function() {
     /**
      * Clears the session between tests to ensure
      * that the sessionstart event is always fired 
      */
-    browser.execute(function() {
-      localStorage.clear();
-    });
+    browser.reloadSession();
   });
 
   describe('legacy custom timings', function() {
@@ -38,7 +35,7 @@ describe("Custom Timing tests", function() {
 
     it('sends custom timing events', function () {
       var customTimingData = browser.execute(function () {
-        return window.__requestPayloads[1];
+        return window.__requestPayloads[2];
       });
 
       expect(JSON.parse(customTimingData.eventData[0].data)[0]).toEqual({
