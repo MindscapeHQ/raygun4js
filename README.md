@@ -268,8 +268,34 @@ Custom timings allow you to track custom performance measurements across your we
       duration: 1200,
   });
 ```
-
 You can read more about custom timings on it's [documentation page here](https://raygun.com/documentation/product-guides/real-user-monitoring/for-web/custom-timings/).
+
+#### Legacy custom timings API
+
+_Note: This API has since been deprecated and will be removed in a future version of the provider. We recommend developers upgrade to using the latest version which is both easier to setup and works for single page applications._
+
+```js
+rg4js('options', {
+  pulseCustomLoadTimeEnabled: true
+  // Plus any other configuration options
+});
+
+rg4js('trackEvent', {
+  type: 'customTimings',
+  timings: {
+    custom1: 10,
+    custom2: 20,
+    custom3: 30,
+    custom4: 40,
+    custom5: 50,
+    custom6: 60,
+    custom7: 70,
+    custom8: 80,
+    custom9: 90,
+    custom10: 10,
+  }
+});
+```
 
 ### Breadcrumbs API
 
