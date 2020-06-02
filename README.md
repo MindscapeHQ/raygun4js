@@ -196,6 +196,8 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all non-2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default due these timings being as accurate as the performance API. 
 
+`trackMeasurementTimings` - When enabled Raygun4JS will track each `performance.measure` call as it's own custom timing entry. This enables developers to use a more native API for tracking performance timings. More information about `performance.measure` can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure).
+
 An example:
 
 ```javascript
@@ -214,7 +216,8 @@ rg4js('options', {
   pulseIgnoreUrlCasing: false,
   captureUnhandledRejections: true,
   setCookieAsSecure: false,
-  captureMissingRequests: false
+  captureMissingRequests: false,
+  trackMeasurementTimings: false
 });
 ```
 
