@@ -26,7 +26,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     customTimingsEnabled,
     beforeSendCb,
     setCookieAsSecure,
-    captureMissingRequests
+    captureMissingRequests,
+    trackMeasurementTimings
   ) {
     var self = this;
     var _private = {};
@@ -39,7 +40,12 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.excludedUserAgents = excludedUserAgents;
     this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
     this.ignoreUrlCasing = ignoreUrlCasing;
-    this.customTimingsEnabled = customTimingsEnabled;
+    /**
+     * Note: the `customTimingsEnabled` flag is for tracking legacy custom timings
+     * because that api prevents page timings from being sent until the main request is completed
+     */
+    this.customTimingsEnabled = customTimingsEnabled; 
+    this.trackMeasurementTimings = trackMeasurementTimings;
     this.beforeSend =
       beforeSendCb ||
       function(payload) {
@@ -480,7 +486,9 @@ var raygunRumFactory = function(window, $, Raygun) {
           if(!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
           } else if (isCustomTimingMeasurement(resource)) {
-            collection.push(getCustomTimingMeasurement(resource));
+            if(self.trackMeasurementTimings) {
+              collection.push(getCustomTimingMeasurement(resource));
+            }
           } else if (!shouldIgnoreResource(resource)) {
             collection.push(getSecondaryTimingData(resource, offset));
           } 
