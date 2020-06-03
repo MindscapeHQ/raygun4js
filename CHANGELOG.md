@@ -1,6 +1,6 @@
 * v2.19.0
   - Adds new custom timings support which enables Custom Timings to work with SPA's and regardless of page loads
-  - Adds an option `trackMeasurementTimings` to for tracking performance.measure calls as custom timings 
+  - Adds an option `automaticPerformanceCustomTimings` to for tracking performance.measure calls as custom timings 
 
 * v2.18.4
   - Fixes an issue where we record the "navigation" entryTypes as cached child assets

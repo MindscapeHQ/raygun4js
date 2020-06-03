@@ -27,7 +27,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     beforeSendCb,
     setCookieAsSecure,
     captureMissingRequests,
-    trackMeasurementTimings
+    automaticPerformanceCustomTimings
   ) {
     var self = this;
     var _private = {};
@@ -45,7 +45,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * because that api prevents page timings from being sent until the main request is completed
      */
     this.customTimingsEnabled = customTimingsEnabled; 
-    this.trackMeasurementTimings = trackMeasurementTimings;
+    this.automaticPerformanceCustomTimings = automaticPerformanceCustomTimings;
     this.beforeSend =
       beforeSendCb ||
       function(payload) {
@@ -486,7 +486,7 @@ var raygunRumFactory = function(window, $, Raygun) {
           if(!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
           } else if (isCustomTimingMeasurement(resource)) {
-            if(self.trackMeasurementTimings) {
+            if(self.automaticPerformanceCustomTimings) {
               collection.push(getCustomTimingMeasurement(resource));
             }
           } else if (!shouldIgnoreResource(resource)) {
