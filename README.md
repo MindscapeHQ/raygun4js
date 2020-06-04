@@ -582,6 +582,16 @@ This will be transmitted with each message. A count of unique users will appear 
 
 You can now pass in empty strings (or false to `isAnonymous`) to reset the current user for login/logout scenarios.
 
+### Ending a session
+
+To end a user's current session:
+
+```javascript
+rg4js('endSession');
+```
+
+This will end the session for a user and start a new one.
+
 ### Version filtering
 
 You can set a version for your app by calling:
