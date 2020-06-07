@@ -155,8 +155,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     this.endSession = function() {
-      self.sessionId = randomKey(32);
-      saveToStorage(self.sessionId);
+      generateNewSessionId();
 
       sendNewSessionStart();
     };
@@ -234,8 +233,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
       
       if(nullValue || expired) {
-        self.sessionId = randomKey(32);
-        saveToStorage(self.sessionId);
+        generateNewSessionId();
         callback(true);
       } else {
         var id = readStorageElement(storageItem, 'id');   
@@ -262,6 +260,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (expired) {
         sendNewSessionStart();
       }
+    }
+
+    function generateNewSessionId(){
+      self.sessionId = randomKey(32);
+      saveToStorage(self.sessionId);
     }
 
     // ================================================================================

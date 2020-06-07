@@ -590,7 +590,7 @@ To end a user's current session:
 rg4js('endSession');
 ```
 
-This will end the session for a user and start a new one.
+This will end the session for a user and start a new one. The new session will remain attached to the current user.
 
 ### Version filtering
 
