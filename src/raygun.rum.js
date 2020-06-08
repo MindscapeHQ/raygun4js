@@ -155,6 +155,9 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     this.endSession = function() {
+      self.pendingPayloadData = false;
+      sendQueuedPerformancePayloads();
+      
       sendItemImmediately({
         sessionId: self.sessionId,
         requestId: self.requestId,
@@ -162,9 +165,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         type: 'session_end',	
       });
 
-      self.pendingPayloadData = false;
-      sendQueuedPerformancePayloads();
-      
       generateNewSessionId();
 
       sendNewSessionStart();
