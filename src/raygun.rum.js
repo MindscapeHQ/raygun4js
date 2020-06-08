@@ -161,6 +161,9 @@ var raygunRumFactory = function(window, $, Raygun) {
         timestamp: new Date().toISOString(),	
         type: 'session_end',	
       });
+
+      self.pendingPayloadData = false;
+      sendQueuedPerformancePayloads();
       
       generateNewSessionId();
 
