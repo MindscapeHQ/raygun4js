@@ -155,6 +155,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     this.endSession = function() {
+      sendItemImmediately({
+        sessionId: self.sessionId,
+        requestId: self.requestId,
+        timestamp: new Date().toISOString(),	
+        type: 'session_end',	
+      });
+      
       generateNewSessionId();
 
       sendNewSessionStart();
