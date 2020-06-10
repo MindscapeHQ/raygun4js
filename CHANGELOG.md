@@ -1,3 +1,6 @@
+* v2.19.1
+  - Fix accidental removal of node.value
+
 * v2.19.0
   - Add manual end session functionality to public API
 
