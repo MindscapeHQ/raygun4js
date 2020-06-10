@@ -1,3 +1,6 @@
+* v2.19.0
+  - Add manual end session functionality to public API
+
 * v2.18.4
   - Fixes an issue where we record the "navigation" entryTypes as cached child assets
   - Fixes an issue with `setAutoBreadcrumbsXHRIgnoredHosts` not being applied when requests are opened

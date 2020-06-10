@@ -128,6 +128,9 @@
         case 'groupingKey':
           rg.groupingKey(value);
           break;
+        case 'endSession':
+          rg.endSession();
+          break;
 
         // Delayed execution functions
         case 'send':
