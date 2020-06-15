@@ -99,4 +99,25 @@ describe("raygun.utilities", () => {
             });
         }));
     });
+
+    describe('nodeText', () => {
+        it("defaults to a empty string", () => {
+            expect(utils.nodeText({})).toBe('');
+        });
+
+        it("uses innerText if textContent is not defined", () => {
+            const node = jasmine.createSpyObj("node", [], { 
+                'innerText': "Inner text"
+            });
+            expect(utils.nodeText(node)).toBe('Inner text');
+        });
+
+        it("uses textContent first", () => {
+            const node = jasmine.createSpyObj("node", [], { 
+                'textContent': "Text content",
+                'innerText': "Inner text"
+            });
+            expect(utils.nodeText(node)).toBe('Text content');
+        });
+    });
 });
