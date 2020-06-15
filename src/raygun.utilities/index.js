@@ -375,7 +375,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
       var text = node.textContent || node.innerText || '';
 
       if (['submit', 'button'].indexOf(node.type) !== -1) {
-        text = node || text;
+        text = node.value || text;
       }
 
       text = text.replace(/^\s+|\s+$/g, '');
