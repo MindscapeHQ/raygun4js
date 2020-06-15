@@ -46,7 +46,7 @@
     "wdio-chromedriver-service": "^6.0.3"
   },
   "scripts": {
-    "test": "npm run wdio",
+    "test": "npm run jasmine && npm run wdio",
     "jasmine": "jasmine --config=jasmine.json",
     "wdio": "cross-env node_modules/.bin/wdio wdio.conf.js"
   },
