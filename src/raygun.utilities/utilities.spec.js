@@ -119,5 +119,30 @@ describe("raygun.utilities", () => {
             });
             expect(utils.nodeText(node)).toBe('Text content');
         });
+
+        describe("with nodeType set", () => {
+            const nodes = [
+                'button',
+                'submit'
+            ];
+            nodes.forEach(nodeName => describe(`as ${nodeName}`, () => {
+                it('returns node.value when defined', () => {
+                    const node = jasmine.createSpyObj("node", [], { 
+                        'textContent': "Text content",
+                        'type': nodeName,
+                        'value': "Node value"
+                    });
+                    expect(utils.nodeText(node)).toBe("Node value");
+                });
+
+                it('returns normal text when node.value is not defined', () => {
+                    const node = jasmine.createSpyObj("node", [], { 
+                        'textContent': "Text content",
+                        'type': nodeName,
+                    });
+                    expect(utils.nodeText(node)).toBe("Text content");
+                });
+            }));
+        });
     });
 });
