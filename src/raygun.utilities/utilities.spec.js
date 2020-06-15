@@ -145,4 +145,33 @@ describe("raygun.utilities", () => {
             }));
         });
     });
+
+    describe('nodeSelector', () => {
+        const nodeTypes = [
+            [{
+                tagName: 'button',
+            }, 'button'],
+            [{
+                tagName: 'button',
+                id: 'submit',
+            }, 'button#submit'],
+            [{
+                tagName: 'button',
+                id: 'submit',
+                className: 'className'
+            }, 'button#submit.className'],
+            [{
+                tagName: 'button',
+                id: 'submit',
+                className: 'classNameOne classNameTwo'
+            }, 'button#submit.classNameOne.classNameTwo']
+        ];
+        
+        nodeTypes.forEach((test, index) => describe(`with node#${index}`, () => {
+            it(`returns ${test[1]}`, () => {
+                const node = jasmine.createSpyObj("node", [], test[0]);
+                expect(utils.nodeSelector(node)).toBe(test[1]);
+            });
+        }));
+    });
 });
