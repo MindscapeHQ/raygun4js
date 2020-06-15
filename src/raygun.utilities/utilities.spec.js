@@ -77,4 +77,26 @@ describe("raygun.utilities", () => {
             });
         });
     });
+
+    describe('storage utilities', () => {
+        const storageMethods = [
+            ['localStorage', utils.localStorageAvailable],
+            ['sessionStorage', utils.sessionStorageAvailable]
+        ];
+
+        storageMethods.forEach((method) => describe(`${method[0]}Available`, () => {
+            describe('with storage being defined', () => {
+                it("returns true", () => {
+                    spyOnProperty(global.window, method[0]).and.returnValue(true);
+                    expect(method[1]()).toBe(true);
+                });
+            });
+            describe('with storage undefined', () => {
+                it('returns false', () => {
+                    spyOnProperty(global.window, method[0]).and.returnValue(null);
+                    expect(method[1]()).toBe(false);
+                });
+            });
+        }));
+    });
 });
