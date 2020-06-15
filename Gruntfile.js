@@ -63,7 +63,7 @@ module.exports = function(grunt) {
       src: {
         options: {
           jshintrc: 'src/.jshintrc',
-          ignores: ['src/snippet/**/*.js', 'src/umd.*']
+          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*']
         },
         src: ['src/**/*.js']
       }
