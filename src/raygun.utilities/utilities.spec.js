@@ -1,6 +1,6 @@
 require('./index');
 
-let raygun = {
+var raygun = {
     Options: Object.defineProperties({}, {
         _raygunApiKey: {
             get: () => '',
@@ -10,28 +10,28 @@ let raygun = {
     }),
     Utilities: null,
 };
-const utils = window.raygunUtilityFactory(window, raygun);
+var utils = window.raygunUtilityFactory(window, raygun);
 
 raygun.Utilities = utils;
 
-describe("raygun.utilities", () => {
-    describe("uuid", () => {
-        it("generates 36 characters", () => {
+describe("raygun.utilities", function() {
+    describe("uuid", function() {
+        it("generates 36 characters", function() {
             expect(utils.getUuid().length).toBe(36);
         });
     });
 
-    describe("isApiKeyConfigured", () => {
-        describe("with the _raygunApiKey set", () => {
-            it('returns true', () => {
+    describe("isApiKeyConfigured", function() {
+        describe("with the _raygunApiKey set", function() {
+            it('returns true', function() {
                 spyOnProperty(raygun.Options, "_raygunApiKey").and.returnValue("API-KEY");
 
                 expect(utils.isApiKeyConfigured()).toBe(true);
             });
         });
 
-        describe("without the _raygunApiKey set", () => {
-            it('returns false', () => {
+        describe("without the _raygunApiKey set", function() {
+            it('returns false', function() {
                 spyOnProperty(raygun.Options, "_raygunApiKey").and.returnValue('');
 
                 expect(utils.isApiKeyConfigured()).toBe(false);
@@ -39,60 +39,60 @@ describe("raygun.utilities", () => {
         });
     });
 
-    describe('isReactNative', () => {
+    describe('isReactNative', function() {
         function setGlobalNativeChecks(document, dev) {
-            const devBefore = global.__DEV__;
-            const documentBefore = global.document;
+            var devBefore = global.__DEV__;
+            var documentBefore = global.document;
 
             global.__DEV__ = dev;
             global.document = document;
             
-            return () => {
+            return function() {
                 global.__DEV__ = devBefore;
                 global.document = documentBefore;
             };
         }
 
-        describe('with no document and __DEV__ set', () => {
-            it('returns true', () => {
-                const reset = setGlobalNativeChecks(undefined, true);
+        describe('with no document and __DEV__ set', function() {
+            it('returns true', function() {
+                var reset = setGlobalNativeChecks(undefined, true);
                 expect(utils.isReactNative()).toBe(true);
                 reset();
             });
         });
         
-        describe('with the document defined', () => {
-            it('returns false', () => {
-                const reset = setGlobalNativeChecks(true, true);
+        describe('with the document defined', function() {
+            it('returns false', function() {
+                var reset = setGlobalNativeChecks(true, true);
                 expect(utils.isReactNative()).toBe(false);
                 reset();
             });
         });
         
-        describe('with __DEV__ being undefined', () => {
-            it('returns false', () => {
-                const reset = setGlobalNativeChecks(true, undefined);
+        describe('with __DEV__ being undefined', function() {
+            it('returns false', function() {
+                var reset = setGlobalNativeChecks(true, undefined);
                 expect(utils.isReactNative()).toBe(false);
                 reset();
             });
         });
     });
 
-    describe('storage utilities', () => {
-        const storageMethods = [
+    describe('storage utilities', function() {
+        var storageMethods = [
             ['localStorage', utils.localStorageAvailable],
             ['sessionStorage', utils.sessionStorageAvailable]
         ];
 
-        storageMethods.forEach((method) => describe(`${method[0]}Available`, () => {
-            describe('with storage being defined', () => {
-                it("returns true", () => {
+        storageMethods.forEach((method) => describe(`${method[0]}Available`, function() {
+            describe('with storage being defined', function() {
+                it("returns true", function() {
                     spyOnProperty(global.window, method[0]).and.returnValue(true);
                     expect(method[1]()).toBe(true);
                 });
             });
-            describe('with storage undefined', () => {
-                it('returns false', () => {
+            describe('with storage undefined', function() {
+                it('returns false', function() {
                     spyOnProperty(global.window, method[0]).and.returnValue(null);
                     expect(method[1]()).toBe(false);
                 });
@@ -100,32 +100,32 @@ describe("raygun.utilities", () => {
         }));
     });
 
-    describe('nodeText', () => {
-        it("defaults to a empty string", () => {
+    describe('nodeText', function() {
+        it("defaults to a empty string", function() {
             expect(utils.nodeText({})).toBe('');
         });
 
-        it("uses innerText if textContent is not defined", () => {
-            const node = jasmine.createSpyObj("node", [], { 
+        it("uses innerText if textContent is not defined", function() {
+            var node = jasmine.createSpyObj("node", [], { 
                 'innerText': "Inner text"
             });
             expect(utils.nodeText(node)).toBe('Inner text');
         });
 
-        it("uses textContent first", () => {
-            const node = jasmine.createSpyObj("node", [], { 
+        it("uses textContent first", function() {
+            var node = jasmine.createSpyObj("node", [], { 
                 'textContent': "Text content",
                 'innerText': "Inner text"
             });
             expect(utils.nodeText(node)).toBe('Text content');
         });
 
-        describe("with nodeType set", () => {
-            const nodes = [
+        describe("with nodeType set", function() {
+            var nodes = [
                 'button',
                 'submit'
             ];
-            nodes.forEach(nodeName => describe(`as ${nodeName}`, () => {
+            nodes.forEach(nodeName => describe(`as ${nodeName}`, function() {
                 it('returns node.value when defined', () => {
                     const node = jasmine.createSpyObj("node", [], { 
                         'textContent': "Text content",
@@ -135,7 +135,7 @@ describe("raygun.utilities", () => {
                     expect(utils.nodeText(node)).toBe("Node value");
                 });
 
-                it('returns normal text when node.value is not defined', () => {
+                it('returns normal text when node.value is not defined', function() {
                     const node = jasmine.createSpyObj("node", [], { 
                         'textContent': "Text content",
                         'type': nodeName,
@@ -146,8 +146,8 @@ describe("raygun.utilities", () => {
         });
     });
 
-    describe('nodeSelector', () => {
-        const nodeTypes = [
+    describe('nodeSelector', function() {
+        var nodeTypes = [
             [{
                 tagName: 'button',
             }, 'button'],
@@ -167,8 +167,8 @@ describe("raygun.utilities", () => {
             }, 'button#submit.classNameOne.classNameTwo']
         ];
         
-        nodeTypes.forEach((test, index) => describe(`with node#${index}`, () => {
-            it(`returns ${test[1]}`, () => {
+        nodeTypes.forEach((test, index) => describe(`with node#${index}`, function() {
+            it(`returns ${test[1]}`, function() {
                 const node = jasmine.createSpyObj("node", [], test[0]);
                 expect(utils.nodeSelector(node)).toBe(test[1]);
             });
