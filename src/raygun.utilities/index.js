@@ -79,7 +79,7 @@ window.raygunUtilityFactory = function(window, Raygun) {
         return true;
       }
       Raygun.Utilities.log(
-        'Raygun API key has not been configured, make sure you call Raygun.init(yourApiKey)'
+        'Raygun API key has not been configured.'
       );
       return false;
     },
