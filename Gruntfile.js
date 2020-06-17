@@ -22,9 +22,9 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.utilities.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js'],
-          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js', 'src/umd.outro.js']
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js'],
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js'],
+          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum.js', 'src/raygun.loader.js', 'src/umd.outro.js']
         }
       }
     },
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
       src: {
         options: {
           jshintrc: 'src/.jshintrc',
-          ignores: ['src/snippet/**/*.js', 'src/umd.*']
+          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*']
         },
         src: ['src/**/*.js']
       }

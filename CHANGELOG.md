@@ -1,6 +1,12 @@
-* v2.19.0
+* v2.20.0
   - Adds new custom timings support which enables Custom Timings to work with SPA's and regardless of page loads
   - Adds an option `automaticPerformanceCustomTimings` to for tracking performance.measure calls as custom timings 
+
+* v2.19.1
+  - Fix accidental removal of node.value
+
+* v2.19.0
+  - Add manual end session functionality to public API
 
 * v2.18.4
   - Fixes an issue where we record the "navigation" entryTypes as cached child assets

@@ -162,12 +162,19 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     this.endSession = function() {
+      self.pendingPayloadData = false;
+      sendQueuedPerformancePayloads();
+      
       sendItemImmediately({
         sessionId: self.sessionId,
         requestId: self.requestId,
-        timestamp: new Date().toISOString(),
-        type: 'session_end',
+        timestamp: new Date().toISOString(),	
+        type: 'session_end',	
       });
+
+      generateNewSessionId();
+
+      sendNewSessionStart();
     };
 
     this.sendCustomTimings = function(customTimings) {
@@ -253,8 +260,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
       
       if(nullValue || expired) {
-        self.sessionId = randomKey(32);
-        saveToStorage(self.sessionId);
+        generateNewSessionId();
         callback(true);
       } else {
         var id = readStorageElement(storageItem, 'id');   
@@ -281,6 +287,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       if (expired) {
         sendNewSessionStart();
       }
+    }
+
+    function generateNewSessionId(){
+      self.sessionId = randomKey(32);
+      saveToStorage(self.sessionId);
     }
 
     // ================================================================================
