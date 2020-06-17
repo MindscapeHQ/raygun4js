@@ -45,12 +45,47 @@ describe("raygun.rum", () => {
             expect(privateMethods.isCustomTimingMeasurement(undefined)).toBe(false);
         });
     });
-
-    describe("getCustomTimingMeasurement", () => {
-
-    });
     
     describe("createCustomTimingMeasurement", () => {
+        it('returns a custom timing entry', () => {
+            expect(privateMethods.createCustomTimingMeasurement("test", 100, 200)).toEqual({
+                url: 'test',
+                timing: {
+                    t: 't',
+                    du: '100.00',
+                    a: '200.00'
+                }
+            });
+        });
+        
+        describe('with floating point numbers passed', () => {
+            it('returns a custom timing entry with entries rounded to 2 decimal places', () => {
+                expect(privateMethods.createCustomTimingMeasurement("test", 100.123, 200.123)).toEqual({
+                    url: 'test',
+                    timing: {
+                        t: 't',
+                        du: '100.12',
+                        a: '200.12'
+                    }
+                });
+            });
+        });
+
+        describe('when no offset passed', () => {
+            it('offset is 0', () => {
+                expect(privateMethods.createCustomTimingMeasurement("test", 100)).toEqual({
+                    url: 'test',
+                    timing: {
+                        t: 't',
+                        du: '100.00',
+                        a: '0.00'
+                    }
+                });
+            });
+        });
+    });
+
+    describe("getCustomTimingMeasurement", () => {
 
     });
 });
