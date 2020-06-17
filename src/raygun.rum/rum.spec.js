@@ -29,7 +29,21 @@ describe("raygun.rum", () => {
     });
 
     describe("isCustomTimingMeasurement", () => {
-        
+        it("returns true when entryType is 'measure'", () => {
+            const resource = {
+                entryType: 'measure'
+            };
+            expect(privateMethods.isCustomTimingMeasurement(resource)).toBe(true);
+        });
+        it("returns false when entryType is not 'measure'", () => {
+            const resource = {
+                entryType: 'mark'
+            };
+            expect(privateMethods.isCustomTimingMeasurement(resource)).toBe(false);
+        });
+        it("returns false when undefined is passed", () => {
+            expect(privateMethods.isCustomTimingMeasurement(undefined)).toBe(false);
+        });
     });
 
     describe("getCustomTimingMeasurement", () => {

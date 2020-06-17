@@ -901,7 +901,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * Returns true if the resources entry type is set to "measure"
      */
     function isCustomTimingMeasurement(resource) {
-      return resource && resource.entryType === "measure";
+      return !!(resource && resource.entryType === "measure");
     }    
     this._privateMethods["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
 
