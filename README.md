@@ -217,7 +217,7 @@ rg4js('options', {
   captureUnhandledRejections: true,
   setCookieAsSecure: false,
   captureMissingRequests: false,
-  trackMeasurementTimings: false
+  automaticPerformanceCustomTimings: false
 });
 ```
 
