@@ -83,6 +83,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       CustomTiming: 't'
     };
 
+    this.Utilities = {};
+
     // ================================================================================
     // =                                                                              =
     // =                                 Public Api                                   =
@@ -206,7 +208,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         newTimings.push(createCustomTimingMeasurement(name, duration, offset));
         addPerformanceTimingsToQueue(newTimings, false);
       } else {
-        log('Raygun4JS: Custom timing "' + name + '" duration is value is not a number');
+        log('Raygun4JS: Custom timing "' + name + '" duration value is not a number');
       }
     };
 
@@ -899,8 +901,9 @@ var raygunRumFactory = function(window, $, Raygun) {
      * Returns true if the resources entry type is set to "measure"
      */
     function isCustomTimingMeasurement(resource) {
-      return resource && resource.entryType === "measure";
+      return !!(resource && resource.entryType === "measure");
     }    
+    this.Utilities["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
 
     /**
      * Creates a custom timing measurement from a ResourceMeasure value passed.
@@ -909,10 +912,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     function getCustomTimingMeasurement(resource) {
       return createCustomTimingMeasurement(resource.name, resource.duration, resource.startTime);
     }
+    this.Utilities["getCustomTimingMeasurement"] = getCustomTimingMeasurement;
 
     /**
      * Creates a custom timing measurement for a name and duration passed.
-     * This can be used to create custom timings seperate to the window.performance API
+     * This can be used to create custom timings separate to the window.performance API
      */
     function createCustomTimingMeasurement(name, duration, offset) {
       return {
@@ -924,6 +928,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       };
     }
+    this.Utilities["createCustomTimingMeasurement"] = createCustomTimingMeasurement;
 
     /**
      * Add to the requestMap. This marks the request as being in "flight" 
