@@ -59,7 +59,7 @@ describe("raygun.rum", () => {
         });
         
         describe('with floating point numbers passed', () => {
-            it('returns a custom timing entry with entries rounded to 2 decimal places', () => {
+            it('all numbers are fixed to 2 decimal places', () => {
                 expect(privateMethods.createCustomTimingMeasurement("test", 100.123, 200.123)).toEqual({
                     url: 'test',
                     timing: {
@@ -72,7 +72,7 @@ describe("raygun.rum", () => {
         });
 
         describe('when no offset passed', () => {
-            it('offset is 0', () => {
+            it('returns a object with the offset equal to 0.00', () => {
                 expect(privateMethods.createCustomTimingMeasurement("test", 100)).toEqual({
                     url: 'test',
                     timing: {
@@ -86,6 +86,21 @@ describe("raygun.rum", () => {
     });
 
     describe("getCustomTimingMeasurement", () => {
-
+        it('returns a custom timing entry', () => {
+            const resource = {
+                name: 'test-resource',
+                startTime: 1000,
+                duration: 2000,
+            };
+            
+            expect(privateMethods.getCustomTimingMeasurement(resource)).toEqual({
+                url: 'test-resource',
+                timing: {
+                    t: 't',
+                    du: '2000.00',
+                    a: '1000.00'
+                }
+            });
+        });
     });
 });
