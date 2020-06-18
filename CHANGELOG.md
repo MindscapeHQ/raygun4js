@@ -1,3 +1,7 @@
+* v2.20.0
+  - Adds new custom timings support which enables Custom Timings to work with SPA's and regardless of page loads
+  - Adds an option `automaticPerformanceCustomTimings` for tracking performance.measure calls as custom timings 
+
 * v2.19.1
   - Fix accidental removal of node.value
 

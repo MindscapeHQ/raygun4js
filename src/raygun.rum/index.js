@@ -26,7 +26,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     customTimingsEnabled,
     beforeSendCb,
     setCookieAsSecure,
-    captureMissingRequests
+    captureMissingRequests,
+    automaticPerformanceCustomTimings
   ) {
     var self = this;
     var _private = {};
@@ -39,7 +40,12 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.excludedUserAgents = excludedUserAgents;
     this.maxVirtualPageDuration = maxVirtualPageDuration || 1800000; // 30 minutes
     this.ignoreUrlCasing = ignoreUrlCasing;
-    this.customTimingsEnabled = customTimingsEnabled;
+    /**
+     * Note: the `customTimingsEnabled` flag is for tracking legacy custom timings
+     * because that api prevents page timings from being sent until the main request is completed
+     */
+    this.customTimingsEnabled = customTimingsEnabled; 
+    this.automaticPerformanceCustomTimings = automaticPerformanceCustomTimings;
     this.beforeSend =
       beforeSendCb ||
       function(payload) {
@@ -74,7 +80,10 @@ var raygunRumFactory = function(window, $, Raygun) {
       XHR: 'x',
       CachedChildAsset: 'e',
       ChildAsset: 'c',
+      CustomTiming: 't'
     };
+
+    this.Utilities = {};
 
     // ================================================================================
     // =                                                                              =
@@ -190,6 +199,16 @@ var raygunRumFactory = function(window, $, Raygun) {
           self.queuedPerformanceTimings[0].customTiming = customTimings;
           sendQueuedPerformancePayloads();
         }
+      }
+    };
+
+    this.trackCustomTiming = function(name, duration, offset) {
+      if(typeof duration === "number") {
+        var newTimings = [];
+        newTimings.push(createCustomTimingMeasurement(name, duration, offset));
+        addPerformanceTimingsToQueue(newTimings, false);
+      } else {
+        log('Raygun4JS: Custom timing "' + name + '" duration value is not a number');
       }
     };
 
@@ -476,11 +495,16 @@ var raygunRumFactory = function(window, $, Raygun) {
         var i;
 
         for (i = self.offset; i < resources.length; i++) {
-          if(!forceSend && waitingForResourceToFinishLoading(resources[i])) {
+          var resource = resources[i];
+          if(!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
-          } else if (!shouldIgnoreResource(resources[i])) {
-            collection.push(getSecondaryTimingData(resources[i], offset));
-          }
+          } else if (isCustomTimingMeasurement(resource)) {
+            if(self.automaticPerformanceCustomTimings) {
+              collection.push(getCustomTimingMeasurement(resource));
+            }
+          } else if (!shouldIgnoreResource(resource)) {
+            collection.push(getSecondaryTimingData(resource, offset));
+          } 
         }
 
         self.offset = i;
@@ -874,6 +898,39 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     /**
+     * Returns true if the resources entry type is set to "measure"
+     */
+    function isCustomTimingMeasurement(resource) {
+      return !!(resource && resource.entryType === "measure");
+    }    
+    this.Utilities["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
+
+    /**
+     * Creates a custom timing measurement from a ResourceMeasure value passed.
+     * The ResourceMeasure object passed in should be retrieved from the window.performance API
+     */
+    function getCustomTimingMeasurement(resource) {
+      return createCustomTimingMeasurement(resource.name, resource.duration, resource.startTime);
+    }
+    this.Utilities["getCustomTimingMeasurement"] = getCustomTimingMeasurement;
+
+    /**
+     * Creates a custom timing measurement for a name and duration passed.
+     * This can be used to create custom timings separate to the window.performance API
+     */
+    function createCustomTimingMeasurement(name, duration, offset) {
+      return {
+        url: name,
+        timing: {
+          t: Timings.CustomTiming,
+          du: duration.toFixed(2),
+          a: (offset || 0).toFixed(2)
+        }
+      };
+    }
+    this.Utilities["createCustomTimingMeasurement"] = createCustomTimingMeasurement;
+
+    /**
      * Add to the requestMap. This marks the request as being in "flight" 
      * and stops collecting metrics until this request has completed. 
      */
@@ -930,7 +987,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
 
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation";
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation" || resource.entryType === "mark";
     }
 
     function shouldIgnoreResourceByName(name) {

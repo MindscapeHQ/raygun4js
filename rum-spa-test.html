@@ -51,8 +51,22 @@
       rg4js('apiKey', 'PXE9AMDjAQdsXkIJbu0xA');
       rg4js('enableCrashReporting', true);
       rg4js('enablePulse', true);
+      rg4js('options', {
+        automaticPerformanceCustomTimings: true
+      });
+
+      rg4js('trackEvent', {
+        type: 'customTiming',
+        name: 'customTiming',
+        duration: 1200,
+      });
+
+      window.performance.mark('pageNavigation');
 
       setTimeout(() => {
+        window.performance.measure('testPageNavigation', 'pageNavigation');
+
+
         rg4js('trackEvent', {
           type: 'pageView',
           path: '/menu'

@@ -196,7 +196,9 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all non-2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default due these timings being as accurate as the performance API. 
 
-An example:
+`automaticPerformanceCustomTimings` - When enabled Raygun4JS will track each `window.performance.measure` call as a custom timing entry. This enables developers to use a more native API for tracking performance timings. More information about `performance.measure` can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure).
+
+An example raygun4js configuration:
 
 ```javascript
 rg4js('options', {
@@ -214,7 +216,8 @@ rg4js('options', {
   pulseIgnoreUrlCasing: false,
   captureUnhandledRejections: true,
   setCookieAsSecure: false,
-  captureMissingRequests: false
+  captureMissingRequests: false,
+  automaticPerformanceCustomTimings: false
 });
 ```
 
@@ -259,7 +262,43 @@ $scope.$on('$routeChangeSuccess', function () {
 
 #### Tracking custom timings
 
-You can override the time when Raygun4JS considers your page to be loaded at, as well as send up to 10 custom timings of your choosing, with the Custom Timings capability. For documentation on this, see https://raygun.com/docs/pulse/customtimings.
+Custom timings allow you to track custom performance measurements across your website and application. For example, you can track the time it takes for a video to play after the user clicks a button or the time for a component to mount. 
+
+```javascript
+  rg4js('trackEvent', {
+      type: 'customTiming',
+      name: 'firstInput',
+      duration: 1200,
+  });
+```
+You can read more about custom timings on its [documentation page here](https://raygun.com/documentation/product-guides/real-user-monitoring/for-web/custom-timings/).
+
+#### Legacy custom timings API
+
+_Note: This API has since been deprecated and will be removed in a future version of the provider. We recommend developers upgrade to using the latest version which is both easier to setup and works for single page applications._
+
+```js
+rg4js('options', {
+  pulseCustomLoadTimeEnabled: true
+  // Plus any other configuration options
+});
+
+rg4js('trackEvent', {
+  type: 'customTimings',
+  timings: {
+    custom1: 10,
+    custom2: 20,
+    custom3: 30,
+    custom4: 40,
+    custom5: 50,
+    custom6: 60,
+    custom7: 70,
+    custom8: 80,
+    custom9: 90,
+    custom10: 10,
+  }
+});
+```
 
 ### Breadcrumbs API
 

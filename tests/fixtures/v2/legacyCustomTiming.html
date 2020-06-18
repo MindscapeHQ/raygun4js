@@ -16,12 +16,17 @@
       rg4js('apiKey', 'abcdef==');
       rg4js('enableCrashReporting', false);
       rg4js('enablePulse', true);
+      rg4js('options', {
+        pulseCustomLoadTimeEnabled: true
+      });
 
       setTimeout(function() {
         rg4js('trackEvent', {
-          type: 'customTiming',
-          name: 'timingName',
-          duration: 100,
+          type: 'customTimings',
+          timings: {
+            custom1: 100,
+            custom2: 50
+          }
         });
       }, 250);
     </script>
