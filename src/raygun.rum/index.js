@@ -83,7 +83,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       CustomTiming: 't'
     };
 
-    this._privateMethods = {};
+    this.Utilities = {};
 
     // ================================================================================
     // =                                                                              =
@@ -903,7 +903,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     function isCustomTimingMeasurement(resource) {
       return !!(resource && resource.entryType === "measure");
     }    
-    this._privateMethods["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
+    this.Utilities["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
 
     /**
      * Creates a custom timing measurement from a ResourceMeasure value passed.
@@ -912,7 +912,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     function getCustomTimingMeasurement(resource) {
       return createCustomTimingMeasurement(resource.name, resource.duration, resource.startTime);
     }
-    this._privateMethods["getCustomTimingMeasurement"] = getCustomTimingMeasurement;
+    this.Utilities["getCustomTimingMeasurement"] = getCustomTimingMeasurement;
 
     /**
      * Creates a custom timing measurement for a name and duration passed.
@@ -928,7 +928,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       };
     }
-    this._privateMethods["createCustomTimingMeasurement"] = createCustomTimingMeasurement;
+    this.Utilities["createCustomTimingMeasurement"] = createCustomTimingMeasurement;
 
     /**
      * Add to the requestMap. This marks the request as being in "flight" 

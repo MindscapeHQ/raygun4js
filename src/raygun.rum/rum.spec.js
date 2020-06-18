@@ -4,7 +4,7 @@ require('./index');
 
 describe("raygun.rum", () => {
     let RUM; 
-    let privateMethods;
+    let utils;
 
     beforeEach(() => {
         RUM = new Raygun.RealUserMonitoring(
@@ -25,7 +25,7 @@ describe("raygun.rum", () => {
             false, //captureMissingRequests,
             false // automaticPerformanceCustomTimings
         );
-        privateMethods = RUM._privateMethods;
+        utils = RUM.Utilities;
     });
 
     describe("isCustomTimingMeasurement", () => {
@@ -33,22 +33,22 @@ describe("raygun.rum", () => {
             const resource = {
                 entryType: 'measure'
             };
-            expect(privateMethods.isCustomTimingMeasurement(resource)).toBe(true);
+            expect(utils.isCustomTimingMeasurement(resource)).toBe(true);
         });
         it("returns false when entryType is not 'measure'", () => {
             const resource = {
                 entryType: 'mark'
             };
-            expect(privateMethods.isCustomTimingMeasurement(resource)).toBe(false);
+            expect(utils.isCustomTimingMeasurement(resource)).toBe(false);
         });
         it("returns false when undefined is passed", () => {
-            expect(privateMethods.isCustomTimingMeasurement(undefined)).toBe(false);
+            expect(utils.isCustomTimingMeasurement(undefined)).toBe(false);
         });
     });
     
     describe("createCustomTimingMeasurement", () => {
         it('returns a custom timing entry', () => {
-            expect(privateMethods.createCustomTimingMeasurement("test", 100, 200)).toEqual({
+            expect(utils.createCustomTimingMeasurement("test", 100, 200)).toEqual({
                 url: 'test',
                 timing: {
                     t: 't',
@@ -60,7 +60,7 @@ describe("raygun.rum", () => {
         
         describe('with floating point numbers passed', () => {
             it('all numbers are fixed to 2 decimal places', () => {
-                expect(privateMethods.createCustomTimingMeasurement("test", 100.123, 200.123)).toEqual({
+                expect(utils.createCustomTimingMeasurement("test", 100.123, 200.123)).toEqual({
                     url: 'test',
                     timing: {
                         t: 't',
@@ -73,7 +73,7 @@ describe("raygun.rum", () => {
 
         describe('when no offset passed', () => {
             it('returns a object with the offset equal to 0.00', () => {
-                expect(privateMethods.createCustomTimingMeasurement("test", 100)).toEqual({
+                expect(utils.createCustomTimingMeasurement("test", 100)).toEqual({
                     url: 'test',
                     timing: {
                         t: 't',
@@ -92,8 +92,8 @@ describe("raygun.rum", () => {
                 startTime: 1000,
                 duration: 2000,
             };
-            
-            expect(privateMethods.getCustomTimingMeasurement(resource)).toEqual({
+
+            expect(utils.getCustomTimingMeasurement(resource)).toEqual({
                 url: 'test-resource',
                 timing: {
                     t: 't',
