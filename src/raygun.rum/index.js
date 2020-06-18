@@ -208,7 +208,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         newTimings.push(createCustomTimingMeasurement(name, duration, offset));
         addPerformanceTimingsToQueue(newTimings, false);
       } else {
-        log('Raygun4JS: Custom timing "' + name + '" duration is value is not a number');
+        log('Raygun4JS: Custom timing "' + name + '" duration value is not a number');
       }
     };
 
@@ -916,7 +916,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     /**
      * Creates a custom timing measurement for a name and duration passed.
-     * This can be used to create custom timings seperate to the window.performance API
+     * This can be used to create custom timings separate to the window.performance API
      */
     function createCustomTimingMeasurement(name, duration, offset) {
       return {
