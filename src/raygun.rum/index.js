@@ -65,7 +65,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
-    this.pageIsUnloading = false;
+    this.sendUsingNavigatorBeacon = false;
+    
+    /**
+     * `stopCollectingMetrics` is a flag to stop collecting/sending metrics from this point onwards. 
+     * This is used to prevent resources triggered from the 'pageshow' event from being tracked
+     */
+    this.stopCollectingMetrics = false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
@@ -101,7 +107,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }.bind(_private);
 
       var unloadHandler = function() {
-        self.pageIsUnloading = true;
+        self.sendUsingNavigatorBeacon = true;
         sendChildAssets(true);
         sendQueuedItems();
       }.bind(_private);
@@ -112,10 +118,18 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       }.bind(_private);
 
+      var pageHideHandler = function() {
+        self.sendUsingNavigatorBeacon = true;
+        sendChildAssets(true);
+        sendQueuedItems();
+        self.stopCollectingMetrics = true;
+      }.bind(_private);
+
       if (window.addEventListener) {
         window.addEventListener('click', clickHandler);
         document.addEventListener('visibilitychange', visibilityChangeHandler);
         window.addEventListener('beforeunload', unloadHandler);
+        window.addEventListener('pagehide', pageHideHandler);
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
@@ -444,8 +458,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function addPerformanceTimingsToQueue(performanceData, forceSend) {
-      self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
-      sendQueuedPerformancePayloads(forceSend);
+      if(self.stopCollectingMetrics === false) {
+        /**
+         * Only collect performance timings when the 
+         */
+        self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+        sendQueuedPerformancePayloads(forceSend);
+      }
     }
 
     // ================================================================================
@@ -882,8 +901,11 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var stringifiedPayload = JSON.stringify(payload);
 
-      // When the document is unloading, all inflight XHR requests will be canceled. Try sendBeacon instead.
-      if (self.pageIsUnloading && navigator.sendBeacon) {
+      /** 
+       * Use the navigator.sendBeacon method instead of a XHR request.
+       * This the document is unloading, all inflight XHR requests will be canceled
+       */ 
+      if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
         navigator.sendBeacon(url, stringifiedPayload);
         return;
       } 
