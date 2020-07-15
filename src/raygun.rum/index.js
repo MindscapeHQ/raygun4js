@@ -899,8 +899,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       var stringifiedPayload = JSON.stringify(payload);
 
       /** 
-       * Use the navigator.sendBeacon method instead of a XHR request.
-       * This the document is unloading, all inflight XHR requests will be canceled
+       * Use the navigator.sendBeacon method instead of a XHR requests when transmitting data
+       * This occurs mostly when the document is about to be discarded or hidden as 
+       * all inflight XHR requests either will be or can be canceled.
        */ 
       if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
         navigator.sendBeacon(url, stringifiedPayload);
