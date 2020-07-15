@@ -459,9 +459,6 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function addPerformanceTimingsToQueue(performanceData, forceSend) {
       if(self.stopCollectingMetrics === false) {
-        /**
-         * Only collect performance timings when the 
-         */
         self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
         sendQueuedPerformancePayloads(forceSend);
       }
