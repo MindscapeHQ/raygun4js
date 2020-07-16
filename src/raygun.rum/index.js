@@ -919,8 +919,10 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function resumeCollectingMetricsFromNow() {
-      self.offset = window.performance.getEntries().length;
-      self.stopCollectingMetrics = false;
+      if(self.stopCollectingMetrics) {
+        self.offset = window.performance.getEntries().length;
+        self.stopCollectingMetrics = false;
+      }
     }
 
     /**
