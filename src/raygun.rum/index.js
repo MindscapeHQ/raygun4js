@@ -165,6 +165,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         this.virtualPage = path;
       }
 
+      resumeCollectingMetricsFromNow();
       processVirtualPageTimingsInQueue();
       sendPerformance(false);
     };
@@ -916,6 +917,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                  Utilities                                   =
     // =                                                                              =
     // ================================================================================
+
+    function resumeCollectingMetricsFromNow() {
+      self.offset = window.performance.getEntries().length;
+      self.stopCollectingMetrics = false;
+    }
 
     /**
      * Returns true if the resources entry type is set to "measure"
