@@ -176,9 +176,9 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `excludedUserAgents` - Prevents errors from being sent from certain user agents by providing an array of strings. This is very helpful to exclude errors reported by certain browsers or test automation with `CasperJS`, `PhantomJS` or any other testing utility that sends a custom user agent. If a part of the client's `navigator.userAgent` matches one of the given strings in the array, then the client will be excluded from error reporting.
 
-`disableErrorTracking` - Prevent uncaught errors from being sent.
+`disableErrorTracking` - Stops all errors from being sent to Raygun. This includes errors automatically picked up by global error handlers as well as errors manually sent.
 
-`disablePulse` - Prevent Pulse real user monitoring events from being sent.
+`disablePulse` - Stops real user monitoring events from being sent.
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
