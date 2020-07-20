@@ -65,7 +65,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.heartBeatIntervalTime = 30000;
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
-    this.pageIsUnloading = false;
+    this.sendUsingNavigatorBeacon = false;
+    
+    /**
+     * `stopCollectingMetrics` is a flag to stop collecting/sending metrics from this point onwards. 
+     * This is used to prevent resources triggered from the 'pageshow' event from being tracked
+     */
+    this.stopCollectingMetrics = false;
 
     this.queuedItems = [];
     this.maxQueueItemsSent = 50;
@@ -101,7 +107,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }.bind(_private);
 
       var unloadHandler = function() {
-        self.pageIsUnloading = true;
+        self.sendUsingNavigatorBeacon = true;
         sendChildAssets(true);
         sendQueuedItems();
       }.bind(_private);
@@ -112,10 +118,18 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
       }.bind(_private);
 
+      var pageHideHandler = function() {
+        self.sendUsingNavigatorBeacon = true;
+        sendChildAssets(true);
+        sendQueuedItems();
+        self.stopCollectingMetrics = true;
+      }.bind(_private);
+
       if (window.addEventListener) {
         window.addEventListener('click', clickHandler);
         document.addEventListener('visibilitychange', visibilityChangeHandler);
         window.addEventListener('beforeunload', unloadHandler);
+        window.addEventListener('pagehide', pageHideHandler);
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
@@ -151,6 +165,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         this.virtualPage = path;
       }
 
+      resumeCollectingMetrics();
       processVirtualPageTimingsInQueue();
       sendPerformance(false);
     };
@@ -444,8 +459,10 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function addPerformanceTimingsToQueue(performanceData, forceSend) {
-      self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
-      sendQueuedPerformancePayloads(forceSend);
+      if(self.stopCollectingMetrics === false) {
+        self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
+        sendQueuedPerformancePayloads(forceSend);
+      }
     }
 
     // ================================================================================
@@ -882,8 +899,12 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var stringifiedPayload = JSON.stringify(payload);
 
-      // When the document is unloading, all inflight XHR requests will be canceled. Try sendBeacon instead.
-      if (self.pageIsUnloading && navigator.sendBeacon) {
+      /** 
+       * Use the navigator.sendBeacon method instead of a XHR requests when transmitting data
+       * This occurs mostly when the document is about to be discarded or hidden as 
+       * all inflight XHR requests either will be or can be canceled.
+       */ 
+      if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
         navigator.sendBeacon(url, stringifiedPayload);
         return;
       } 
@@ -896,6 +917,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                  Utilities                                   =
     // =                                                                              =
     // ================================================================================
+
+    function resumeCollectingMetrics() {
+      if(self.stopCollectingMetrics) {
+        self.offset = window.performance.getEntries().length;
+        self.stopCollectingMetrics = false;
+      }
+    }
 
     /**
      * Returns true if the resources entry type is set to "measure"

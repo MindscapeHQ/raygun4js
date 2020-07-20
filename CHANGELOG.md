@@ -1,3 +1,6 @@
+* v2.20.1
+  - Fixes an issue where some browsers (most notably Mobile Safari) won't send data when the page is being transitioned away from
+
 * v2.20.0
   - Adds new custom timings support which enables Custom Timings to work with SPA's and regardless of page loads
   - Adds an option `automaticPerformanceCustomTimings` for tracking performance.measure calls as custom timings 
