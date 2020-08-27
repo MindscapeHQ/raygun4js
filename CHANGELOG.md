@@ -1,3 +1,6 @@
+* v2.20.2
+  - Fixes an issue with ionic-cordova errors not reporting due to the stack-trace being null. Thanks @nirajrajbhandari for identifying and fixing the problem 
+
 * v2.20.1
   - Fixes an issue where some browsers (most notably Mobile Safari) won't send data when the page is being transitioned away from
 
