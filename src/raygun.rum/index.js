@@ -771,7 +771,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getSecondaryEncodedTimingData(timing, offset) {
       var data = {
-        du: maxFiveMinutes(timing.duration).toFixed(2),
+        du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
         a: offset + timing.fetchStart,
       };
