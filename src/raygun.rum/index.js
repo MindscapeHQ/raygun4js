@@ -919,6 +919,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     function getTimingDuration(timing) {
+      /**
+       * Safari timing entries (predominantly 'fetch' types) can have a 
+       * duration value of 0. 
+       * 
+       * This utility fallsback to using the responseEnd - startTime when 
+       * that is the case.
+       */
       var duration = timing.duration;
 
       if(duration !== 0) {
