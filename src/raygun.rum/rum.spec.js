@@ -103,4 +103,26 @@ describe("raygun.rum", () => {
             });
         });
     });
+
+    describe("getTimingDuration", () => {
+        it('returns the duration when it is not 0', () => {
+            const resource = {
+                name: 'test-resource',
+                startTime: 1000,
+                responseEnd: 2000,
+                duration: 500,
+            };
+            expect(utils.getTimingDuration(resource)).toEqual(500);
+        });
+
+        it('returns startTime - responseEnd when the duration is 0', () => {
+            const resource = {
+                name: 'test-resource',
+                startTime: 1200,
+                responseEnd: 2000,
+                duration: 0,
+            };
+            expect(utils.getTimingDuration(resource)).toEqual(800);
+        });
+    });
 });

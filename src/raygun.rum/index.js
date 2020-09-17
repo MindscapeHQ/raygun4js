@@ -918,6 +918,17 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
+    function getTimingDuration(timing) {
+      var duration = timing.duration;
+
+      if(duration !== 0) {
+        return duration;
+      }
+
+      return timing.responseEnd - timing.startTime;
+    }
+    this.Utilities["getTimingDuration"] = getTimingDuration;
+
     function resumeCollectingMetrics() {
       if(self.stopCollectingMetrics) {
         self.offset = window.performance.getEntries().length;
