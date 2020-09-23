@@ -771,7 +771,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getSecondaryEncodedTimingData(timing, offset) {
       var data = {
-        du: maxFiveMinutes(timing.duration).toFixed(2),
+        du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
         a: offset + timing.fetchStart,
       };
@@ -917,6 +917,24 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                  Utilities                                   =
     // =                                                                              =
     // ================================================================================
+
+    function getTimingDuration(timing) {
+      /**
+       * Safari timing entries (predominantly 'fetch' types) can have a 
+       * duration value of 0. 
+       * 
+       * This utility fallsback to using the responseEnd - startTime when 
+       * that is the case.
+       */
+      var duration = timing.duration;
+
+      if(duration !== 0) {
+        return duration;
+      }
+
+      return timing.responseEnd - timing.startTime;
+    }
+    this.Utilities["getTimingDuration"] = getTimingDuration;
 
     function resumeCollectingMetrics() {
       if(self.stopCollectingMetrics) {
