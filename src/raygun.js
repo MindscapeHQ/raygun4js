@@ -1159,7 +1159,7 @@ var raygunFactory = function(window, $, undefined) {
     value = Raygun.Utilities.readCookie(_userKey);
 
     /**
-     * If there was a cookie and localStorage is avaliable then  
+     * If there was a cookie and localStorage is available then
      * clear the cookie as localStorage will be the storage mechanism going forward
      */  
     if(value !== null && Raygun.Utilities.localStorageAvailable()) {
@@ -1173,7 +1173,6 @@ var raygunFactory = function(window, $, undefined) {
   if (!window.__raygunNoConflict) {
     window.Raygun = Raygun;
   }
-  TraceKit.setRaygun(Raygun);
 
   return Raygun;
 };

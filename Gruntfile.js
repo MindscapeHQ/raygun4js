@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   // Project configuration.
   grunt.initConfig({
@@ -22,9 +22,40 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js', 'src/umd.outro.js']
+          'dist/raygun.js': [
+            'node_modules/tracekit/tracekit.js',
+            'src/raygun.tracekit.jquery.js',
+            'src/polyfills.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js'
+          ],
+          'dist/raygun.vanilla.js': [
+            'node_modules/tracekit/tracekit.js',
+            'src/polyfills.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js'
+          ],
+          'dist/raygun.umd.js': [
+            'src/umd.intro.js',
+            'node_modules/tracekit/tracekit.js',
+            'src/polyfills.js',
+            'src/raygun.tracekit.jquery.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js',
+            'src/umd.outro.js'
+          ]
         }
       }
     },
@@ -40,16 +71,16 @@ module.exports = function(grunt) {
           'dist/raygun.umd.min.js': ['dist/raygun.umd.js']
         }
       },
-      snippet:{
-        options:{
+      snippet: {
+        options: {
           banner: '',
           sourceMap: false,
           maxLineLen: 60
         },
-        files:{
-          'dist/snippet/minified.js':['src/snippet/unminified.js'],
-          'dist/snippet/minified.nohandler.js':['src/snippet/unminified.nohandler.js'],
-          'dist/snippet/minified.fetchhandler.js':['src/snippet/unminified.fetchhandler.js']
+        files: {
+          'dist/snippet/minified.js': ['src/snippet/unminified.js'],
+          'dist/snippet/minified.nohandler.js': ['src/snippet/unminified.nohandler.js'],
+          'dist/snippet/minified.fetchhandler.js': ['src/snippet/unminified.fetchhandler.js']
         }
       }
     },

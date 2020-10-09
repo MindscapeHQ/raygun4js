@@ -53,7 +53,7 @@
 
     options = options || {};
 
-    var keys = ['complete', 'error', 'success'], key;
+    var keys = ['complete', 'error', 'success', 'done', 'fail', 'always'], key;
     while(key = keys.pop()) {
       if ($.isFunction(options[key])) {
         options[key] = TraceKit.wrap(options[key]);

@@ -50,7 +50,9 @@
     "jasmine": "jasmine --config=jasmine.json",
     "wdio": "cross-env node_modules/.bin/wdio wdio.conf.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "tracekit": "^0.4.5"
+  },
   "keywords": [
     "error",
     "tracking",
