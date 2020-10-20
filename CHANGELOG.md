@@ -1,6 +1,3 @@
-* v2.20.4
-  - Fixes a memory leak by periodically clearing `xhrStatusMap`
-
 * v2.20.3
   - Adds a fallback for calculating the duration for timing entries which have a `.duration` value of zero. This fixes a issue where Safari reports `fetch` calls as having a duration of zero.   
 
