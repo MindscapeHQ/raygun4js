@@ -1,7 +1,7 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
 
-fdescribe("Unhandled promise rejection", function() {
+describe("Unhandled promise rejection", function() {
     // Tests
 
     it('sends error on unhandled promise rejection', function() {
