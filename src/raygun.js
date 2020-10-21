@@ -451,8 +451,9 @@ var raygunFactory = function(window, $, undefined) {
       error = event.reason.error;
     }
     if (!error) {
-      error = event;
+      error = 'Unhandled promise rejection';
     }
+
     _publicRaygunFunctions.send(error, null, ['UnhandledPromiseRejection']);
   }
 
