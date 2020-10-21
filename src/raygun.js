@@ -451,7 +451,9 @@ var raygunFactory = function(window, $, undefined) {
       error = event.reason.error;
     }
     if (!error) {
-      error = 'Unhandled promise rejection';
+      error = new Error('Unhandled promise rejection');
+      // Clear the stacktrace, as we don't want the error to appear to come from raygun4js
+      error.stack = null;
     }
 
     _publicRaygunFunctions.send(error, null, ['UnhandledPromiseRejection']);
