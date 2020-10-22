@@ -1,4 +1,4 @@
-* v2.20.4
+* v2.21.0
 - Fixes a memory leak issue by clearing the `xhrStatusMap` array on every heart beat
 - Replace the "Script error" message on an unhandled rejection to be "Unhandled promise rejection" to better distinguish between the two
 
