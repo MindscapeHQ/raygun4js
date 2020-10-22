@@ -43,6 +43,7 @@ describe("Unhandled promise rejection", function() {
                 var errorPayload = requestPayloads[0].Details.Error;
 
                 expect(errorPayload.Message).toEqual('Unhandled promise rejection');
+                expect(errorPayload.StackTrace.length).toEqual(1);
                 expect(errorPayload.StackTrace[0].LineNumber).toBeNull();
                 expect(errorPayload.StackTrace[0].ColumnNumber).toBeNull();
             }
