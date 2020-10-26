@@ -246,6 +246,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.heartBeatInterval = setInterval(function() {
         sendChildAssets();
         sendQueuedItems();
+        
+        this.xhrStatusMap = {};
       }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
     }
 

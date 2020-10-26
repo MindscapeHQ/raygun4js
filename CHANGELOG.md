@@ -1,3 +1,7 @@
+* v2.21.0
+- Fixes a memory leak issue by clearing the `xhrStatusMap` array on every heart beat
+- Replace the "Script error" message on an unhandled rejection to be "Unhandled promise rejection" to better distinguish between the two
+
 * v2.20.3
   - Adds a fallback for calculating the duration for timing entries which have a `.duration` value of zero. This fixes a issue where Safari reports `fetch` calls as having a duration of zero.   
 
