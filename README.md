@@ -10,7 +10,7 @@
 
 **Step 1**
 
-Add this snippet to your markup, before the closing `</head>` tag:
+Add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
 
 ```javascript
 <script type="text/javascript">
@@ -22,7 +22,7 @@ Add this snippet to your markup, before the closing `</head>` tag:
 </script>
 ```
 
-This will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
+The above snippet will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
 **Step 2**
 
