@@ -17,12 +17,7 @@
     "url": "https://github.com/MindscapeHQ/raygun4js.git"
   },
   "bugs": "https://github.com/MindscapeHQ/raygun4js/issues",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/MindscapeHQ/raygun4js/blob/master/LICENSE"
-    }
-  ],
+  "license": "SEE LICENSE IN https://github.com/MindscapeHQ/raygun4js/blob/master/LICENSE",
   "devDependencies": {
     "@wdio/cli": "^6.1.8",
     "@wdio/dot-reporter": "^6.1.5",
