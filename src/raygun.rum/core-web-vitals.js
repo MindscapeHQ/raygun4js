@@ -32,7 +32,7 @@ window.raygunCoreWebVitalFactory = function(window) {
                 du: event.value
             }
         };
-        
+
         queueTimings(webVitalEvent);
     };
 
