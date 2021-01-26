@@ -10,13 +10,14 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunCoreWebVitalFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
   Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
+  Raygun.CoreWebVitals = raygunCoreWebVitalFactory(window);
 
   // Constants
   var ProviderStates = {
@@ -219,6 +220,7 @@ var raygunFactory = function(window, $, undefined) {
       if ($document && $document.ajaxError && !_ignoreAjaxError) {
         $document.ajaxError(processJQueryAjaxError);
       }
+
       return Raygun;
     },
 

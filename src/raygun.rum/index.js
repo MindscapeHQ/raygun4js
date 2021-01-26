@@ -86,7 +86,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       XHR: 'x',
       CachedChildAsset: 'e',
       ChildAsset: 'c',
-      CustomTiming: 't'
+      CustomTiming: 't',
+      // CoreWebVital: 'w' TODO should this be added here, or live with the other core web vital stuff?
     };
 
     this.Utilities = {};
@@ -133,10 +134,12 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
-
+      
       Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
       Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
+
+      Raygun.CoreWebVitals.attach();
     };
 
     this.pageLoaded = function(isNewSession) {
