@@ -41,6 +41,7 @@ var raygunFactory = function(window, $, undefined) {
     _disablePulse = true,
     _wrapAsynchronousCallbacks = false,
     _automaticPerformanceCustomTimings = false,
+    _trackCoreWebVitals = false,
     _customData = {},
     _tags = [],
     _user,
@@ -121,6 +122,7 @@ var raygunFactory = function(window, $, undefined) {
         _setCookieAsSecure = options.setCookieAsSecure || false;
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
+        _trackCoreWebVitals = options.trackCoreWebVitals || false;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -505,7 +507,8 @@ var raygunFactory = function(window, $, undefined) {
           _beforeSendRumCallback,
           _setCookieAsSecure,
           _captureMissingRequests,
-          _automaticPerformanceCustomTimings
+          _automaticPerformanceCustomTimings,
+          _trackCoreWebVitals
         );
         _rum.attach();
       };

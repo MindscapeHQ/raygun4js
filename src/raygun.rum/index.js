@@ -27,7 +27,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     beforeSendCb,
     setCookieAsSecure,
     captureMissingRequests,
-    automaticPerformanceCustomTimings
+    automaticPerformanceCustomTimings,
+    trackCoreWebVitals
   ) {
     var self = this;
     var _private = {};
@@ -46,6 +47,9 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     this.customTimingsEnabled = customTimingsEnabled; 
     this.automaticPerformanceCustomTimings = automaticPerformanceCustomTimings;
+
+    this.trackCoreWebVitals = trackCoreWebVitals;
+
     this.beforeSend =
       beforeSendCb ||
       function(payload) {
@@ -139,7 +143,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
 
-      Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
+      if(this.trackCoreWebVitals) {
+        Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
+      }
     };
 
     this.pageLoaded = function(isNewSession) {
