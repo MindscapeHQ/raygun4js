@@ -139,7 +139,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
 
-      Raygun.CoreWebVitals.attach();
+      Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
     };
 
     this.pageLoaded = function(isNewSession) {
@@ -197,6 +197,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       sendNewSessionStart();
     };
 
+    // Legacy Custom Timings
     this.sendCustomTimings = function(customTimings) {
       if (
         typeof customTimings === 'object' &&

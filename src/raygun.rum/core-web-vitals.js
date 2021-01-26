@@ -14,8 +14,11 @@ var WebVitalTimingType = "w";
 
 window.raygunCoreWebVitalFactory = function(window) {
     var CoreWebVitals = function(){};
+    var queueTimings = null;
 
-    CoreWebVitals.prototype.attach = function() {
+    CoreWebVitals.prototype.attach = function(queueHandler) {
+        queueTimings = queueHandler;
+
         window.webVitals.getLCP(this.handler);
         window.webVitals.getFID(this.handler);
         window.webVitals.getCLS(this.handler);
@@ -23,14 +26,14 @@ window.raygunCoreWebVitalFactory = function(window) {
 
     CoreWebVitals.prototype.handler = function(event) {
         var webVitalEvent = {
-            name: event.name,
+            uri: event.name,
             timing: {
                 t: WebVitalTimingType,
                 du: event.value
             }
         };
-    
-        window.console.log(webVitalEvent);
+        
+        queueTimings(webVitalEvent);
     };
 
     return new CoreWebVitals();
