@@ -26,7 +26,7 @@ window.raygunCoreWebVitalFactory = function(window) {
 
     CoreWebVitals.prototype.handler = function(event) {
         var webVitalEvent = {
-            uri: event.name,
+            url: event.name,
             timing: {
                 t: WebVitalTimingType,
                 du: event.value
