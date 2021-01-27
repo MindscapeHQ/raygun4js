@@ -91,7 +91,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       CachedChildAsset: 'e',
       ChildAsset: 'c',
       CustomTiming: 't',
-      // CoreWebVital: 'w' TODO should this be added here, or live with the other core web vital stuff?
+      CoreWebVital: 'w'
     };
 
     this.Utilities = {};
