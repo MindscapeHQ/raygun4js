@@ -1,3 +1,6 @@
+* v2.21.1
+- Fixes an issue where errors generated on Cordova iOS 6.0+ applications would not contain a stack trace due to the scheme changing from `file` and to `app`
+
 * v2.21.0
 - Fixes a memory leak issue by clearing the `xhrStatusMap` array on every heart beat
 - Replace the "Script error" message on an unhandled rejection to be "Unhandled promise rejection" to better distinguish between the two
