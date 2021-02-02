@@ -103,6 +103,10 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     this.attach = function() {
+      if(this.trackCoreWebVitals) {
+        Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
+      }
+
       getSessionId(function(isNewSession) {
         self.pageLoaded(isNewSession);
       });
@@ -142,10 +146,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
       Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
-
-      if(this.trackCoreWebVitals) {
-        Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
-      }
     };
 
     this.pageLoaded = function(isNewSession) {
