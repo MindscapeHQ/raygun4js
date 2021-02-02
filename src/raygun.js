@@ -477,7 +477,7 @@ var raygunFactory = function(window, $, undefined) {
 
   // The final initializing logic is provided as a callback due to async storage methods for user data in React Native
   // The common case executes it immediately due to that data being provided by the cookie synchronously
-  // The case when Affected User Tracking is enabled calls this function when the code sets the user data
+  // The case when Customers is enabled calls this function when the code sets the user data
   function bootRaygun() {
     if (_providerState === ProviderStates.READY) {
       return;

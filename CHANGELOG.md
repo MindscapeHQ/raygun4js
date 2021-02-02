@@ -430,7 +430,7 @@
   - Fixed the need to call attach() (if only using manual sending)
 
 * v1.3.1
-  - Added user tracking and version tracking functionality
+  - Added user tracking/Customers and version tracking functionality
 
 * v1.3.0
   - Updated to latest TraceKit
