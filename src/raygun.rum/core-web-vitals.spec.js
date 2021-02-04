@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-var cwvfactory = require('./core-web-vitals');
+require('./core-web-vitals');
 
 describe("core-web-vitals", () => {
     let CoreWebVitals = window.raygunCoreWebVitalFactory({ webVitals: null }), queue = [];
@@ -18,5 +18,15 @@ describe("core-web-vitals", () => {
                 }
             });
         });
-    })
+        
+    });
+
+    describe("event reports long metric value", () => {
+        CoreWebVitals.handler({ name: "FID", value: "0.14589" });
+
+        it('value is rounded to 3dp', () => {
+            var res = queue.pop();
+            expect(res.timing.du).toBe("0.146");
+        });
+    });
 });
