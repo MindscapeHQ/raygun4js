@@ -15,7 +15,17 @@ function raygunCoreWebVitalFactory(window) {
     var WebVitalTimingType = "w";
     var queueTimings = null;
 
-    var CoreWebVitals = function() {};
+    var CoreWebVitals = function(){
+        this.cleanWebVitalData = function (event) {
+            var res = event;
+
+            if(res.value && res.value.toFixed) {
+                res.value = res.value.toFixed(3);
+            }
+        
+            return res;
+        };
+    };
 
     CoreWebVitals.prototype.attach = function(queueHandler) {
         queueTimings = queueHandler;
@@ -28,6 +38,10 @@ function raygunCoreWebVitalFactory(window) {
     };
 
     CoreWebVitals.prototype.handler = function(event) {
+        if(event.value && event.value.toFixed) {
+            event.value = event.value.toFixed(3);
+        }
+
         var webVitalEvent = {
             url: event.name,
             timing: {
@@ -35,7 +49,7 @@ function raygunCoreWebVitalFactory(window) {
                 du: event.value
             }
         };
-
+        
         queueTimings(webVitalEvent);
     };
 
