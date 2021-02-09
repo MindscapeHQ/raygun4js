@@ -3,7 +3,7 @@
 require('./core-web-vitals');
 
 describe("core-web-vitals", () => {
-    let CoreWebVitals = window.raygunCoreWebVitalFactory({ webVitals: null }), queue = [];
+    const CoreWebVitals = window.raygunCoreWebVitalFactory({ webVitals: null }), queue = [];
     CoreWebVitals.attach(e => queue.push(e));
 
     describe("handler is called", () => {
