@@ -1,3 +1,6 @@
+* v2.22.0
+- Adds the ability to track Core Web Vitals when the `trackCoreWebVitals` option is enabled. This also ensures that First Input Delay is reported from non-chromium sessions.
+
 * v2.21.1
 - Fixes an issue where errors generated on Cordova iOS 6.0+ applications would not contain a stack trace due to the scheme changing from `file` and to `app`
 
