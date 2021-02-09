@@ -22,9 +22,9 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js', 'src/umd.outro.js']
+          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
+          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
+          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js', 'src/umd.outro.js']
         }
       }
     },
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
       src: {
         options: {
           jshintrc: 'src/.jshintrc',
-          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*']
+          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*', 'src/raygun.rum/vendor/*.js']
         },
         src: ['src/**/*.js']
       }

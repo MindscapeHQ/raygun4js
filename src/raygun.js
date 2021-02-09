@@ -10,13 +10,14 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunCoreWebVitalFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
   Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
+  Raygun.CoreWebVitals = raygunCoreWebVitalFactory(window);
 
   // Constants
   var ProviderStates = {
@@ -40,6 +41,7 @@ var raygunFactory = function(window, $, undefined) {
     _disablePulse = true,
     _wrapAsynchronousCallbacks = false,
     _automaticPerformanceCustomTimings = false,
+    _trackCoreWebVitals = false,
     _customData = {},
     _tags = [],
     _user,
@@ -120,6 +122,7 @@ var raygunFactory = function(window, $, undefined) {
         _setCookieAsSecure = options.setCookieAsSecure || false;
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
+        _trackCoreWebVitals = options.trackCoreWebVitals || false;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -219,6 +222,7 @@ var raygunFactory = function(window, $, undefined) {
       if ($document && $document.ajaxError && !_ignoreAjaxError) {
         $document.ajaxError(processJQueryAjaxError);
       }
+
       return Raygun;
     },
 
@@ -503,7 +507,8 @@ var raygunFactory = function(window, $, undefined) {
           _beforeSendRumCallback,
           _setCookieAsSecure,
           _captureMissingRequests,
-          _automaticPerformanceCustomTimings
+          _automaticPerformanceCustomTimings,
+          _trackCoreWebVitals
         );
         _rum.attach();
       };
