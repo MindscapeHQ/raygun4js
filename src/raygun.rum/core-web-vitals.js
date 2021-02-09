@@ -13,9 +13,9 @@
 
 function raygunCoreWebVitalFactory(window) {
     var WebVitalTimingType = "w";
-
-    var CoreWebVitals = function(){};
     var queueTimings = null;
+
+    var CoreWebVitals = function() {};
 
     CoreWebVitals.prototype.attach = function(queueHandler) {
         queueTimings = queueHandler;
