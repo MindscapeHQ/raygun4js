@@ -198,7 +198,7 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `automaticPerformanceCustomTimings` - When enabled Raygun4JS will track each `window.performance.measure` call as a custom timing entry. This enables developers to use a more native API for tracking performance timings. More information about `performance.measure` can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure).
 
-`trackCoreWebVitals` - When enabled Raygun4JS will automatically track and report Core Web Vitals.
+`trackCoreWebVitals` - When enabled, Raygun4JS will automatically track and report Core Web Vitals. This is enabled by default.
 
 An example raygun4js configuration:
 
