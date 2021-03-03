@@ -41,7 +41,7 @@ var raygunFactory = function(window, $, undefined) {
     _disablePulse = true,
     _wrapAsynchronousCallbacks = false,
     _automaticPerformanceCustomTimings = false,
-    _trackCoreWebVitals = false,
+    _trackCoreWebVitals = true,
     _customData = {},
     _tags = [],
     _user,
@@ -122,7 +122,7 @@ var raygunFactory = function(window, $, undefined) {
         _setCookieAsSecure = options.setCookieAsSecure || false;
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
-        _trackCoreWebVitals = options.trackCoreWebVitals || false;
+        _trackCoreWebVitals = options.trackCoreWebVitals || true;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
