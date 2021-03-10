@@ -46,7 +46,6 @@ function raygunCoreWebVitalFactory(window) {
     };
 
     CoreWebVitals.prototype.handler = function(event) {
-        window.console.log(event);
         if(event.value && event.value.toFixed) {
             event.value = event.value.toFixed(3);
         }
@@ -58,7 +57,7 @@ function raygunCoreWebVitalFactory(window) {
                 du: event.value
             }
         };
-        
+
         queueTimings(webVitalEvent);
     };
 
