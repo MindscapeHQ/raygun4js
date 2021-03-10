@@ -2,7 +2,7 @@
 - Fixes a compatability issue with the `web-vitals` vendor script and RequireJS.
 
 * v2.22.0
-- Adds the ability to track Core Web Vitals when the `trackCoreWebVitals` option is enabled.
+- Adds the ability to track Core Web Vitals when the `trackCoreWebVitals` option is enabled. The option is enabled by default.
 
 * v2.21.1
 - Fixes an issue where errors generated on Cordova iOS 6.0+ applications would not contain a stack trace due to the scheme changing from `file` and to `app`
