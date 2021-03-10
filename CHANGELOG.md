@@ -1,3 +1,6 @@
+* v2.22.1
+- Fixes a compatability issue with the `web-vitals` vendor script and RequireJS.
+
 * v2.22.0
 - Adds the ability to track Core Web Vitals when the `trackCoreWebVitals` option is enabled.
 
