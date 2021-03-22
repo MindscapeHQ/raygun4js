@@ -2,6 +2,7 @@
  * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
  */
 (function () {
+    // This ensures that we do not initilize Core Web Vitals for non-browser environments
     if(typeof document === 'undefined') {
       return;
     }
@@ -292,7 +293,7 @@
         // best we can do until an API is available to support querying past
         // visibilityState.
         {
-          firstHiddenTime = window.webVitals ? window.webVitals.firstHiddenTime : initHiddenTime();
+          firstHiddenTime = !!self.webVitals ? self.webVitals.firstHiddenTime : initHiddenTime();
 
           if (firstHiddenTime === Infinity) {
             trackChanges();
