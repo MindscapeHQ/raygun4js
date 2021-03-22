@@ -1,5 +1,9 @@
 (function () {
 
+    if(typeof document === 'undefined') {
+      return;
+    }
+
     /*
      * Copyright 2020 Google LLC
      *

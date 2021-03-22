@@ -2,6 +2,9 @@
  * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
  */
 (function () {
+    if(typeof document === 'undefined') {
+      return;
+    }
 
     /*
      * Copyright 2020 Google LLC
@@ -289,7 +292,7 @@
         // best we can do until an API is available to support querying past
         // visibilityState.
         {
-          firstHiddenTime = self.webVitals.firstHiddenTime;
+          firstHiddenTime = window.webVitals ? window.webVitals.firstHiddenTime : initHiddenTime();
 
           if (firstHiddenTime === Infinity) {
             trackChanges();
