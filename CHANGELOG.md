@@ -1,3 +1,6 @@
+* v2.22.2
+- Fixes an issue where raygun4js attempts to access the document on non-browser environments. Also ensures that the Core Web Vitals scripts are not initialized for these environments.
+
 * v2.22.1
 - Fixes a compatability issue with the `web-vitals` vendor script and RequireJS.
 
