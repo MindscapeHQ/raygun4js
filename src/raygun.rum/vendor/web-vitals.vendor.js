@@ -550,7 +550,7 @@
         try {
           // Use the NavigationTiming L2 entry if available.
           var navTimings = performance.getEntriesByType('navigation');
-          var navigationEntry;  !!navTimings ? navTimings[0] : getNavigationEntryFromPerformanceTiming();
+          var navigationEntry = !!navTimings ? navTimings[0] : getNavigationEntryFromPerformanceTiming();
           metric.value = metric.delta = navigationEntry.responseStart;
           metric.entries = [navigationEntry];
           onReport(metric);
