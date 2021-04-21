@@ -30,7 +30,7 @@ function raygunCoreWebVitalFactory(window) {
     CoreWebVitals.prototype.attach = function(queueHandler) {
         queueTimings = queueHandler;
 
-        if(window.webVitals) {
+        if(typeof window !== 'undefined' && window.webVitals) {
             if(window.webVitals.getLCP) {
                 window.webVitals.getLCP(this.handler);
             }

@@ -2,6 +2,10 @@
  * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
  */
 (function () {
+    // This ensures that we do not initilize Core Web Vitals for non-browser environments
+    if(typeof document === 'undefined') {
+      return;
+    }
 
     /*
      * Copyright 2020 Google LLC
@@ -289,7 +293,7 @@
         // best we can do until an API is available to support querying past
         // visibilityState.
         {
-          firstHiddenTime = self.webVitals.firstHiddenTime;
+          firstHiddenTime = !!self.webVitals ? self.webVitals.firstHiddenTime : initHiddenTime();
 
           if (firstHiddenTime === Infinity) {
             trackChanges();
@@ -545,7 +549,8 @@
       afterLoad(function () {
         try {
           // Use the NavigationTiming L2 entry if available.
-          var navigationEntry = performance.getEntriesByType('navigation')[0] || getNavigationEntryFromPerformanceTiming();
+          var navTimings = performance.getEntriesByType('navigation');
+          var navigationEntry = !!navTimings ? navTimings[0] : getNavigationEntryFromPerformanceTiming();
           metric.value = metric.delta = navigationEntry.responseStart;
           metric.entries = [navigationEntry];
           onReport(metric);

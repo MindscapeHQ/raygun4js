@@ -1,4 +1,8 @@
 (function () {
+    // This ensures that we do not initilize Core Web Vitals for non-browser environments
+    if(typeof document === 'undefined') {
+      return;
+    }
 
     /*
      * Copyright 2020 Google LLC
