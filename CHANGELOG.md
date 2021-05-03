@@ -1,3 +1,6 @@
+* v2.22.3
+- Fixes an issue where the heartbeat was not clearing the `xhrStatusMap` array due to `this` referring to the window object
+
 * v2.22.2
 - Fixes an issue where raygun4js attempts to access the document on non-browser environments. Also ensures that the Core Web Vitals scripts are not initialized for these environments.
 
