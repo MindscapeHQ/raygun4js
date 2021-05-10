@@ -217,9 +217,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 executeHandlers();
               }
             })
-          );
-
-          promise.catch(
+          ).catch(
             self.wrapWithHandler(function(error) {
               self.executeHandlers(self.errorHandlers, {
                 metadata: {
