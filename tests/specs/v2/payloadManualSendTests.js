@@ -3,7 +3,7 @@
 var _ = require('underscore');
 var common = require('../common');
 
-var _entriesEndpoint = 'https://api.raygun.io/entries';
+var _entriesEndpoint = 'https://api.raygun.com/entries';
 
 describe("Payload functional validation tests for V2 manual send", function() {
 

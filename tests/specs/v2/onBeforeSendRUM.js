@@ -1,7 +1,7 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
 
-var _eventsEndpoint = 'https://api.raygun.io/events';
+var _eventsEndpoint = 'https://api.raygun.com/events';
 
 describe('onBeforeSendRUM callback', function() {
   it('lets you modify the payload before sending', function() {
