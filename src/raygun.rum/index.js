@@ -453,7 +453,7 @@ var raygunRumFactory = function(window, $, Raygun) {
           // Pending virtual page, wait until the virtual page timings have been calculated
           sendTimingData();
           self.queuedPerformanceTimings.splice(0, i);
-          return;
+          continue;
         }
 
         currentPayloadTimingData.push(data);
