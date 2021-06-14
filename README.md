@@ -97,10 +97,14 @@ Download the [production version][min] or the [development version][max]. You ca
 the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a
 [production version][min.vanilla] or [development version][max.vanilla].
 
+The standard bundle includes the [web-vitals](https://github.com/GoogleChrome/web-vitals) base and polyfill scripts for automatically tracking Core Web Vitals metrics. If you prefer to add these yourself, there is a separate bundle that does not include the vendor scripts. This is available as a [production version][min.nowebvitals] or [development version][max.nowebvitals].
+
 [min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
 [max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
 [min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
 [max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
+[min.nowebvitals]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.nowebvitals.min.js
+[max.nowebvitals]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.nowebvitals.js
 
 ## Usage
 
