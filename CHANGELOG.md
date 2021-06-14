@@ -1,3 +1,6 @@
+* v2.22.4
+- Add a new script bundle that doesn't include the web-vitals vendor script
+
 * v2.22.3
 - Fixes an issue where the heartbeat was not clearing the `xhrStatusMap` array due to `this` referring to the window object
 
