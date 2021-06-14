@@ -22,9 +22,61 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/raygun.js': ['tracekit/tracekit.js', 'src/raygun.tracekit.jquery.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.vanilla.js': ['tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js'],
-          'dist/raygun.umd.js': ['src/umd.intro.js', 'tracekit/tracekit.js', 'src/polyfills.js', 'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js', 'src/raygun.tracekit.jquery.js', 'src/raygun.utilities/index.js', 'src/raygun.network-tracking.js', 'src/raygun.breadcrumbs.js', 'src/raygun.rum/core-web-vitals.js', 'src/raygun.js', 'src/raygun.rum/vendor/web-vitals.vendor.js', 'src/raygun.rum/index.js', 'src/raygun.loader.js', 'src/umd.outro.js']
+          'dist/raygun.js': [
+            'tracekit/tracekit.js',
+            'src/raygun.tracekit.jquery.js',
+            'src/polyfills.js',
+            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.rum/core-web-vitals.js',
+            'src/raygun.js',
+            'src/raygun.rum/vendor/web-vitals.vendor.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js'
+          ],
+          'dist/raygun.vanilla.js': [
+            'tracekit/tracekit.js',
+            'src/polyfills.js',
+            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.rum/core-web-vitals.js',
+            'src/raygun.js',
+            'src/raygun.rum/vendor/web-vitals.vendor.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js'
+          ],
+          'dist/raygun.umd.js': [
+            'src/umd.intro.js',
+            'tracekit/tracekit.js',
+            'src/polyfills.js',
+            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
+            'src/raygun.tracekit.jquery.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.rum/core-web-vitals.js',
+            'src/raygun.js',
+            'src/raygun.rum/vendor/web-vitals.vendor.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js',
+            'src/umd.outro.js'
+          ],
+          'dist/raygun.nowebvitals.js': [
+            'tracekit/tracekit.js',
+            'src/raygun.tracekit.jquery.js',
+            'src/polyfills.js',
+            'src/raygun.utilities/index.js',
+            'src/raygun.network-tracking.js',
+            'src/raygun.breadcrumbs.js',
+            'src/raygun.rum/core-web-vitals.js',
+            'src/raygun.js',
+            'src/raygun.rum/index.js',
+            'src/raygun.loader.js'
+          ],
         }
       }
     },
@@ -37,7 +89,8 @@ module.exports = function(grunt) {
         files: {
           'dist/raygun.min.js': ['dist/raygun.js'],
           'dist/raygun.vanilla.min.js': ['dist/raygun.vanilla.js'],
-          'dist/raygun.umd.min.js': ['dist/raygun.umd.js']
+          'dist/raygun.umd.min.js': ['dist/raygun.umd.js'],
+          'dist/raygun.nowebvitals.min.js': ['dist/raygun.nowebvitals.js'],
         }
       },
       snippet:{
