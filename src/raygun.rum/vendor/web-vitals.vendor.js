@@ -1,567 +1,136 @@
 /**
+ * web-vitals v2.1.0
  * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
  */
-(function () {
-    // This ensures that we do not initilize Core Web Vitals for non-browser environments
-    if(typeof document === 'undefined') {
-      return;
+
+!function (e) {
+  "use strict";
+
+  // This ensures that we do not initialize Core Web Vitals for non-browser environments
+  if(typeof document === 'undefined') {
+    return;
+  }
+
+  var t = function (e, t) {
+    return {
+      name: e,
+      value: void 0 === t ? -1 : t,
+      delta: 0,
+      entries: [],
+      id: "v2-".concat(Date.now(), "-").concat(Math.floor(8999999999999 * Math.random()) + 1e12)
     }
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-
-    /**
-     * Performantly generate a unique, 30-char string by combining a version
-     * number, the current timestamp with a 13-digit number integer.
-     * @return {string}
-     */
-    var generateUniqueID = function generateUniqueID() {
-      return "v1-".concat(Date.now(), "-").concat(Math.floor(Math.random() * (9e12 - 1)) + 1e12);
+  }, n = function (e, t) {
+    try {
+      if (PerformanceObserver.supportedEntryTypes.includes(e)) {
+        if ("first-input" === e && !("PerformanceEventTiming" in self)) return;
+        var n = new PerformanceObserver((function (e) {
+          return e.getEntries().map(t)
+        }));
+        return n.observe({type: e, buffered: !0}), n
+      }
+    } catch (e) {
+    }
+  }, i = function (e, t) {
+    var n = function n(i) {
+      "pagehide" !== i.type && "hidden" !== document.visibilityState || (e(i), t && (removeEventListener("visibilitychange", n, !0), removeEventListener("pagehide", n, !0)))
     };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var initMetric = function initMetric(name, value) {
-      return {
-        name: name,
-        value: typeof value === 'undefined' ? -1 : value,
-        delta: 0,
-        entries: [],
-        id: generateUniqueID()
+    addEventListener("visibilitychange", n, !0), addEventListener("pagehide", n, !0)
+  }, a = function (e) {
+    addEventListener("pageshow", (function (t) {
+      t.persisted && e(t)
+    }), !0)
+  }, r = function (e, t, n) {
+    var i;
+    return function (a) {
+      t.value >= 0 && (a || n) && (t.delta = t.value - (i || 0), (t.delta || void 0 === i) && (i = t.value, e(t)))
+    }
+  }, o = -1, u = function () {
+    i((function (e) {
+      var t = e.timeStamp;
+      o = t
+    }), !0)
+  }, s = function () {
+    return o < 0 && ((o = self.webVitals.firstHiddenTime) === 1 / 0 && u(), a((function () {
+      setTimeout((function () {
+        o = "hidden" === document.visibilityState ? 0 : 1 / 0, u()
+      }), 0)
+    }))), {
+      get firstHiddenTime() {
+        return o
+      }
+    }
+  }, c = function (e, i) {
+    var o, u = s(), c = t("FCP"), f = function (e) {
+        "first-contentful-paint" === e.name && (m && m.disconnect(), e.startTime < u.firstHiddenTime && (c.value = e.startTime, c.entries.push(e), o(!0)))
+      }, d = performance.getEntriesByName && performance.getEntriesByName("first-contentful-paint")[0],
+      m = d ? null : n("paint", f);
+    (d || m) && (o = r(e, c, i), d && f(d), a((function (n) {
+      c = t("FCP"), o = r(e, c, i), requestAnimationFrame((function () {
+        requestAnimationFrame((function () {
+          c.value = performance.now() - n.timeStamp, o(!0)
+        }))
+      }))
+    })))
+  }, f = !1, d = -1, m = new Set;
+  e.getCLS = function (e, o) {
+    f || (c((function (e) {
+      d = e.value
+    })), f = !0);
+    var u, s = function (t) {
+      d > -1 && e(t)
+    }, m = t("CLS", 0), v = 0, l = [], p = function (e) {
+      if (!e.hadRecentInput) {
+        var t = l[0], n = l[l.length - 1];
+        v && e.startTime - n.startTime < 1e3 && e.startTime - t.startTime < 5e3 ? (v += e.value, l.push(e)) : (v = e.value, l = [e]), v > m.value && (m.value = v, m.entries = l, u())
+      }
+    }, g = n("layout-shift", p);
+    g && (u = r(s, m, o), i((function () {
+      g.takeRecords().map(p), u(!0)
+    })), a((function () {
+      v = 0, d = -1, m = t("CLS", 0), u = r(s, m, o)
+    })))
+  }, e.getFCP = c, e.getFID = function (e, o) {
+    var u, c = s(), f = t("FID"), d = function (e) {
+      e.startTime < c.firstHiddenTime && (f.value = e.processingStart - e.startTime, f.entries.push(e), u(!0))
+    }, m = n("first-input", d);
+    u = r(e, f, o), m && i((function () {
+      m.takeRecords().map(d), m.disconnect()
+    }), !0), m || window.webVitals.firstInputPolyfill(d), a((function () {
+      f = t("FID"), u = r(e, f, o), window.webVitals.resetFirstInputPolyfill(), window.webVitals.firstInputPolyfill(d)
+    }))
+  }, e.getLCP = function (e, o) {
+    var u, c = s(), f = t("LCP"), d = function (e) {
+      var t = e.startTime;
+      t < c.firstHiddenTime && (f.value = t, f.entries.push(e)), u()
+    }, v = n("largest-contentful-paint", d);
+    if (v) {
+      u = r(e, f, o);
+      var l = function () {
+        m.has(f.id) || (v.takeRecords().map(d), v.disconnect(), m.add(f.id), u(!0))
       };
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-
-    /**
-     * Takes a performance entry type and a callback function, and creates a
-     * `PerformanceObserver` instance that will observe the specified entry type
-     * with buffering enabled and call the callback _for each entry_.
-     *
-     * This function also feature-detects entry support and wraps the logic in a
-     * try/catch to avoid errors in unsupporting browsers.
-     */
-    var observe = function observe(type, callback) {
+      ["keydown", "click"].forEach((function (e) {
+        addEventListener(e, l, {once: !0, capture: !0})
+      })), i(l, !0), a((function (n) {
+        f = t("LCP"), u = r(e, f, o), requestAnimationFrame((function () {
+          requestAnimationFrame((function () {
+            f.value = performance.now() - n.timeStamp, m.add(f.id), u(!0)
+          }))
+        }))
+      }))
+    }
+  }, e.getTTFB = function (e) {
+    var n, i = t("TTFB");
+    n = function () {
       try {
-        if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-          var po = new PerformanceObserver(function (l) {
-            return l.getEntries().map(callback);
-          });
-          po.observe({
-            type: type,
-            buffered: true
-          });
-          return po;
-        }
-      } catch (e) {// Do nothing.
+        var t = performance.getEntriesByType("navigation")[0] || function () {
+          var e = performance.timing, t = {entryType: "navigation", startTime: 0};
+          for (var n in e) "navigationStart" !== n && "toJSON" !== n && (t[n] = Math.max(e[n] - e.navigationStart, 0));
+          return t
+        }();
+        if (i.value = i.delta = t.responseStart, i.value < 0) return;
+        i.entries = [t], e(i)
+      } catch (e) {
       }
-
-      return;
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var beforeUnloadFixAdded = false;
-    var onHidden = function onHidden(cb, once) {
-      // Adding a `beforeunload` listener is needed to fix this bug:
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-      if (!beforeUnloadFixAdded && // Avoid adding this in Firefox as it'll break bfcache:
-      // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-      // @ts-ignore
-      typeof InstallTrigger === 'undefined') {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        addEventListener('beforeunload', function () {});
-        beforeUnloadFixAdded = true;
-      }
-
-      var onVisibilityChange = function onVisibilityChange(event) {
-        if (document.visibilityState === 'hidden') {
-          cb(event);
-
-          if (once) {
-            removeEventListener('visibilitychange', onVisibilityChange, true);
-          }
-        }
-      };
-
-      addEventListener('visibilitychange', onVisibilityChange, true);
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var onBFCacheRestore = function onBFCacheRestore(cb) {
-      addEventListener('pageshow', function (event) {
-        if (event.persisted) {
-          cb(event);
-        }
-      }, true);
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var finalMetrics = typeof WeakSet === 'function' ? new WeakSet() : new Set();
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var bindReporter = function bindReporter(callback, metric, reportAllChanges) {
-      var prevValue;
-      return function () {
-        if (metric.value >= 0) {
-          if (reportAllChanges || finalMetrics.has(metric) || document.visibilityState === 'hidden') {
-            metric.delta = metric.value - (prevValue || 0); // Report the metric if there's a non-zero delta, if the metric is
-            // final, or if no previous value exists (which can happen in the case
-            // of the document becoming hidden when the metric value is 0).
-            // See: https://github.com/GoogleChrome/web-vitals/issues/14
-
-            if (metric.delta || prevValue === undefined) {
-              prevValue = metric.value;
-              callback(metric);
-            }
-          }
-        }
-      };
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var getCLS = function getCLS(onReport, reportAllChanges) {
-      var metric = initMetric('CLS', 0);
-      var report;
-
-      var entryHandler = function entryHandler(entry) {
-        // Only count layout shifts without recent user input.
-        if (!entry.hadRecentInput) {
-          metric.value += entry.value;
-          metric.entries.push(entry);
-          report();
-        }
-      };
-
-      var po = observe('layout-shift', entryHandler);
-
-      if (po) {
-        report = bindReporter(onReport, metric, reportAllChanges);
-        onHidden(function () {
-          po.takeRecords().map(entryHandler);
-          report();
-        });
-        onBFCacheRestore(function () {
-          metric = initMetric('CLS', 0);
-          report = bindReporter(onReport, metric, reportAllChanges);
-        });
-      }
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var firstHiddenTime = -1;
-
-    var initHiddenTime = function initHiddenTime() {
-      return document.visibilityState === 'hidden' ? 0 : Infinity;
-    };
-
-    var trackChanges = function trackChanges() {
-      // Update the time if/when the document becomes hidden.
-      onHidden(function (_ref) {
-        var timeStamp = _ref.timeStamp;
-        firstHiddenTime = timeStamp;
-      }, true);
-    };
-
-    var getFirstHidden = function getFirstHidden() {
-      if (firstHiddenTime < 0) {
-        // If the document is hidden when this code runs, assume it was hidden
-        // since navigation start. This isn't a perfect heuristic, but it's the
-        // best we can do until an API is available to support querying past
-        // visibilityState.
-        {
-          firstHiddenTime = !!self.webVitals ? self.webVitals.firstHiddenTime : initHiddenTime();
-
-          if (firstHiddenTime === Infinity) {
-            trackChanges();
-          }
-        } // Reset the time on bfcache restores.
-
-
-        onBFCacheRestore(function () {
-          // Schedule a task in order to track the `visibilityState` once it's
-          // had an opportunity to change to visible in all browsers.
-          // https://bugs.chromium.org/p/chromium/issues/detail?id=1133363
-          setTimeout(function () {
-            firstHiddenTime = initHiddenTime();
-            trackChanges();
-          }, 0);
-        });
-      }
-
-      return {
-        get timeStamp() {
-          return firstHiddenTime;
-        }
-
-      };
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var getFCP = function getFCP(onReport, reportAllChanges) {
-      var firstHidden = getFirstHidden();
-      var metric = initMetric('FCP');
-      var report;
-
-      var entryHandler = function entryHandler(entry) {
-        if (entry.name === 'first-contentful-paint') {
-          if (po) {
-            po.disconnect();
-          } // Only report if the page wasn't hidden prior to the first paint.
-
-
-          if (entry.startTime < firstHidden.timeStamp) {
-            metric.value = entry.startTime;
-            metric.entries.push(entry);
-            finalMetrics.add(metric);
-            report();
-          }
-        }
-      };
-
-      var po = observe('paint', entryHandler);
-
-      if (po) {
-        report = bindReporter(onReport, metric, reportAllChanges);
-        onBFCacheRestore(function (event) {
-          metric = initMetric('FCP');
-          report = bindReporter(onReport, metric, reportAllChanges);
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              metric.value = performance.now() - event.timeStamp;
-              finalMetrics.add(metric);
-              report();
-            });
-          });
-        });
-      }
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var getFID = function getFID(onReport, reportAllChanges) {
-      var firstHidden = getFirstHidden();
-      var metric = initMetric('FID');
-      var report;
-
-      var entryHandler = function entryHandler(entry) {
-        // Only report if the page wasn't hidden prior to the first input.
-        if (entry.startTime < firstHidden.timeStamp) {
-          metric.value = entry.processingStart - entry.startTime;
-          metric.entries.push(entry);
-          finalMetrics.add(metric);
-          report();
-        }
-      };
-
-      var po = observe('first-input', entryHandler);
-      report = bindReporter(onReport, metric, reportAllChanges);
-
-      if (po) {
-        onHidden(function () {
-          po.takeRecords().map(entryHandler);
-          po.disconnect();
-        }, true);
-      }
-
-      {
-        // Prefer the native implementation if available,
-        if (!po) {
-          window.webVitals.firstInputPolyfill(entryHandler);
-        }
-
-        onBFCacheRestore(function () {
-          metric = initMetric('FID');
-          report = bindReporter(onReport, metric, reportAllChanges);
-          window.webVitals.resetFirstInputPolyfill();
-          window.webVitals.firstInputPolyfill(entryHandler);
-        });
-      }
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    var getLCP = function getLCP(onReport, reportAllChanges) {
-      var firstHidden = getFirstHidden();
-      var metric = initMetric('LCP');
-      var report;
-
-      var entryHandler = function entryHandler(entry) {
-        // The startTime attribute returns the value of the renderTime if it is not 0,
-        // and the value of the loadTime otherwise.
-        var value = entry.startTime; // If the page was hidden prior to paint time of the entry,
-        // ignore it and mark the metric as final, otherwise add the entry.
-
-        if (value < firstHidden.timeStamp) {
-          metric.value = value;
-          metric.entries.push(entry);
-        }
-
-        report();
-      };
-
-      var po = observe('largest-contentful-paint', entryHandler);
-
-      if (po) {
-        report = bindReporter(onReport, metric, reportAllChanges);
-
-        var stopListening = function stopListening() {
-          if (!finalMetrics.has(metric)) {
-            po.takeRecords().map(entryHandler);
-            po.disconnect();
-            finalMetrics.add(metric);
-            report();
-          }
-        }; // Stop listening after input. Note: while scrolling is an input that
-        // stop LCP observation, it's unreliable since it can be programmatically
-        // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-
-
-        ['keydown', 'click'].forEach(function (type) {
-          addEventListener(type, stopListening, {
-            once: true,
-            capture: true
-          });
-        });
-        onHidden(stopListening, true);
-        onBFCacheRestore(function (event) {
-          metric = initMetric('LCP');
-          report = bindReporter(onReport, metric, reportAllChanges);
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              metric.value = performance.now() - event.timeStamp;
-              finalMetrics.add(metric);
-              report();
-            });
-          });
-        });
-      }
-    };
-
-    /*
-     * Copyright 2020 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-
-    var afterLoad = function afterLoad(callback) {
-      if (document.readyState === 'complete') {
-        // Queue a task so the callback runs after `loadEventEnd`.
-        setTimeout(callback, 0);
-      } else {
-        // Use `pageshow` so the callback runs after `loadEventEnd`.
-        addEventListener('pageshow', callback);
-      }
-    };
-
-    var getNavigationEntryFromPerformanceTiming = function getNavigationEntryFromPerformanceTiming() {
-      // Really annoying that TypeScript errors when using `PerformanceTiming`.
-      var timing = performance.timing;
-      var navigationEntry = {
-        entryType: 'navigation',
-        startTime: 0
-      };
-
-      for (var key in timing) {
-        if (key !== 'navigationStart' && key !== 'toJSON') {
-          navigationEntry[key] = Math.max(timing[key] - timing.navigationStart, 0);
-        }
-      }
-
-      return navigationEntry;
-    };
-
-    var getTTFB = function getTTFB(onReport) {
-      var metric = initMetric('TTFB');
-      afterLoad(function () {
-        try {
-          // Use the NavigationTiming L2 entry if available.
-          var navTimings = performance.getEntriesByType('navigation');
-          var navigationEntry = !!navTimings ? navTimings[0] : getNavigationEntryFromPerformanceTiming();
-          metric.value = metric.delta = navigationEntry.responseStart;
-          metric.entries = [navigationEntry];
-          onReport(metric);
-        } catch (error) {// Do nothing.
-        }
-      });
-    };
-
-    window.webVitals.getCLS = getCLS;
-    window.webVitals.getFCP = getFCP;
-    window.webVitals.getFID = getFID;
-    window.webVitals.getLCP = getLCP;
-    window.webVitals.getTTFB = getTTFB;
-}());
+    }, "complete" === document.readyState ? setTimeout(n, 0) : addEventListener("pageshow", n)
+  }, Object.defineProperty(e, "__esModule", {value: !0})
+}(this.webVitals = this.webVitals || {});
