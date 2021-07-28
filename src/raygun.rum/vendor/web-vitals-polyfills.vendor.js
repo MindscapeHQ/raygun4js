@@ -1,5 +1,6 @@
 /**
  * web-vitals v2.1.0 polyfill
+ * This comes from the google web-vital repository, polyfill script @https://github.com/GoogleChrome/web-vitals
  */
 
 (function() {

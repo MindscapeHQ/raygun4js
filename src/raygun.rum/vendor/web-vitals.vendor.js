@@ -1,13 +1,13 @@
 /**
  * web-vitals v2.1.0
- * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
+ * This comes from the google web-vital repository, base only script @https://github.com/GoogleChrome/web-vitals
  */
 
-var webVitals = function(exports) {
+(function(exports) {
   'use strict';
 
   // This ensures that we do not initialize Core Web Vitals for non-browser environments
-  if (typeof document === 'undefined') {
+  if(typeof document === 'undefined') {
     return;
   }
 
@@ -86,8 +86,10 @@ var webVitals = function(exports) {
   var getVisibilityWatcher = function getVisibilityWatcher() {
     if (firstHiddenTime < 0) {
       {
-        firstHiddenTime = initHiddenTime();
-        trackChanges();
+        firstHiddenTime = self.webVitals.firstHiddenTime;
+        if (firstHiddenTime === Infinity) {
+          trackChanges();
+        }
       }
       onBFCacheRestore((function() {
         setTimeout((function() {
@@ -188,80 +190,6 @@ var webVitals = function(exports) {
       }));
     }
   };
-  var firstInputEvent;
-  var firstInputDelay;
-  var firstInputTimeStamp;
-  var callbacks;
-  var listenerOpts = { passive: true, capture: true };
-  var startTimeStamp = new Date;
-  var firstInputPolyfill = function firstInputPolyfill(onFirstInput) {
-    callbacks.push(onFirstInput);
-    reportFirstInputDelayIfRecordedAndValid();
-  };
-  var resetFirstInputPolyfill = function resetFirstInputPolyfill() {
-    callbacks = [];
-    firstInputDelay = -1;
-    firstInputEvent = null;
-    eachEventType(addEventListener);
-  };
-  var recordFirstInputDelay = function recordFirstInputDelay(delay, event) {
-    if (!firstInputEvent) {
-      firstInputEvent = event;
-      firstInputDelay = delay;
-      firstInputTimeStamp = new Date;
-      eachEventType(removeEventListener);
-      reportFirstInputDelayIfRecordedAndValid();
-    }
-  };
-  var reportFirstInputDelayIfRecordedAndValid = function reportFirstInputDelayIfRecordedAndValid() {
-    if (firstInputDelay >= 0 && firstInputDelay < firstInputTimeStamp - startTimeStamp) {
-      var entry = {
-        entryType: 'first-input',
-        name: firstInputEvent.type,
-        target: firstInputEvent.target,
-        cancelable: firstInputEvent.cancelable,
-        startTime: firstInputEvent.timeStamp,
-        processingStart: firstInputEvent.timeStamp + firstInputDelay,
-      };
-      callbacks.forEach((function(callback) {
-        callback(entry);
-      }));
-      callbacks = [];
-    }
-  };
-  var onPointerDown = function onPointerDown(delay, event) {
-    var onPointerUp = function onPointerUp() {
-      recordFirstInputDelay(delay, event);
-      removePointerEventListeners();
-    };
-    var onPointerCancel = function onPointerCancel() {
-      removePointerEventListeners();
-    };
-    var removePointerEventListeners = function removePointerEventListeners() {
-      removeEventListener('pointerup', onPointerUp, listenerOpts);
-      removeEventListener('pointercancel', onPointerCancel, listenerOpts);
-    };
-    addEventListener('pointerup', onPointerUp, listenerOpts);
-    addEventListener('pointercancel', onPointerCancel, listenerOpts);
-  };
-  var onInput = function onInput(event) {
-    if (event.cancelable) {
-      var isEpochTime = event.timeStamp > 1e12;
-      var now = isEpochTime ? new Date : performance.now();
-      var delay = now - event.timeStamp;
-      if (event.type == 'pointerdown') {
-        onPointerDown(delay, event);
-      } else {
-        recordFirstInputDelay(delay, event);
-      }
-    }
-  };
-  var eachEventType = function eachEventType(callback) {
-    var eventTypes = ['mousedown', 'keydown', 'touchstart', 'pointerdown'];
-    eventTypes.forEach((function(type) {
-      return callback(type, onInput, listenerOpts);
-    }));
-  };
   var getFID = function getFID(onReport, reportAllChanges) {
     var visibilityWatcher = getVisibilityWatcher();
     var metric = initMetric('FID');
@@ -282,14 +210,15 @@ var webVitals = function(exports) {
       }), true);
     }
     {
-      if (po) {
-        onBFCacheRestore((function() {
-          metric = initMetric('FID');
-          report = bindReporter(onReport, metric, reportAllChanges);
-          resetFirstInputPolyfill();
-          firstInputPolyfill(entryHandler);
-        }));
+      if (!po) {
+        window.webVitals.firstInputPolyfill(entryHandler);
       }
+      onBFCacheRestore((function() {
+        metric = initMetric('FID');
+        report = bindReporter(onReport, metric, reportAllChanges);
+        window.webVitals.resetFirstInputPolyfill();
+        window.webVitals.firstInputPolyfill(entryHandler);
+      }));
     }
   };
   var reportedMetricIDs = new Set;
@@ -369,6 +298,6 @@ var webVitals = function(exports) {
   exports.getLCP = getLCP;
   exports.getTTFB = getTTFB;
   Object.defineProperty(exports, '__esModule', { value: true });
-  return exports;
-}({});
+})(this.webVitals = this.webVitals || {});
+
 
