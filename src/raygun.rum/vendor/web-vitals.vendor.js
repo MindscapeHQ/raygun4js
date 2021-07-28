@@ -3,134 +3,372 @@
  * This comes from the google web-vital repository, base only script @ https://github.com/GoogleChrome/web-vitals
  */
 
-!function (e) {
-  "use strict";
+var webVitals = function(exports) {
+  'use strict';
 
   // This ensures that we do not initialize Core Web Vitals for non-browser environments
-  if(typeof document === 'undefined') {
+  if (typeof document === 'undefined') {
     return;
   }
 
-  var t = function (e, t) {
+  var generateUniqueID = function generateUniqueID() {
+    return 'v2-'.concat(Date.now(), '-').concat(Math.floor(Math.random() * (9e12 - 1)) + 1e12);
+  };
+  var initMetric = function initMetric(name, value) {
     return {
-      name: e,
-      value: void 0 === t ? -1 : t,
+      name: name,
+      value: typeof value === 'undefined' ? -1 : value,
       delta: 0,
       entries: [],
-      id: "v2-".concat(Date.now(), "-").concat(Math.floor(8999999999999 * Math.random()) + 1e12)
-    }
-  }, n = function (e, t) {
+      id: generateUniqueID(),
+    };
+  };
+  var observe = function observe(type, callback) {
     try {
-      if (PerformanceObserver.supportedEntryTypes.includes(e)) {
-        if ("first-input" === e && !("PerformanceEventTiming" in self)) return;
-        var n = new PerformanceObserver((function (e) {
-          return e.getEntries().map(t)
+      if (PerformanceObserver.supportedEntryTypes.includes(type)) {
+        if (type === 'first-input' && !('PerformanceEventTiming' in self)) {
+          return;
+        }
+        var po = new PerformanceObserver((function(l) {
+          return l.getEntries().map(callback);
         }));
-        return n.observe({type: e, buffered: !0}), n
+        po.observe({ type: type, buffered: true });
+        return po;
       }
     } catch (e) {
     }
-  }, i = function (e, t) {
-    var n = function n(i) {
-      "pagehide" !== i.type && "hidden" !== document.visibilityState || (e(i), t && (removeEventListener("visibilitychange", n, !0), removeEventListener("pagehide", n, !0)))
+    return;
+  };
+  var onHidden = function onHidden(cb, once) {
+    var onHiddenOrPageHide = function onHiddenOrPageHide(event) {
+      if (event.type === 'pagehide' || document.visibilityState === 'hidden') {
+        cb(event);
+        if (once) {
+          removeEventListener('visibilitychange', onHiddenOrPageHide, true);
+          removeEventListener('pagehide', onHiddenOrPageHide, true);
+        }
+      }
     };
-    addEventListener("visibilitychange", n, !0), addEventListener("pagehide", n, !0)
-  }, a = function (e) {
-    addEventListener("pageshow", (function (t) {
-      t.persisted && e(t)
-    }), !0)
-  }, r = function (e, t, n) {
-    var i;
-    return function (a) {
-      t.value >= 0 && (a || n) && (t.delta = t.value - (i || 0), (t.delta || void 0 === i) && (i = t.value, e(t)))
+    addEventListener('visibilitychange', onHiddenOrPageHide, true);
+    addEventListener('pagehide', onHiddenOrPageHide, true);
+  };
+  var onBFCacheRestore = function onBFCacheRestore(cb) {
+    addEventListener('pageshow', (function(event) {
+      if (event.persisted) {
+        cb(event);
+      }
+    }), true);
+  };
+  var bindReporter = function bindReporter(callback, metric, reportAllChanges) {
+    var prevValue;
+    return function(forceReport) {
+      if (metric.value >= 0) {
+        if (forceReport || reportAllChanges) {
+          metric.delta = metric.value - (prevValue || 0);
+          if (metric.delta || prevValue === undefined) {
+            prevValue = metric.value;
+            callback(metric);
+          }
+        }
+      }
+    };
+  };
+  var firstHiddenTime = -1;
+  var initHiddenTime = function initHiddenTime() {
+    return document.visibilityState === 'hidden' ? 0 : Infinity;
+  };
+  var trackChanges = function trackChanges() {
+    onHidden((function(_ref) {
+      var timeStamp = _ref.timeStamp;
+      firstHiddenTime = timeStamp;
+    }), true);
+  };
+  var getVisibilityWatcher = function getVisibilityWatcher() {
+    if (firstHiddenTime < 0) {
+      {
+        firstHiddenTime = initHiddenTime();
+        trackChanges();
+      }
+      onBFCacheRestore((function() {
+        setTimeout((function() {
+          firstHiddenTime = initHiddenTime();
+          trackChanges();
+        }), 0);
+      }));
     }
-  }, o = -1, u = function () {
-    i((function (e) {
-      var t = e.timeStamp;
-      o = t
-    }), !0)
-  }, s = function () {
-    return o < 0 && ((o = self.webVitals.firstHiddenTime) === 1 / 0 && u(), a((function () {
-      setTimeout((function () {
-        o = "hidden" === document.visibilityState ? 0 : 1 / 0, u()
-      }), 0)
-    }))), {
+    return {
       get firstHiddenTime() {
-        return o
+        return firstHiddenTime;
+      },
+    };
+  };
+  var getFCP = function getFCP(onReport, reportAllChanges) {
+    var visibilityWatcher = getVisibilityWatcher();
+    var metric = initMetric('FCP');
+    var report;
+    var entryHandler = function entryHandler(entry) {
+      if (entry.name === 'first-contentful-paint') {
+        if (po) {
+          po.disconnect();
+        }
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          metric.value = entry.startTime;
+          metric.entries.push(entry);
+          report(true);
+        }
       }
+    };
+    var fcpEntry = performance.getEntriesByName && performance.getEntriesByName('first-contentful-paint')[0];
+    var po = fcpEntry ? null : observe('paint', entryHandler);
+    if (fcpEntry || po) {
+      report = bindReporter(onReport, metric, reportAllChanges);
+      if (fcpEntry) {
+        entryHandler(fcpEntry);
+      }
+      onBFCacheRestore((function(event) {
+        metric = initMetric('FCP');
+        report = bindReporter(onReport, metric, reportAllChanges);
+        requestAnimationFrame((function() {
+          requestAnimationFrame((function() {
+            metric.value = performance.now() - event.timeStamp;
+            report(true);
+          }));
+        }));
+      }));
     }
-  }, c = function (e, i) {
-    var o, u = s(), c = t("FCP"), f = function (e) {
-        "first-contentful-paint" === e.name && (m && m.disconnect(), e.startTime < u.firstHiddenTime && (c.value = e.startTime, c.entries.push(e), o(!0)))
-      }, d = performance.getEntriesByName && performance.getEntriesByName("first-contentful-paint")[0],
-      m = d ? null : n("paint", f);
-    (d || m) && (o = r(e, c, i), d && f(d), a((function (n) {
-      c = t("FCP"), o = r(e, c, i), requestAnimationFrame((function () {
-        requestAnimationFrame((function () {
-          c.value = performance.now() - n.timeStamp, o(!0)
-        }))
-      }))
-    })))
-  }, f = !1, d = -1, m = new Set;
-  e.getCLS = function (e, o) {
-    f || (c((function (e) {
-      d = e.value
-    })), f = !0);
-    var u, s = function (t) {
-      d > -1 && e(t)
-    }, m = t("CLS", 0), v = 0, l = [], p = function (e) {
-      if (!e.hadRecentInput) {
-        var t = l[0], n = l[l.length - 1];
-        v && e.startTime - n.startTime < 1e3 && e.startTime - t.startTime < 5e3 ? (v += e.value, l.push(e)) : (v = e.value, l = [e]), v > m.value && (m.value = v, m.entries = l, u())
+  };
+  var isMonitoringFCP = false;
+  var fcpValue = -1;
+  var getCLS = function getCLS(onReport, reportAllChanges) {
+    if (!isMonitoringFCP) {
+      getFCP((function(metric) {
+        fcpValue = metric.value;
+      }));
+      isMonitoringFCP = true;
+    }
+    var onReportWrapped = function onReportWrapped(arg) {
+      if (fcpValue > -1) {
+        onReport(arg);
       }
-    }, g = n("layout-shift", p);
-    g && (u = r(s, m, o), i((function () {
-      g.takeRecords().map(p), u(!0)
-    })), a((function () {
-      v = 0, d = -1, m = t("CLS", 0), u = r(s, m, o)
-    })))
-  }, e.getFCP = c, e.getFID = function (e, o) {
-    var u, c = s(), f = t("FID"), d = function (e) {
-      e.startTime < c.firstHiddenTime && (f.value = e.processingStart - e.startTime, f.entries.push(e), u(!0))
-    }, m = n("first-input", d);
-    u = r(e, f, o), m && i((function () {
-      m.takeRecords().map(d), m.disconnect()
-    }), !0), m || window.webVitals.firstInputPolyfill(d), a((function () {
-      f = t("FID"), u = r(e, f, o), window.webVitals.resetFirstInputPolyfill(), window.webVitals.firstInputPolyfill(d)
-    }))
-  }, e.getLCP = function (e, o) {
-    var u, c = s(), f = t("LCP"), d = function (e) {
-      var t = e.startTime;
-      t < c.firstHiddenTime && (f.value = t, f.entries.push(e)), u()
-    }, v = n("largest-contentful-paint", d);
-    if (v) {
-      u = r(e, f, o);
-      var l = function () {
-        m.has(f.id) || (v.takeRecords().map(d), v.disconnect(), m.add(f.id), u(!0))
+    };
+    var metric = initMetric('CLS', 0);
+    var report;
+    var sessionValue = 0;
+    var sessionEntries = [];
+    var entryHandler = function entryHandler(entry) {
+      if (!entry.hadRecentInput) {
+        var firstSessionEntry = sessionEntries[0];
+        var lastSessionEntry = sessionEntries[sessionEntries.length - 1];
+        if (sessionValue && entry.startTime - lastSessionEntry.startTime < 1e3 && entry.startTime - firstSessionEntry.startTime < 5e3) {
+          sessionValue += entry.value;
+          sessionEntries.push(entry);
+        } else {
+          sessionValue = entry.value;
+          sessionEntries = [entry];
+        }
+        if (sessionValue > metric.value) {
+          metric.value = sessionValue;
+          metric.entries = sessionEntries;
+          report();
+        }
+      }
+    };
+    var po = observe('layout-shift', entryHandler);
+    if (po) {
+      report = bindReporter(onReportWrapped, metric, reportAllChanges);
+      onHidden((function() {
+        po.takeRecords().map(entryHandler);
+        report(true);
+      }));
+      onBFCacheRestore((function() {
+        sessionValue = 0;
+        fcpValue = -1;
+        metric = initMetric('CLS', 0);
+        report = bindReporter(onReportWrapped, metric, reportAllChanges);
+      }));
+    }
+  };
+  var firstInputEvent;
+  var firstInputDelay;
+  var firstInputTimeStamp;
+  var callbacks;
+  var listenerOpts = { passive: true, capture: true };
+  var startTimeStamp = new Date;
+  var firstInputPolyfill = function firstInputPolyfill(onFirstInput) {
+    callbacks.push(onFirstInput);
+    reportFirstInputDelayIfRecordedAndValid();
+  };
+  var resetFirstInputPolyfill = function resetFirstInputPolyfill() {
+    callbacks = [];
+    firstInputDelay = -1;
+    firstInputEvent = null;
+    eachEventType(addEventListener);
+  };
+  var recordFirstInputDelay = function recordFirstInputDelay(delay, event) {
+    if (!firstInputEvent) {
+      firstInputEvent = event;
+      firstInputDelay = delay;
+      firstInputTimeStamp = new Date;
+      eachEventType(removeEventListener);
+      reportFirstInputDelayIfRecordedAndValid();
+    }
+  };
+  var reportFirstInputDelayIfRecordedAndValid = function reportFirstInputDelayIfRecordedAndValid() {
+    if (firstInputDelay >= 0 && firstInputDelay < firstInputTimeStamp - startTimeStamp) {
+      var entry = {
+        entryType: 'first-input',
+        name: firstInputEvent.type,
+        target: firstInputEvent.target,
+        cancelable: firstInputEvent.cancelable,
+        startTime: firstInputEvent.timeStamp,
+        processingStart: firstInputEvent.timeStamp + firstInputDelay,
       };
-      ["keydown", "click"].forEach((function (e) {
-        addEventListener(e, l, {once: !0, capture: !0})
-      })), i(l, !0), a((function (n) {
-        f = t("LCP"), u = r(e, f, o), requestAnimationFrame((function () {
-          requestAnimationFrame((function () {
-            f.value = performance.now() - n.timeStamp, m.add(f.id), u(!0)
-          }))
-        }))
-      }))
+      callbacks.forEach((function(callback) {
+        callback(entry);
+      }));
+      callbacks = [];
     }
-  }, e.getTTFB = function (e) {
-    var n, i = t("TTFB");
-    n = function () {
-      try {
-        var t = performance.getEntriesByType("navigation")[0] || function () {
-          var e = performance.timing, t = {entryType: "navigation", startTime: 0};
-          for (var n in e) "navigationStart" !== n && "toJSON" !== n && (t[n] = Math.max(e[n] - e.navigationStart, 0));
-          return t
-        }();
-        if (i.value = i.delta = t.responseStart, i.value < 0) return;
-        i.entries = [t], e(i)
-      } catch (e) {
+  };
+  var onPointerDown = function onPointerDown(delay, event) {
+    var onPointerUp = function onPointerUp() {
+      recordFirstInputDelay(delay, event);
+      removePointerEventListeners();
+    };
+    var onPointerCancel = function onPointerCancel() {
+      removePointerEventListeners();
+    };
+    var removePointerEventListeners = function removePointerEventListeners() {
+      removeEventListener('pointerup', onPointerUp, listenerOpts);
+      removeEventListener('pointercancel', onPointerCancel, listenerOpts);
+    };
+    addEventListener('pointerup', onPointerUp, listenerOpts);
+    addEventListener('pointercancel', onPointerCancel, listenerOpts);
+  };
+  var onInput = function onInput(event) {
+    if (event.cancelable) {
+      var isEpochTime = event.timeStamp > 1e12;
+      var now = isEpochTime ? new Date : performance.now();
+      var delay = now - event.timeStamp;
+      if (event.type == 'pointerdown') {
+        onPointerDown(delay, event);
+      } else {
+        recordFirstInputDelay(delay, event);
       }
-    }, "complete" === document.readyState ? setTimeout(n, 0) : addEventListener("pageshow", n)
-  }, Object.defineProperty(e, "__esModule", {value: !0})
-}(this.webVitals = this.webVitals || {});
+    }
+  };
+  var eachEventType = function eachEventType(callback) {
+    var eventTypes = ['mousedown', 'keydown', 'touchstart', 'pointerdown'];
+    eventTypes.forEach((function(type) {
+      return callback(type, onInput, listenerOpts);
+    }));
+  };
+  var getFID = function getFID(onReport, reportAllChanges) {
+    var visibilityWatcher = getVisibilityWatcher();
+    var metric = initMetric('FID');
+    var report;
+    var entryHandler = function entryHandler(entry) {
+      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+        metric.value = entry.processingStart - entry.startTime;
+        metric.entries.push(entry);
+        report(true);
+      }
+    };
+    var po = observe('first-input', entryHandler);
+    report = bindReporter(onReport, metric, reportAllChanges);
+    if (po) {
+      onHidden((function() {
+        po.takeRecords().map(entryHandler);
+        po.disconnect();
+      }), true);
+    }
+    {
+      if (po) {
+        onBFCacheRestore((function() {
+          metric = initMetric('FID');
+          report = bindReporter(onReport, metric, reportAllChanges);
+          resetFirstInputPolyfill();
+          firstInputPolyfill(entryHandler);
+        }));
+      }
+    }
+  };
+  var reportedMetricIDs = new Set;
+  var getLCP = function getLCP(onReport, reportAllChanges) {
+    var visibilityWatcher = getVisibilityWatcher();
+    var metric = initMetric('LCP');
+    var report;
+    var entryHandler = function entryHandler(entry) {
+      var value = entry.startTime;
+      if (value < visibilityWatcher.firstHiddenTime) {
+        metric.value = value;
+        metric.entries.push(entry);
+      }
+      report();
+    };
+    var po = observe('largest-contentful-paint', entryHandler);
+    if (po) {
+      report = bindReporter(onReport, metric, reportAllChanges);
+      var stopListening = function stopListening() {
+        if (!reportedMetricIDs.has(metric.id)) {
+          po.takeRecords().map(entryHandler);
+          po.disconnect();
+          reportedMetricIDs.add(metric.id);
+          report(true);
+        }
+      };
+      ['keydown', 'click'].forEach((function(type) {
+        addEventListener(type, stopListening, { once: true, capture: true });
+      }));
+      onHidden(stopListening, true);
+      onBFCacheRestore((function(event) {
+        metric = initMetric('LCP');
+        report = bindReporter(onReport, metric, reportAllChanges);
+        requestAnimationFrame((function() {
+          requestAnimationFrame((function() {
+            metric.value = performance.now() - event.timeStamp;
+            reportedMetricIDs.add(metric.id);
+            report(true);
+          }));
+        }));
+      }));
+    }
+  };
+  var afterLoad = function afterLoad(callback) {
+    if (document.readyState === 'complete') {
+      setTimeout(callback, 0);
+    } else {
+      addEventListener('pageshow', callback);
+    }
+  };
+  var getNavigationEntryFromPerformanceTiming = function getNavigationEntryFromPerformanceTiming() {
+    var timing = performance.timing;
+    var navigationEntry = { entryType: 'navigation', startTime: 0 };
+    for (var key in timing) {
+      if (key !== 'navigationStart' && key !== 'toJSON') {
+        navigationEntry[key] = Math.max(timing[key] - timing.navigationStart, 0);
+      }
+    }
+    return navigationEntry;
+  };
+  var getTTFB = function getTTFB(onReport) {
+    var metric = initMetric('TTFB');
+    afterLoad((function() {
+      try {
+        var navigationEntry = performance.getEntriesByType('navigation')[0] || getNavigationEntryFromPerformanceTiming();
+        metric.value = metric.delta = navigationEntry.responseStart;
+        if (metric.value < 0) return;
+        metric.entries = [navigationEntry];
+        onReport(metric);
+      } catch (error) {
+      }
+    }));
+  };
+  exports.getCLS = getCLS;
+  exports.getFCP = getFCP;
+  exports.getFID = getFID;
+  exports.getLCP = getLCP;
+  exports.getTTFB = getTTFB;
+  Object.defineProperty(exports, '__esModule', { value: true });
+  return exports;
+}({});
+

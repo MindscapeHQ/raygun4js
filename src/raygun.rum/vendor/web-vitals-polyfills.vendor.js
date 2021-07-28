@@ -1,11 +1,10 @@
 /**
  * web-vitals v2.1.0 polyfill
  */
-(function() {
-  'use strict';
 
+(function() {
   // This ensures that we do not initialize Core Web Vitals for non-browser environments
-  if(typeof document === 'undefined') {
+  if (typeof document === 'undefined') {
     return;
   }
 
@@ -103,3 +102,4 @@
     },
   };
 })();
+
