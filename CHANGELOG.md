@@ -1,3 +1,6 @@
+* v2.22.4
+- Upgrade the web-vitals vendor library to v2.1.0
+
 * v2.22.3
 - Fixes an issue where the heartbeat was not clearing the `xhrStatusMap` array due to `this` referring to the window object
 
