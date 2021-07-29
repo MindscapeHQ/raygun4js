@@ -6,8 +6,8 @@
 (function(exports) {
   'use strict';
 
-  // This ensures that we do not initialize Core Web Vitals for non-browser environments
-  if(typeof document === 'undefined') {
+  // Raygun: This ensures that we do not initialize Core Web Vitals for non-browser environments
+  if (typeof document === 'undefined') {
     return;
   }
 
