@@ -3,7 +3,7 @@
  * This comes from the google web-vital repository, base only script @https://github.com/GoogleChrome/web-vitals
  */
 
-(function(exports) {
+var webVitals = (function() {
   'use strict';
 
   // Raygun: This ensures that we do not initialize Core Web Vitals for non-browser environments
@@ -299,6 +299,6 @@
   exports.getLCP = getLCP;
   exports.getTTFB = getTTFB;
   Object.defineProperty(exports, '__esModule', { value: true });
-})(this.webVitals = this.webVitals || {});
+})();
 
 
