@@ -283,7 +283,8 @@
     var metric = initMetric('TTFB');
     afterLoad((function() {
       try {
-        var navigationEntry = performance.getEntriesByType('navigation')[0] || getNavigationEntryFromPerformanceTiming();
+        var navTiming = performance.getEntriesByType('navigation');
+        var navigationEntry = !!navTiming ? navTiming[0] : getNavigationEntryFromPerformanceTiming();
         metric.value = metric.delta = navigationEntry.responseStart;
         if (metric.value < 0) return;
         metric.entries = [navigationEntry];
