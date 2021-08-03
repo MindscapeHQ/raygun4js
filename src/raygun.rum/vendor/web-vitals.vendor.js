@@ -4,7 +4,6 @@
  */
 
 (function() {
-  'use strict';
 
   // Raygun: This ensures that we do not initialize Core Web Vitals for non-browser environments
   if (typeof document === 'undefined') {
@@ -293,6 +292,7 @@
       }
     }));
   };
+  
   window.webVitals.getCLS = getCLS;
   window.webVitals.getFCP = getFCP;
   window.webVitals.getFID = getFID;

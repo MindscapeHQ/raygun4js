@@ -95,6 +95,7 @@
     return firstHiddenTime;
   };
   resetFirstInputPolyfill();
+
   self.webVitals = {
     firstInputPolyfill: firstInputPolyfill,
     resetFirstInputPolyfill: resetFirstInputPolyfill,
