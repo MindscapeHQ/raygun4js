@@ -3,7 +3,7 @@
  * This comes from the google web-vital repository, base only script @https://github.com/GoogleChrome/web-vitals
  */
 
-var webVitals = (function() {
+(function() {
   'use strict';
 
   // Raygun: This ensures that we do not initialize Core Web Vitals for non-browser environments
@@ -293,12 +293,11 @@ var webVitals = (function() {
       }
     }));
   };
-  exports.getCLS = getCLS;
-  exports.getFCP = getFCP;
-  exports.getFID = getFID;
-  exports.getLCP = getLCP;
-  exports.getTTFB = getTTFB;
-  Object.defineProperty(exports, '__esModule', { value: true });
+  window.webVitals.getCLS = getCLS;
+  window.webVitals.getFCP = getFCP;
+  window.webVitals.getFID = getFID;
+  window.webVitals.getLCP = getLCP;
+  window.webVitals.getTTFB = getTTFB;
 })();
 
 
