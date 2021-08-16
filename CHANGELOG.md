@@ -1,3 +1,6 @@
+* v2.22.5
+- Fixes an issue where `navigator.sendBeacon` errors were not being handled gracefully.
+
 * v2.22.4
 - Upgrade the web-vitals vendor library to v2.1.0.
 - Fixes an issue where Core Web Vital timings were being queued behind virtual page timings.
