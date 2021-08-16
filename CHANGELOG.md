@@ -1,5 +1,6 @@
 * v2.22.5
 - Fixes an issue with Core Web Vital tracking not being able to be disabled.
+- Fixes an issue where `navigator.sendBeacon` errors were not being handled gracefully.
 
 * v2.22.4
 - Upgrade the web-vitals vendor library to v2.1.0.
