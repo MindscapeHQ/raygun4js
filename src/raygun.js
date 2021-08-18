@@ -10,11 +10,12 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunCoreWebVitalFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunErrorUtilitiesFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunCoreWebVitalFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
+  Raygun.ErrorUtilities = raygunErrorUtilitiesFactory(window, Raygun);
   Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
   Raygun.CoreWebVitals = raygunCoreWebVitalFactory(window);
@@ -155,7 +156,7 @@ var raygunFactory = function(window, $, undefined) {
 
         if(options.clientIp) {
           _clientIp = options.clientIp;
-        }        
+        }
       }
 
       ensureUser();
@@ -374,7 +375,7 @@ var raygunFactory = function(window, $, undefined) {
           _rum.trackCustomTiming(options.name, options.duration, options.offset);
         } else if (type === 'customTimings' && options.timings) {
           _rum.sendCustomTimings(options.timings);
-        } 
+        }
       }
     },
 
@@ -705,67 +706,8 @@ var raygunFactory = function(window, $, undefined) {
     var stack = [],
       qs = {};
 
-    if (_ignore3rdPartyErrors) {
-      if (!stackTrace.stack || !stackTrace.stack.length) {
-        Raygun.Utilities.log('Raygun4JS: Cancelling send due to null stacktrace');
-        return;
-      }
-
-      var domain = Raygun.Utilities.parseUrl('domain');
-
-      var msg = scriptError;
-      if (stackTrace.message) {
-        msg = stackTrace.message;
-      } else if (options && options.status) {
-        msg = options.status;
-      }
-
-      if (typeof msg === 'undefined') {
-        msg = scriptError;
-      }
-
-      if (
-        !Raygun.Utilities.isReactNative() &&
-        typeof msg.substring === 'function' &&
-        msg.substring(0, scriptError.length) === scriptError &&
-        stackTrace.stack[0].url !== null &&
-        stackTrace.stack[0].url !== undefined &&
-        stackTrace.stack[0].url.indexOf(domain) === -1 &&
-        (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?')
-      ) {
-        Raygun.Utilities.log(
-          'Raygun4JS: cancelling send due to third-party script error with no stacktrace and message'
-        );
-        return;
-      }
-
-      var foundValidDomain = false;
-      for (var i = 0; !foundValidDomain && stackTrace.stack && i < stackTrace.stack.length; i++) {
-        if (
-          stackTrace.stack[i] !== null &&
-          stackTrace.stack[i] !== undefined &&
-          stackTrace.stack[i].url !== null &&
-          stackTrace.stack[i].url !== undefined
-        ) {
-          for (var j in _whitelistedScriptDomains) {
-            if (stackTrace.stack[i].url.indexOf(_whitelistedScriptDomains[j]) > -1) {
-              foundValidDomain = true;
-            }
-          }
-
-          if (stackTrace.stack[i].url.indexOf(domain) > -1) {
-            foundValidDomain = true;
-          }
-        }
-      }
-
-      if (!foundValidDomain) {
-        Raygun.Utilities.log(
-          'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
-        );
-
-        return;
-      }
+    if (_ignore3rdPartyErrors && shouldDiscardThirdPartyError(stackTrace, options)) {
+      return;
     }
 
     if (_excludedHostnames instanceof Array) {
@@ -1132,7 +1074,7 @@ var raygunFactory = function(window, $, undefined) {
     xhr.send(data);
   }
 
-  // Storage 
+  // Storage
   function saveToStorage(value) {
     if(Raygun.Utilities.localStorageAvailable()) {
       localStorage.setItem(_userKey, value);
@@ -1151,7 +1093,7 @@ var raygunFactory = function(window, $, undefined) {
 
   function getFromStorage(callback) {
     /**
-     * Attempt to get the value from local storage, 
+     * Attempt to get the value from local storage,
      * If that doesn't contain a value then try from a cookie as previous versions saved it here
      */
     var value;
@@ -1167,15 +1109,59 @@ var raygunFactory = function(window, $, undefined) {
     value = Raygun.Utilities.readCookie(_userKey);
 
     /**
-     * If there was a cookie and localStorage is avaliable then  
+     * If there was a cookie and localStorage is avaliable then
      * clear the cookie as localStorage will be the storage mechanism going forward
-     */  
+     */
     if(value !== null && Raygun.Utilities.localStorageAvailable()) {
       Raygun.Utilities.clearCookie(_userKey);
       localStorage.setItem(_userKey, value);
     }
-    
+
     callback(value);
+  }
+
+  function shouldDiscardThirdPartyError(stackTrace, options) {
+    if (Raygun.Utilities.isEmpty(stackTrace.stack)) {
+      Raygun.Utilities.log('Raygun4JS: Cancelling send due to null stacktrace');
+      return true;
+    }
+
+    if (Raygun.ErrorUtilities.isScriptError(stackTrace, options)) {
+      Raygun.Utilities.log(
+        'Raygun4JS: cancelling send due to third-party script error with no stacktrace and message',
+        {
+          stackTrace: stackTrace,
+          options: options
+        }
+      );
+      return true;
+    }
+
+    if (Raygun.ErrorUtilities.isBrowserExtensionError(stackTrace)) {
+      Raygun.Utilities.log(
+        'Raygun4JS: cancelling send due to the error coming from a browser extension',
+        stackTrace
+      );
+      return true;
+    }
+
+    if (Raygun.ErrorUtilities.isInvalidStackTrace(stackTrace)) {
+      Raygun.Utilities.log(
+        'Raygun4JS: cancelling send due to invalid stacktrace data',
+        stackTrace
+      );
+      return true;
+    }
+
+    if (!Raygun.ErrorUtilities.stackTraceHasValidDomain(stackTrace, _whitelistedScriptDomains)) {
+      Raygun.Utilities.log(
+        'Raygun4JS: cancelling send due to error on non-origin, non-whitelisted domain'
+      );
+
+      return true;
+    }
+
+    return false;
   }
 
   if (!window.__raygunNoConflict) {
