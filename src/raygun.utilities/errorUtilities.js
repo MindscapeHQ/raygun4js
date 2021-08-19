@@ -6,6 +6,7 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
   var scriptError = 'Script error';
   var currentLocation = window.location;
   var currentUrl = currentLocation.toString();
+  var utils = Raygun.Utilities;
 
   var isBrowserExtensionUrl = function isBrowserExtensionUrl(url) {
     return url.indexOf('chrome-extension://') === 0 ||
@@ -15,18 +16,18 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
   };
 
   // The stack line is deemed invalid if all of the following conditions are met:
-  // 1. The line and column numbers are zero
+  // 1. The line and column numbers are null *or* zero
   // 2. The url is nil *or* the same as the current location *and* the function is '?'
   var isInvalidStackLine = function isInvalidStackLine(stackLine) {
-    if (!Raygun.Utilities.isNil(stackLine.line) && stackLine.line > 0) {
+    if (!utils.isNil(stackLine.line) && stackLine.line > 0) {
       return false;
     }
 
-    if (!Raygun.Utilities.isNil(stackLine.column) && stackLine.column > 0) {
+    if (!utils.isNil(stackLine.column) && stackLine.column > 0) {
       return false;
     }
 
-    if (!Raygun.Utilities.isNil(stackLine.url)) {
+    if (!utils.isNil(stackLine.url)) {
       return currentUrl.indexOf(stackLine.url) !== -1 && stackLine.func === '?';
     }
 
@@ -54,10 +55,10 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
         msg = scriptError;
       }
 
-      return !Raygun.Utilities.isReactNative() &&
+      return !utils.isReactNative() &&
         typeof msg.substring === 'function' &&
         msg.substring(0, scriptError.length) === scriptError &&
-        !Raygun.Utilities.isNil(stackTrace.stack[0].url) &&
+        !utils.isNil(stackTrace.stack[0].url) &&
         stackTrace.stack[0].url.indexOf(currentLocation.host) === -1 &&
         (stackTrace.stack[0].line === 0 || stackTrace.stack[0].func === '?');
     },
@@ -72,20 +73,21 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
     isBrowserExtensionError: function isBrowserExtensionError(stackTrace) {
       var stack = stackTrace.stack;
 
-      if (Raygun.Utilities.isEmpty(stack)) {
+      if (utils.isEmpty(stack)) {
         return false;
       }
 
-      return Raygun.Utilities.any(stack, function (stackLine) {
+      return utils.any(stack, function (stackLine) {
         var url = stackLine.url;
 
-        return !Raygun.Utilities.isNil(url) && isBrowserExtensionUrl(url);
+        return !utils.isNil(url) && isBrowserExtensionUrl(url);
       });
     },
 
     /**
      * Check if all lines in the stack are invalid, i.e. they have a line and column number of zero and a url of null or
-     * a url that matches the current host *and* a function called '?'.
+     * a url that matches the current host *and* a function called '?'. This is a common pattern of errors triggered in
+     * browser extensions or by bots/crawlers.
      *
      * @param stackTrace
      * @returns {boolean}
@@ -93,11 +95,11 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
     isInvalidStackTrace: function isInvalidStackTrace(stackTrace) {
       var stack = stackTrace.stack;
 
-      if (Raygun.Utilities.isNil(stackTrace.message) || Raygun.Utilities.isEmpty(stack)) {
+      if (utils.isNil(stackTrace.message) || utils.isEmpty(stack)) {
         return true;
       }
 
-      return Raygun.Utilities.all(stack, isInvalidStackLine);
+      return utils.all(stack, isInvalidStackLine);
     },
 
     /**
@@ -113,8 +115,8 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
 
       for (var i = 0; !foundValidDomain && stackTrace.stack && i < stackTrace.stack.length; i++) {
         if (
-          !Raygun.Utilities.isNil(stackTrace.stack[i]) &&
-          !Raygun.Utilities.isNil(stackTrace.stack[i].url)
+          !utils.isNil(stackTrace.stack[i]) &&
+          !utils.isNil(stackTrace.stack[i].url)
         ) {
           for (var j in whitelistedScriptDomains) {
             if (whitelistedScriptDomains.hasOwnProperty(j)) {
