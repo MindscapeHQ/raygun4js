@@ -104,7 +104,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     this.attach = function() {
       if(this.trackCoreWebVitals) {
-        Raygun.CoreWebVitals.attach(addPerformanceTimingsToQueue);
+        Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings);
       }
 
       getSessionId(function(isNewSession) {
@@ -475,6 +475,11 @@ var raygunRumFactory = function(window, $, Raygun) {
         self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
         sendQueuedPerformancePayloads(forceSend);
       }
+    }
+
+    function sendCoreWebVitalTimings(performanceData) {
+      // Core web vital timing metrics need to be sent to the API immediately, if they are queued then they may not be sent if a virtual page timing event occurs before they are tracked
+      sendItemImmediately(createTimingPayload([performanceData]));
     }
 
     // ================================================================================
@@ -911,15 +916,22 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var stringifiedPayload = JSON.stringify(payload);
 
-      /** 
+      /**
        * Use the navigator.sendBeacon method instead of a XHR requests when transmitting data
-       * This occurs mostly when the document is about to be discarded or hidden as 
+       * This occurs mostly when the document is about to be discarded or hidden as
        * all inflight XHR requests either will be or can be canceled.
-       */ 
+       */
       if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
-        navigator.sendBeacon(url, stringifiedPayload);
+        try {
+          navigator.sendBeacon(url, stringifiedPayload);
+        } catch (e) {
+          log(e, {
+            url: url,
+            payload: stringifiedPayload
+          });
+        }
         return;
-      } 
+      }
 
       makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
     }

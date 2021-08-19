@@ -123,8 +123,8 @@ var raygunFactory = function(window, $, undefined) {
         _setCookieAsSecure = options.setCookieAsSecure || false;
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
-        _trackCoreWebVitals = options.trackCoreWebVitals || true;
-
+        _trackCoreWebVitals = options.trackCoreWebVitals === undefined ? true : options.trackCoreWebVitals;
+  
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
         }
