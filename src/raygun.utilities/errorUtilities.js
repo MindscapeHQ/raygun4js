@@ -16,7 +16,7 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
   };
 
   // The stack line is deemed invalid if all of the following conditions are met:
-  // 1. The line and column numbers are null *or* zero
+  // 1. The line and column numbers are nil *or* zero
   // 2. The url is nil *or* the same as the current location *and* the function is '?'
   var isInvalidStackLine = function isInvalidStackLine(stackLine) {
     if (!utils.isNil(stackLine.line) && stackLine.line > 0) {
@@ -51,7 +51,7 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
         msg = options.status;
       }
 
-      if (typeof msg === 'undefined') {
+      if (utils.isNil(msg)) {
         msg = scriptError;
       }
 
@@ -114,19 +114,18 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
       var foundValidDomain = false;
 
       for (var i = 0; !foundValidDomain && stackTrace.stack && i < stackTrace.stack.length; i++) {
-        if (
-          !utils.isNil(stackTrace.stack[i]) &&
-          !utils.isNil(stackTrace.stack[i].url)
-        ) {
+        var stackLine = stackTrace.stack[i];
+
+        if (!utils.isNil(stackLine) && !utils.isNil(stackLine.url)) {
           for (var j in whitelistedScriptDomains) {
             if (whitelistedScriptDomains.hasOwnProperty(j)) {
-              if (stackTrace.stack[i].url.indexOf(whitelistedScriptDomains[j]) > -1) {
+              if (stackLine.url.indexOf(whitelistedScriptDomains[j]) > -1) {
                 foundValidDomain = true;
               }
             }
           }
 
-          if (stackTrace.stack[i].url.indexOf(currentLocation.host) > -1) {
+          if (stackLine.url.indexOf(currentLocation.host) > -1) {
             foundValidDomain = true;
           }
         }
