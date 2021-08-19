@@ -54,6 +54,29 @@ describe('Error utilities', () => {
         expect(errorUtilities.isScriptError(stackTrace, {})).toEqual(true);
       });
     });
+
+    describe('with an error that is not script error', () => {
+      it('will return false', () => {
+        const stackTrace = {
+          message: 'Cannot read property \'expand\' of undefined',
+          stack: [
+            {
+              line: 56,
+              column: 12,
+              url: 'http://example.com/index.js',
+              func: 'render'
+            },
+            {
+              line: 12,
+              column: 34,
+              url: 'http://example.com/index.js',
+              func: 'start'
+            },
+          ]
+        };
+        expect(errorUtilities.isScriptError(stackTrace, {})).toEqual(false);
+      });
+    });
   });
 
   describe('isBrowserExtensionError', () => {
@@ -67,7 +90,7 @@ describe('Error utilities', () => {
       });
     });
 
-    describe('with null url in stacktrace', () => {
+    describe('with undefined url in stacktrace', () => {
       it('will return false', () => {
         const stackTrace = {
           stack: [
