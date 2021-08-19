@@ -18,7 +18,7 @@ const FakeRaygun = {
   Utilities: window.raygunUtilityFactory(FakeWindow, {})
 };
 
-var errorUtilities = window.raygunErrorUtilitiesFactory(FakeWindow, FakeRaygun);
+const errorUtilities = window.raygunErrorUtilitiesFactory(FakeWindow, FakeRaygun);
 
 describe('Error utilities', () => {
   describe('isScriptError', () => {
@@ -108,7 +108,8 @@ describe('Error utilities', () => {
 
     describe('stacktrace with all lines from browser extension', () => {
       it('will return true', () => {
-        var stackTrace = {
+        const stackTrace = {
+          message: 'Error in browser extension',
           stack: [
             {
               line: 2,
@@ -137,7 +138,7 @@ describe('Error utilities', () => {
 
     describe('stacktrace with a line not from a browser extension', () => {
       it('will return true', () => {
-        var stackTrace = {
+        const stackTrace = {
           stack: [
             {
               line: 3,
@@ -160,7 +161,7 @@ describe('Error utilities', () => {
 
     describe('stacktrace with no lines from a browser extension', () => {
       it('will return false', () => {
-        var stackTrace = {
+        const stackTrace = {
           stack: [
             {
               line: 4,
