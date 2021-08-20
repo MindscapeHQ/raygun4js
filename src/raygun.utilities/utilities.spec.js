@@ -237,6 +237,7 @@ describe("raygun.utilities", () => {
                     expect(utils.any(null, () => true)).toEqual(false);
                 });
             });
+
             describe('with empty array', () => {
                 it('will return false', () => {
                     expect(utils.any([], () => true)).toEqual(false);
@@ -249,41 +250,10 @@ describe("raygun.utilities", () => {
                     expect(utils.any([1, 1, 2, 3, 5, 8], (item) => item > 8)).toEqual(false);
                 });
             });
+
             describe('with array that has an item that matches the predicate', () => {
                 it('will return true', () => {
                     expect(utils.any([1, 2, 4, 8, 16], (item) => item > 8)).toEqual(true);
-                });
-            });
-        });
-    });
-
-    describe('all', () => {
-        describe('with invalid array values', () => {
-            describe('with null value', () => {
-                it('will return false', () => {
-                    expect(utils.all(null, () => true)).toEqual(false);
-                });
-            });
-            describe('with empty array', () => {
-                it('will return false', () => {
-                    expect(utils.all([], () => true)).toEqual(false);
-                });
-            });
-        });
-        describe('with valid array values', () => {
-            describe('with array that has no items that match the predicate', () => {
-                it('will return false', () => {
-                    expect(utils.all([1, 1, 2, 3, 5, 8, 13, 21], (item) => item > 22)).toEqual(false);
-                });
-            });
-            describe('with array that has only some items that match the predicate', () => {
-                it('will return false', () => {
-                    expect(utils.all([1, 1, 2, 3, 5, 8, 13, 21], (item) => item > 8)).toEqual(false);
-                });
-            });
-            describe('with array where all items match the predicate', () => {
-                it('will return true', () => {
-                    expect(utils.all([2, 4, 6, 8, 12], (item) => item % 2 === 0)).toEqual(true);
                 });
             });
         });

@@ -488,30 +488,6 @@ window.raygunUtilityFactory = function(window, Raygun) {
       }
 
       return false;
-    },
-
-    /**
-     * Given an array, invoke the predicate on each item in the array, for this to return true, all predicate calls must
-     * return true. Simplified version of {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every/|Array.prototype.every}.
-     *
-     * @param arr T[]
-     * @param predicate (item: T) => boolean
-     * @returns {boolean}
-     */
-    all: function all(arr, predicate) {
-      if (this.isEmpty(arr)) {
-        return false;
-      }
-
-      for (var i = 0; i < arr.length; i++) {
-        var item = arr[i];
-
-        if (predicate(item) === false) {
-          return false;
-        }
-      }
-
-      return true;
     }
   };
 
