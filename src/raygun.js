@@ -124,7 +124,7 @@ var raygunFactory = function(window, $, undefined) {
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
         _trackCoreWebVitals = options.trackCoreWebVitals === undefined ? true : options.trackCoreWebVitals;
-  
+
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
         }
@@ -1145,7 +1145,7 @@ var raygunFactory = function(window, $, undefined) {
       return true;
     }
 
-    if (Raygun.ErrorUtilities.isInvalidStackTrace(stackTrace)) {
+    if (!Raygun.ErrorUtilities.isValidStackTrace(stackTrace)) {
       Raygun.Utilities.log(
         'Raygun4JS: cancelling send due to invalid stacktrace data',
         stackTrace

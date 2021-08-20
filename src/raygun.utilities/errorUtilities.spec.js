@@ -183,26 +183,26 @@ describe('Error utilities', () => {
     });
   });
 
-  describe('isInvalidStackTrace', () => {
+  describe('isValidStackTrace', () => {
     describe('with null stack array', () => {
-      it('will return true', () => {
-        expect(errorUtilities.isInvalidStackTrace({
+      it('will return false', () => {
+        expect(errorUtilities.isValidStackTrace({
           stack: null,
-        })).toEqual(true);
+        })).toEqual(false);
       });
     });
 
     describe('with empty stack array', () => {
-      it('will return true', () => {
-        expect(errorUtilities.isInvalidStackTrace({
+      it('will return false', () => {
+        expect(errorUtilities.isValidStackTrace({
           stack: [],
-        })).toEqual(true);
+        })).toEqual(false);
       });
     });
 
     describe('with all null values in stack lines', () => {
-      it('will return true', () => {
-        expect(errorUtilities.isInvalidStackTrace({
+      it('will return false', () => {
+        expect(errorUtilities.isValidStackTrace({
           stack: [
             {
               line: null,
@@ -211,13 +211,13 @@ describe('Error utilities', () => {
               func: '?'
             }
           ],
-        })).toEqual(true);
+        })).toEqual(false);
       });
     });
 
     describe('with known error from bot', () => {
-      it('will return true', () => {
-        expect(errorUtilities.isInvalidStackTrace({
+      it('will return false', () => {
+        expect(errorUtilities.isValidStackTrace({
           message: 'Object Not Found Matching Id:1',
           stack: [
             {
@@ -227,14 +227,14 @@ describe('Error utilities', () => {
               func: 'Z'
             }
           ],
-        })).toEqual(true);
+        })).toEqual(false);
       });
     });
 
     describe('with zero line and column numbers, function is "?"', () => {
       describe('with a url that matches the current location', () => {
-        it('will return true', () => {
-          expect(errorUtilities.isInvalidStackTrace({
+        it('will return false', () => {
+          expect(errorUtilities.isValidStackTrace({
             message: 'ResizeObserver loop limit exceeded',
             stack: [
               {
@@ -244,13 +244,13 @@ describe('Error utilities', () => {
                 func: '?'
               }
             ],
-          })).toEqual(true);
+          })).toEqual(false);
         });
       });
 
       describe('with a url that does not match the current location', () => {
         it('will return true', () => {
-          expect(errorUtilities.isInvalidStackTrace({
+          expect(errorUtilities.isValidStackTrace({
             message: 'TypeError: undefined is not a function',
             stack: [
               {
@@ -260,14 +260,14 @@ describe('Error utilities', () => {
                 func: '?'
               }
             ],
-          })).toEqual(false);
+          })).toEqual(true);
         });
       });
 
       describe('with valid stacktrace', () => {
         describe('with all valid stack lines', () => {
-          it('will return false', () => {
-            expect(errorUtilities.isInvalidStackTrace({
+          it('will return true', () => {
+            expect(errorUtilities.isValidStackTrace({
               message: 'Cannot read property \'fn\' of undefined',
               stack: [
                 {
@@ -283,13 +283,13 @@ describe('Error utilities', () => {
                   func: 'run'
                 },
               ],
-            })).toEqual(false);
+            })).toEqual(true);
           });
         });
 
         describe('with an invalid stack line', () => {
-          it('will return false', () => {
-            expect(errorUtilities.isInvalidStackTrace({
+          it('will return true', () => {
+            expect(errorUtilities.isValidStackTrace({
               message: 'Cannot read property \'fn\' of undefined',
               stack: [
                 {
@@ -305,7 +305,7 @@ describe('Error utilities', () => {
                   func: 'Z'
                 },
               ],
-            })).toEqual(false);
+            })).toEqual(true);
           });
         });
       });

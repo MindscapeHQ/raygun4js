@@ -18,17 +18,17 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
   // The stack line is deemed invalid if all of the following conditions are met:
   // 1. The line and column numbers are nil *or* zero
   // 2. The url is nil *or* the same as the current location *and* the function is '?'
-  var isInvalidStackLine = function isInvalidStackLine(stackLine) {
+  var isValidStackLine = function isValidStackLine(stackLine) {
     if (!utils.isNil(stackLine.line) && stackLine.line > 0) {
-      return false;
+      return true;
     }
 
     if (!utils.isNil(stackLine.column) && stackLine.column > 0) {
-      return false;
+      return true;
     }
 
-    if (!utils.isNil(stackLine.url)) {
-      return currentUrl.indexOf(stackLine.url) !== -1 && stackLine.func === '?';
+    if (utils.isNil(stackLine.url) || currentUrl.indexOf(stackLine.url) !== -1 && stackLine.func === '?') {
+      return false;
     }
 
     return true;
@@ -92,14 +92,14 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
      * @param stackTrace
      * @returns {boolean}
      */
-    isInvalidStackTrace: function isInvalidStackTrace(stackTrace) {
+    isValidStackTrace: function isValidStackTrace(stackTrace) {
       var stack = stackTrace.stack;
 
       if (utils.isNil(stackTrace.message) || utils.isEmpty(stack)) {
-        return true;
+        return false;
       }
 
-      return utils.all(stack, isInvalidStackLine);
+      return utils.any(stack, isValidStackLine);
     },
 
     /**
