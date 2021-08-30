@@ -90,9 +90,10 @@ window.raygunErrorUtilitiesFactory = function (window, Raygun) {
     },
 
     /**
-     * Check if all lines in the stack are invalid, i.e. they have a line and column number of zero and a url of null or
-     * a url that matches the current host *and* a function called '?'. This is a common pattern of errors triggered in
-     * browser extensions or by bots/crawlers.
+     * Check if any lines in the stack are valid, i.e. they do not match the criteria of having a null/zero line and
+     * column number and do not have a url equal to the current url with a function name of '?'.
+     *
+     * This is to filter out a common pattern of errors triggered in browser extensions or by bots/crawlers.
      *
      * @param stackTrace
      * @returns {boolean}
