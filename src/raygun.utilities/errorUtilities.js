@@ -4,7 +4,12 @@
 
 window.raygunErrorUtilitiesFactory = function (window, Raygun) {
   var scriptError = 'Script error';
-  var currentLocation = window.location;
+  var currentLocation = !!window && !!window.location ? window.location : {
+    host: null,
+    toString: function toString() {
+      return null;
+    }
+  };
   var currentUrl = currentLocation.toString();
   var utils = Raygun.Utilities;
 
