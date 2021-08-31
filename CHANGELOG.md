@@ -1,3 +1,6 @@
+* v2.23.0
+- If `ignore3rdPartyErrors` option is true, discard errors that match the pattern of errors from browser extensions, bots and crawlers
+
 * v2.22.5
 - Fixes an issue with Core Web Vital tracking not being able to be disabled.
 - Fixes an issue where `navigator.sendBeacon` errors were not being handled gracefully.
