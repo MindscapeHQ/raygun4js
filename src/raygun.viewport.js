@@ -24,6 +24,18 @@ window.raygunViewportFactory = function raygunViewportFactory(window, document, 
   };
 
   return {
+    /**
+     * Get the width and height values of the current browser viewport. \
+     *
+     * Notes:
+     * - This will return an object with null width and height values if window or document are unavailable, or the
+     * dimension values are invalid.
+     * - This will use the window object's innerWidth and innerHeight functions to get the dimensions, with a fallback
+     * to document.documentElement clientWidth and clientHeight, if both are available, it will return the largest of
+     * the values
+     *
+     * @returns {{width: number, height: number}|{width: null, height: null}}
+     */
     getViewportDimensions: function getViewportDimensions() {
       if (utils.isNil(document) || utils.isNil(window)) {
         return nullResult;
