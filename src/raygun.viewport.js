@@ -25,7 +25,7 @@ window.raygunViewportFactory = function raygunViewportFactory(window, document, 
 
   return {
     /**
-     * Get the width and height values of the current browser viewport. \
+     * Get the width and height values of the current browser viewport.
      *
      * Notes:
      * - This will return an object with null width and height values if window or document are unavailable, or the

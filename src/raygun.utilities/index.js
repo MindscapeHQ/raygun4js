@@ -211,18 +211,6 @@ window.raygunUtilityFactory = function(window, Raygun) {
       return Math.floor(Math.random() * 9007199254740993);
     },
 
-    getViewPort: function() {
-      if (this.isReactNative()) {
-        return { width: 'Not available', height: 'Not available' };
-      }
-
-      var e = document.documentElement,
-        g = document.getElementsByTagName('body')[0],
-        x = window.innerWidth || e.clientWidth || g.clientWidth,
-        y = window.innerHeight || e.clientHeight || g.clientHeight;
-      return { width: x, height: y };
-    },
-
     parseUrl: function(arg, url) {
       function isNumeric(arg) {
         return !isNaN(parseFloat(arg)) && isFinite(arg);

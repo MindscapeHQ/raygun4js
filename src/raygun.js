@@ -817,9 +817,11 @@ var raygunFactory = function(window, $, undefined) {
       options.tags.push('React Native');
     }
 
+    var viewportDimensions = Raygun.Viewport.getViewportDimensions();
+
     var screenData = window.screen || {
-      width: Raygun.Utilities.getViewPort().width,
-      height: Raygun.Utilities.getViewPort().height,
+      width: viewportDimensions.width,
+      height: viewportDimensions.height,
       colorDepth: 8,
     };
 
@@ -887,8 +889,8 @@ var raygunFactory = function(window, $, undefined) {
           'Document-Mode': !Raygun.Utilities.isReactNative()
             ? document.documentMode
             : 'Not available',
-          'Browser-Width': Raygun.Utilities.getViewPort().width,
-          'Browser-Height': Raygun.Utilities.getViewPort().height,
+          'Browser-Width': viewportDimensions.width,
+          'Browser-Height': viewportDimensions.height,
           'Screen-Width': screenData.width,
           'Screen-Height': screenData.height,
           'Color-Depth': screenData.colorDepth,
