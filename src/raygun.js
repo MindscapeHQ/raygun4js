@@ -19,7 +19,7 @@ var raygunFactory = function(window, $, undefined) {
   Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
   Raygun.CoreWebVitals = raygunCoreWebVitalFactory(window);
-  Raygun.Viewport = raygunViewportFactory(window, Raygun);
+  Raygun.Viewport = raygunViewportFactory(window, document, Raygun);
 
   // Constants
   var ProviderStates = {

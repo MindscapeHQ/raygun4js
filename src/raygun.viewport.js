@@ -1,9 +1,15 @@
-/** @format **/
+/**
+ * @prettier
+ */
 
-window.raygunViewportFactory = function raygunViewportFactory(window, Raygun) {
+window.raygunViewportFactory = function raygunViewportFactory(window, document, Raygun) {
   'use strict';
 
   var utils = Raygun.Utilities;
+  var nullResult = {
+    width: null,
+    height: null
+  };
 
   var getViewportWidth = function getViewportWidth() {
     return Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
@@ -14,23 +20,20 @@ window.raygunViewportFactory = function raygunViewportFactory(window, Raygun) {
   };
 
   var isValidDimension = function isValidDimension(dimensionValue) {
-    return !utils.isNil(dimensionValue) && !isNaN(dimensionValue) && dimensionValue >= 0;
+    return !utils.isNil(dimensionValue) && !isNaN(dimensionValue) && dimensionValue > 0;
   };
 
   return {
     getViewportDimensions: function getViewportDimensions() {
-      if (utils.isNil(window) || utils.isNil(document)) {
-        return null;
+      if (utils.isNil(document) || utils.isNil(window)) {
+        return nullResult;
       }
 
       var viewportWidth = getViewportWidth();
       var viewportHeight = getViewportHeight();
 
       if (!isValidDimension(viewportWidth) && !isValidDimension(viewportHeight)) {
-        return {
-          width: null,
-          height: null
-        };
+        return nullResult;
       }
 
       return {
