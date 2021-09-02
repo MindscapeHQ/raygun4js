@@ -1,5 +1,8 @@
+* v2.24.0
+- Send the browser's viewport width and height with each RUM session payload.
+
 * v2.23.0
-- If `ignore3rdPartyErrors` option is true, discard errors that match the pattern of errors from browser extensions, bots and crawlers
+- If `ignore3rdPartyErrors` option is true, discard errors that match the pattern of errors from browser extensions, bots and crawlers.
 
 * v2.22.5
 - Fixes an issue with Core Web Vital tracking not being able to be disabled.
