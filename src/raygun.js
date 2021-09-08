@@ -10,7 +10,7 @@
  * Licensed under the MIT license.
  */
 
-/*globals __DEV__, raygunUtilityFactory, raygunErrorUtilitiesFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunCoreWebVitalFactory */
+/*globals __DEV__, raygunUtilityFactory, raygunErrorUtilitiesFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunViewportFactory, raygunCoreWebVitalFactory */
 
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
@@ -19,6 +19,7 @@ var raygunFactory = function(window, $, undefined) {
   Raygun.NetworkTracking = raygunNetworkTrackingFactory(window, Raygun);
   Raygun.Breadcrumbs = raygunBreadcrumbsFactory(window, Raygun);
   Raygun.CoreWebVitals = raygunCoreWebVitalFactory(window);
+  Raygun.Viewport = raygunViewportFactory(window, document, Raygun);
 
   // Constants
   var ProviderStates = {
@@ -43,6 +44,7 @@ var raygunFactory = function(window, $, undefined) {
     _wrapAsynchronousCallbacks = false,
     _automaticPerformanceCustomTimings = false,
     _trackCoreWebVitals = true,
+    _trackViewportDimensions = true,
     _customData = {},
     _tags = [],
     _user,
@@ -124,6 +126,7 @@ var raygunFactory = function(window, $, undefined) {
         _captureMissingRequests = options.captureMissingRequests || false;
         _automaticPerformanceCustomTimings = options.automaticPerformanceCustomTimings || false;
         _trackCoreWebVitals = options.trackCoreWebVitals === undefined ? true : options.trackCoreWebVitals;
+        _trackViewportDimensions = options.trackViewportDimensions === undefined ? true : options.trackViewportDimensions;
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
@@ -509,7 +512,8 @@ var raygunFactory = function(window, $, undefined) {
           _setCookieAsSecure,
           _captureMissingRequests,
           _automaticPerformanceCustomTimings,
-          _trackCoreWebVitals
+          _trackCoreWebVitals,
+          _trackViewportDimensions
         );
         _rum.attach();
       };
@@ -813,9 +817,11 @@ var raygunFactory = function(window, $, undefined) {
       options.tags.push('React Native');
     }
 
+    var viewportDimensions = Raygun.Viewport.getViewportDimensions();
+
     var screenData = window.screen || {
-      width: Raygun.Utilities.getViewPort().width,
-      height: Raygun.Utilities.getViewPort().height,
+      width: viewportDimensions.width,
+      height: viewportDimensions.height,
       colorDepth: 8,
     };
 
@@ -883,8 +889,8 @@ var raygunFactory = function(window, $, undefined) {
           'Document-Mode': !Raygun.Utilities.isReactNative()
             ? document.documentMode
             : 'Not available',
-          'Browser-Width': Raygun.Utilities.getViewPort().width,
-          'Browser-Height': Raygun.Utilities.getViewPort().height,
+          'Browser-Width': viewportDimensions.width,
+          'Browser-Height': viewportDimensions.height,
           'Screen-Width': screenData.width,
           'Screen-Height': screenData.height,
           'Color-Depth': screenData.colorDepth,
