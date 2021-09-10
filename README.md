@@ -201,6 +201,8 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `trackCoreWebVitals` - When enabled, Raygun4JS will automatically track and report Core Web Vitals. This is enabled by default.
 
+`trackViewportDimensions` - When enabled, Raygun4JS will send the browser's viewport dimensions with each RUM session payload. This is enabled by default.
+
 An example raygun4js configuration:
 
 ```javascript
