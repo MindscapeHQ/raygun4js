@@ -3,7 +3,6 @@ name: Build & Publish Raygun4JS to the pre-release environment
 on:
   push:
     branches: [ master ]  
-  workflow_dispatch:
   
 jobs:
   build:
