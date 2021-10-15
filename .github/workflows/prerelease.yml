@@ -2,8 +2,9 @@ name: Build & Publish Raygun4JS to the pre-release environment
 
 on:
   push:
-    branches: [ master ]
-
+    branches: [ master ]  
+  workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
