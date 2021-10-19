@@ -169,7 +169,8 @@ The second parameter should contain one or more of these keys and a value to cus
 
 `ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
-and will still be sent. _Note: IE 9 and below have no stacktrace information and errors will be discarded with this enabled._
+and will still be sent. Errors that occur in browser extensions or that have been triggered by bots/crawlers that appear to come from 
+your website will also be ignored. _Note: IE 9 and below have no stacktrace information and errors will be discarded with this enabled._
 
 `excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings or RegExp
 objects (for partial matches). Each should match the hostname or TLD that you want to exclude. Note that protocols are not tested.
@@ -199,6 +200,8 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 `automaticPerformanceCustomTimings` - When enabled Raygun4JS will track each `window.performance.measure` call as a custom timing entry. This enables developers to use a more native API for tracking performance timings. More information about `performance.measure` can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure).
 
 `trackCoreWebVitals` - When enabled, Raygun4JS will automatically track and report Core Web Vitals. This is enabled by default.
+
+`trackViewportDimensions` - When enabled, Raygun4JS will send the browser's viewport dimensions with each RUM session payload. This is enabled by default.
 
 An example raygun4js configuration:
 

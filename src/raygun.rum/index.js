@@ -28,7 +28,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     setCookieAsSecure,
     captureMissingRequests,
     automaticPerformanceCustomTimings,
-    trackCoreWebVitals
+    trackCoreWebVitals,
+    trackViewportDimensions
   ) {
     var self = this;
     var _private = {};
@@ -45,7 +46,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * Note: the `customTimingsEnabled` flag is for tracking legacy custom timings
      * because that api prevents page timings from being sent until the main request is completed
      */
-    this.customTimingsEnabled = customTimingsEnabled; 
+    this.customTimingsEnabled = customTimingsEnabled;
     this.automaticPerformanceCustomTimings = automaticPerformanceCustomTimings;
 
     this.trackCoreWebVitals = trackCoreWebVitals;
@@ -70,9 +71,9 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
     this.sendUsingNavigatorBeacon = false;
-    
+
     /**
-     * `stopCollectingMetrics` is a flag to stop collecting/sending metrics from this point onwards. 
+     * `stopCollectingMetrics` is a flag to stop collecting/sending metrics from this point onwards.
      * This is used to prevent resources triggered from the 'pageshow' event from being tracked
      */
     this.stopCollectingMetrics = false;
@@ -143,7 +144,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
       }
-      
+
       Raygun.NetworkTracking.on('request', xhrRequestHandler.bind(this));
       Raygun.NetworkTracking.on('error', xhrErrorHandler.bind(this));
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
@@ -196,13 +197,13 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.endSession = function() {
       self.pendingPayloadData = false;
       sendQueuedPerformancePayloads();
-      
-      sendItemImmediately({
+
+      sendItemImmediately(addViewportToSessionData({
         sessionId: self.sessionId,
         requestId: self.requestId,
-        timestamp: new Date().toISOString(),	
-        type: 'session_end',	
-      });
+        timestamp: new Date().toISOString(),
+        type: 'session_end',
+      }));
 
       generateNewSessionId();
 
@@ -265,13 +266,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.heartBeatInterval = setInterval(function() {
         sendChildAssets();
         sendQueuedItems();
-        
+
         self.xhrStatusMap = {};
       }, self.heartBeatIntervalTime); // 30 seconds between heartbeats
     }
 
     function sendNewSessionStart() {
-      sendItemImmediately({
+      sendItemImmediately(addViewportToSessionData({
         sessionId: self.sessionId,
         timestamp: new Date().toISOString(),
         type: 'session_start',
@@ -279,7 +280,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         version: self.version || 'Not supplied',
         tags: self.tags,
         device: navigator.userAgent,
-      });
+      }));
     }
 
     function hasSessionExpired(storageItem) {
@@ -296,13 +297,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       if(!nullValue) {
         expired = hasSessionExpired(storageItem);
       }
-      
+
       if(nullValue || expired) {
         generateNewSessionId();
         callback(true);
       } else {
-        var id = readStorageElement(storageItem, 'id');   
-        saveToStorage(id); // Update the timestamp     
+        var id = readStorageElement(storageItem, 'id');
+        saveToStorage(id); // Update the timestamp
         self.sessionId = id;
         callback(false);
       }
@@ -315,7 +316,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       if(storageItem) {
         expired = hasSessionExpired(storageItem);
       }
-      
+
       if(expired || !storageItem){
         self.sessionId = randomKey(32);
       }
@@ -549,7 +550,7 @@ var raygunRumFactory = function(window, $, Raygun) {
             }
           } else if (!shouldIgnoreResource(resource)) {
             collection.push(getSecondaryTimingData(resource, offset));
-          } 
+          }
         }
 
         self.offset = i;
@@ -586,10 +587,10 @@ var raygunRumFactory = function(window, $, Raygun) {
                 collection.push({
                   url: response.baseUrl,
                   statusCode: response.status,
-                  timing: { 
-                    du: maxFiveMinutes(response.duration).toFixed(2), 
+                  timing: {
+                    du: maxFiveMinutes(response.duration).toFixed(2),
                     a: offset.toFixed(2),
-                    t: Timings.XHR 
+                    t: Timings.XHR
                   },
                 });
               }
@@ -770,9 +771,9 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     /**
-     * Adds first-paint and first-contentful-paint timings onto the main page timing. 
+     * Adds first-paint and first-contentful-paint timings onto the main page timing.
      * The performance API is used as it's a more standard method only supported in Chrome.
-     * `msFirstPaint` is used for Edge/IE browsers and returns a Unix timestamp. We calculate 
+     * `msFirstPaint` is used for Edge/IE browsers and returns a Unix timestamp. We calculate
      * the difference between 'msFirstPaint' and 'connectStart' to get first-paint for Edge/IE.
      */
     function addPaintTimings(data) {
@@ -783,7 +784,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var firstPaint = window.performance.getEntriesByName('first-paint');
 
       if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
-        data.fp = firstPaint[0].startTime.toFixed(2); 
+        data.fp = firstPaint[0].startTime.toFixed(2);
       } else if(window.performance.timing && !!window.performance.timing.msFirstPaint) {
         data.fp = (window.performance.timing.msFirstPaint - window.performance.timing.fetchStart).toFixed(2);
       }
@@ -791,7 +792,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
 
       if(firstContentfulPaint.length > 0 && firstContentfulPaint[0].startTime > 0) {
-        data.fcp = firstContentfulPaint[0].startTime.toFixed(2); 
+        data.fcp = firstContentfulPaint[0].startTime.toFixed(2);
       }
 
       return data;
@@ -973,10 +974,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getTimingDuration(timing) {
       /**
-       * Safari timing entries (predominantly 'fetch' types) can have a 
-       * duration value of 0. 
-       * 
-       * This utility fallsback to using the responseEnd - startTime when 
+       * Safari timing entries (predominantly 'fetch' types) can have a
+       * duration value of 0.
+       *
+       * This utility fallsback to using the responseEnd - startTime when
        * that is the case.
        */
       var duration = timing.duration;
@@ -1001,7 +1002,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function isCustomTimingMeasurement(resource) {
       return !!(resource && resource.entryType === "measure");
-    }    
+    }
     this.Utilities["isCustomTimingMeasurement"] = isCustomTimingMeasurement;
 
     /**
@@ -1030,8 +1031,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.Utilities["createCustomTimingMeasurement"] = createCustomTimingMeasurement;
 
     /**
-     * Add to the requestMap. This marks the request as being in "flight" 
-     * and stops collecting metrics until this request has completed. 
+     * Add to the requestMap. This marks the request as being in "flight"
+     * and stops collecting metrics until this request has completed.
      */
     function xhrRequestHandler(request) {
 
@@ -1044,16 +1045,16 @@ var raygunRumFactory = function(window, $, Raygun) {
       var requestWithHash = attachParentResourceHash(request, self.parentResourceHash);
       this.xhrRequestMap[request.baseUrl].push(requestWithHash);
     }
-    
+
     /**
-     * Removes the request from the requestMap so that metric collection can be resumed. 
+     * Removes the request from the requestMap so that metric collection can be resumed.
      */
     function xhrErrorHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
       if(request && request.length > 0) {
         this.xhrRequestMap[response.baseUrl].shift();
         log('request encountered an error', response);
-      }	      
+      }
     }
 
     /**
@@ -1085,7 +1086,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       } else {
         log('response fired from non-handled request');
       }
-    }	    
+    }
 
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
@@ -1165,7 +1166,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function createTimingPayload(data) {
-      return {
+      return addViewportToSessionData({
         sessionId: self.sessionId,
         requestId: self.requestId,
         timestamp: new Date().toISOString(),
@@ -1175,7 +1176,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         device: navigator.userAgent,
         tags: self.tags,
         data: data,
-      };
+      });
     }
 
     function createRequestId() {
@@ -1195,10 +1196,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function getFromStorage() {
       /**
-       * Attempt to get the value from local storage, 
+       * Attempt to get the value from local storage,
        * If that doesn't contain a value then try from a cookie as previous versions saved it here
        */
-      var value; 
+      var value;
 
       if(Raygun.Utilities.localStorageAvailable()) {
         value = localStorage.getItem(self.cookieName);
@@ -1218,9 +1219,9 @@ var raygunRumFactory = function(window, $, Raygun) {
       value = Raygun.Utilities.readCookie(self.cookieName);
 
       /**
-       * If there was a cookie and localStorage is avaliable then  
+       * If there was a cookie and localStorage is avaliable then
        * clear the cookie as sessionStorage will be the storage mechanism going forward
-       */  
+       */
       if(value !== null && Raygun.Utilities.localStorageAvailable()) {
         Raygun.Utilities.clearCookie(self.cookieName);
         localStorage.setItem(self.cookieName, value);
@@ -1253,11 +1254,11 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function isXHRTiming(initiatorType) {
       return (
-        initiatorType === 'xmlhttprequest' || 
-        initiatorType === 'fetch' || 
+        initiatorType === 'xmlhttprequest' ||
+        initiatorType === 'fetch' ||
         initiatorType === 'preflight' || // 'preflight' initatorType used by Edge for CORS POST/DELETE requests
-        initiatorType === 'beacon' // for navigator.sendBeacon calls in Chrome/Edge. Safari doesn't record the timings and Firefox marks them as 'other' 
-      ); 
+        initiatorType === 'beacon' // for navigator.sendBeacon calls in Chrome/Edge. Safari doesn't record the timings and Firefox marks them as 'other'
+      );
     }
 
     function isChromeFetchCall(timing) {
@@ -1322,6 +1323,14 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function sortCollectionByProperty(collection, property) {
       return collection.sort(getCompareFunction(property));
+    }
+
+    function addViewportToSessionData(sessionData) {
+      if (trackViewportDimensions && !sessionData.hasOwnProperty('viewport')) {
+        sessionData.viewport = Raygun.Viewport.getViewportDimensions();
+      }
+
+      return sessionData;
     }
 
     _private.updateStorageTimestamp = updateStorageTimestamp;

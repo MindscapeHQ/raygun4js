@@ -170,13 +170,31 @@ window.raygunUtilityFactory = function(window, Raygun) {
       }
     },
 
-    isEmpty: function(o) {
+    isEmpty: function isEmpty(o) {
+      if (this.isNil(o)) {
+        return true;
+      }
+
+      if (typeof o === 'string' || o instanceof Array) {
+        return o.length === 0;
+      }
+
       for (var p in o) {
         if (o.hasOwnProperty(p)) {
           return false;
         }
       }
       return true;
+    },
+
+    /**
+     * Check if the object provided is either null or undefined
+     *
+     * @param obj
+     * @returns {boolean}
+     */
+    isNil: function isNil(obj) {
+      return typeof obj === 'undefined' || obj === null;
     },
 
     contains: function(array, obj) {
@@ -191,18 +209,6 @@ window.raygunUtilityFactory = function(window, Raygun) {
 
     getRandomInt: function() {
       return Math.floor(Math.random() * 9007199254740993);
-    },
-
-    getViewPort: function() {
-      if (this.isReactNative()) {
-        return { width: 'Not available', height: 'Not available' };
-      }
-
-      var e = document.documentElement,
-        g = document.getElementsByTagName('body')[0],
-        x = window.innerWidth || e.clientWidth || g.clientWidth,
-        y = window.innerHeight || e.clientHeight || g.clientHeight;
-      return { width: x, height: y };
     },
 
     parseUrl: function(arg, url) {
@@ -446,6 +452,30 @@ window.raygunUtilityFactory = function(window, Raygun) {
     },
     isIE: function() {
       return window.navigator.userAgent.indexOf('Trident') > -1 || window.navigator.userAgent.indexOf('MSIE') > -1;
+    },
+
+    /**
+     * Given an array, invoke the predicate on each item in the array, if any of these calls return true, then the
+     * result is true. Simplified version of {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some/|Array.prototype.some}.
+     *
+     * @param arr T[]
+     * @param predicate (item: T) => boolean
+     * @returns {boolean}
+     */
+    any: function any(arr, predicate) {
+      if (this.isEmpty(arr)) {
+        return false;
+      }
+
+      for (var i = 0; i < arr.length; i++) {
+        var item = arr[i];
+
+        if (predicate(item) === true) {
+          return true;
+        }
+      }
+
+      return false;
     }
   };
 
