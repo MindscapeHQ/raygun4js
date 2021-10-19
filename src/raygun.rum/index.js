@@ -682,13 +682,17 @@ var raygunRumFactory = function(window, $, Raygun) {
           offset
         ),
         size: timing.decodedBodySize || 0,
+        
       };
 
       log('retrieving secondary timing data for', timing.name);
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        timingData.statusCode = this.xhrStatusMap[url].shift().status;
+        // TODO add some null catching for when request is not null
+        var request = this.xhrStatusMap[url].shift();
+        timingData.statusCode = request.status;
+        timingData.parentResourceHash = request.parentResourceHash;
 
         log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
