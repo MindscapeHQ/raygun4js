@@ -120,8 +120,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
           this.addEventListener(
             'error',
             self.wrapWithHandler(function() {
-              window.console.log("XHR triggerd", url);
-
               self.executeHandlers(self.errorHandlers, {
                 requestURL: url,
                 responseURL: this.responseURL,
@@ -195,7 +193,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
 
               function executeHandlers() {
                 Raygun.Utilities.log('tracking fetch response for', url);
-                window.console.log("XHR triggerd", response);
                 self.executeHandlers(self.responseHandlers, {
                   status: response.status,
                   requestURL: url,

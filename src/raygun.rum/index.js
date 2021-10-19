@@ -427,7 +427,6 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
 
       var sendTimingData = function() {
-        window.console.log("Payload timing data", currentPayloadTimingData);
         if (currentPayloadTimingData.length > 0) {
           addCurrentPayloadEvents();
         }
@@ -438,8 +437,6 @@ var raygunRumFactory = function(window, $, Raygun) {
           payloadIncludesPageTiming = false;
         }
       };
-
-      window.console.log("--------");
 
       for (i = 0; i < self.queuedPerformanceTimings.length; i++) {
         data = self.queuedPerformanceTimings[i];
@@ -1044,7 +1041,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       log('adding request to xhr request map', request);
 
-      var requestWithHash = attachParentResourceHash(request, self.parentResourceHash)
+      var requestWithHash = attachParentResourceHash(request, self.parentResourceHash);
       this.xhrRequestMap[request.baseUrl].push(requestWithHash);
     }
     
@@ -1053,7 +1050,6 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function xhrErrorHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
-      window.console.log("XHR Error occured");
       if(request && request.length > 0) {
         this.xhrRequestMap[response.baseUrl].shift();
         log('request encountered an error', response);
