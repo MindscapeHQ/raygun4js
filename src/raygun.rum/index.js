@@ -67,7 +67,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.version = version;
     this.tags = tags;
     this.heartBeatInterval = null;
-    this.heartBeatIntervalTime = 300;
+    this.heartBeatIntervalTime = 30000;
     this.offset = 0;
     this._captureMissingRequests = captureMissingRequests || false;
     this.sendUsingNavigatorBeacon = false;
@@ -693,7 +693,6 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        // TODO add some null catching for when request is null
         var request = this.xhrStatusMap[url].shift();
         
         timingData.statusCode = request.status;
@@ -1095,7 +1094,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var requests = this.xhrRequestMap[response.baseUrl];
 
       if(requests && requests.length > 0) {
-        var parentResource = requests[0].parentResource ? requests[0].parentResource : undefined;
+        var parentResource = requests[0].parentResource;
 
         this.xhrRequestMap[response.baseUrl].shift();
 
