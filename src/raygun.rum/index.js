@@ -587,8 +587,8 @@ var raygunRumFactory = function(window, $, Raygun) {
 
               if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
-
-                collection.push({
+                
+                const payload = {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
@@ -596,7 +596,9 @@ var raygunRumFactory = function(window, $, Raygun) {
                     a: offset.toFixed(2),
                     t: Timings.XHR
                   },
-                });
+                };
+
+                collection.push(attachParentResource(payload));
               }
             } while (responses.length > 0);
           }
