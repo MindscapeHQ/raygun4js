@@ -588,7 +588,7 @@ var raygunRumFactory = function(window, $, Raygun) {
               if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
                 
-                const payload = {
+                var payload = {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
