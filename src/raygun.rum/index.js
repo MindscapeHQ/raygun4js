@@ -559,7 +559,8 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         self.offset = i;
 
-        if(this._captureMissingRequests) {
+        if(true) {
+          window.console.log("Processing WRT");
           addMissingWrtData(collection, offset);
         }
       } catch (e) {
@@ -598,7 +599,7 @@ var raygunRumFactory = function(window, $, Raygun) {
                   },
                 };
 
-                collection.push(attachParentResource(payload));
+                collection.push(attachParentResource(payload, response.parentResource));
               }
             } while (responses.length > 0);
           }
@@ -988,7 +989,11 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function attachParentResource(obj, parentResource) {
-      return Raygun.Utilities.merge(obj, { parentResource: parentResource });
+      if(parentResource) {
+        return Raygun.Utilities.merge(obj, { parentResource: parentResource });
+      }
+
+      return obj;
     }
 
     function attachParentResourceToCollection(array, parentResource) {
