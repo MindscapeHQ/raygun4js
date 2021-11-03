@@ -559,7 +559,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         self.offset = i;
 
-        if(true) {
+        if(this._captureMissingRequests) {
           addMissingWrtData(collection, offset);
         }
       } catch (e) {
