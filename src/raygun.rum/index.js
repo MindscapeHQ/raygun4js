@@ -560,7 +560,6 @@ var raygunRumFactory = function(window, $, Raygun) {
         self.offset = i;
 
         if(true) {
-          window.console.log("Processing WRT");
           addMissingWrtData(collection, offset);
         }
       } catch (e) {
