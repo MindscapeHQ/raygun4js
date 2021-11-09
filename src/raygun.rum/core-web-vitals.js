@@ -14,6 +14,7 @@
 function raygunCoreWebVitalFactory(window) {
     var WebVitalTimingType = "w";
     var queueTimings = null;
+    var _parentResource = null;
 
     var CoreWebVitals = function(){
         this.cleanWebVitalData = function (event) {
@@ -27,8 +28,9 @@ function raygunCoreWebVitalFactory(window) {
         };
     };
 
-    CoreWebVitals.prototype.attach = function(queueHandler) {
+    CoreWebVitals.prototype.attach = function(queueHandler, parentResource) {
         queueTimings = queueHandler;
+        _parentResource = parentResource;
 
         if(typeof window !== 'undefined' && window.webVitals) {
             if(window.webVitals.getLCP) {
@@ -55,7 +57,8 @@ function raygunCoreWebVitalFactory(window) {
             timing: {
                 t: WebVitalTimingType,
                 du: event.value
-            }
+            },
+            parentResource: _parentResource
         };
 
         queueTimings(webVitalEvent);

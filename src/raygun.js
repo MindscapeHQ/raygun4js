@@ -372,12 +372,13 @@ var raygunFactory = function(window, $, undefined) {
       }
 
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
+        var parentResource = _rum.parentResource;
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
-          _rum.trackCustomTiming(options.name, options.duration, options.offset);
+          _rum.trackCustomTiming(options.name, options.duration, options.offset, parentResource);
         } else if (type === 'customTimings' && options.timings) {
-          _rum.sendCustomTimings(options.timings);
+          _rum.sendCustomTimings(options.timings, parentResource);
         }
       }
     },

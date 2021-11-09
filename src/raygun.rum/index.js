@@ -104,13 +104,14 @@ var raygunRumFactory = function(window, $, Raygun) {
     // ================================================================================
 
     this.attach = function() {
-      if(this.trackCoreWebVitals) {
-        Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings);
-      }
 
       getSessionId(function(isNewSession) {
         self.pageLoaded(isNewSession);
       });
+
+      if(this.trackCoreWebVitals) {
+        Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings, self.parentResource);
+      }
 
       var clickHandler = function() {
         this.updateStorageTimestamp();
@@ -155,7 +156,11 @@ var raygunRumFactory = function(window, $, Raygun) {
         sendNewSessionStart();
       }
 
-      sendPerformance(true);
+      var url = getPageUrl(window.location.pathname);
+      var parentResource = createParentResource(url, Timings.Page);
+      self.parentResource = parentResource;
+
+      sendPerformance(true, parentResource);
 
       heartBeat();
 
@@ -175,9 +180,13 @@ var raygunRumFactory = function(window, $, Raygun) {
         this.virtualPage = path;
       }
 
+      var url = getPageUrl(path);
+      var parentResource = createParentResource(url, Timings.VirtualPage);
+      self.parentResource = parentResource;
+
       resumeCollectingMetrics();
       processVirtualPageTimingsInQueue();
-      sendPerformance(false);
+      sendPerformance(false, parentResource);
     };
 
     this.setUser = function(user) {
@@ -205,7 +214,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     // Legacy Custom Timings
-    this.sendCustomTimings = function(customTimings) {
+    this.sendCustomTimings = function(customTimings, parentResource) {
       if (
         typeof customTimings === 'object' &&
         (typeof customTimings.custom1 === 'number' ||
@@ -223,15 +232,18 @@ var raygunRumFactory = function(window, $, Raygun) {
           // Append custom timings to first queued item, which should be a page view
           self.pendingPayloadData = false;
           self.queuedPerformanceTimings[0].customTiming = customTimings;
+          self.queuedPerformanceTimings[0].parentResource = parentResource;
+
           sendQueuedPerformancePayloads();
         }
       }
     };
 
-    this.trackCustomTiming = function(name, duration, offset) {
+    this.trackCustomTiming = function(name, duration, offset, parentResource) {
       if(typeof duration === "number") {
         var newTimings = [];
-        newTimings.push(createCustomTimingMeasurement(name, duration, offset));
+        var customTiming = createCustomTimingMeasurement(name, duration, offset);
+        newTimings.push(attachParentResource(customTiming, parentResource));
         addPerformanceTimingsToQueue(newTimings, false);
       } else {
         log('Raygun4JS: Custom timing "' + name + '" duration value is not a number');
@@ -330,8 +342,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function sendPerformance(firstLoad) {
-      var performanceData = getPerformanceData(self.virtualPage, firstLoad);
+    function sendPerformance(firstLoad, parentResource) {
+      var performanceData = getPerformanceData(self.virtualPage, firstLoad, parentResource);
 
       if (performanceData === null || performanceData.length < 0) {
         return;
@@ -434,7 +446,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         data = self.queuedPerformanceTimings[i];
         var isPageOrVirtualPage =
           data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
-
+        
         if (payloadIncludesPageTiming && isPageOrVirtualPage) {
           // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
           addCurrentPayloadEvents();
@@ -489,7 +501,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
-    function getPerformanceData(virtualPage, firstLoad) {
+    function getPerformanceData(virtualPage, firstLoad, parentResource) {
       if (
         !performanceEntryExists('timing', 'object') ||
         window.performance.timing.fetchStart === undefined ||
@@ -516,6 +528,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         extractChildData(data, true);
       }
 
+      data = attachParentResourceToCollection(data, parentResource);
+
       return data;
     }
 
@@ -535,7 +549,8 @@ var raygunRumFactory = function(window, $, Raygun) {
             break;
           } else if (isCustomTimingMeasurement(resource)) {
             if(self.automaticPerformanceCustomTimings) {
-              collection.push(getCustomTimingMeasurement(resource));
+              var customTiming = getCustomTimingMeasurement(resource);
+              collection.push(attachParentResource(customTiming, self.parentResource));
             }
           } else if (!shouldIgnoreResource(resource)) {
             collection.push(getSecondaryTimingData(resource, offset));
@@ -572,8 +587,8 @@ var raygunRumFactory = function(window, $, Raygun) {
 
               if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
-
-                collection.push({
+                
+                var payload = {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
@@ -581,7 +596,9 @@ var raygunRumFactory = function(window, $, Raygun) {
                     a: offset.toFixed(2),
                     t: Timings.XHR
                   },
-                });
+                };
+
+                collection.push(attachParentResource(payload, response.parentResource));
               }
             } while (responses.length > 0);
           }
@@ -650,8 +667,8 @@ var raygunRumFactory = function(window, $, Raygun) {
     }.bind(this);
 
     /**
-     * Stops sending through timing information if a XHR request has been made by the response handler hasn't been fired.
-     * This is to prevent issues where multiple timings for the same asset can be sent.
+     * Stops sending through timing information if a XHR request has been made but the response handler hasn't been fired. 
+     * This is to prevent issues where multiple timings for the same asset can be sent. 
      * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
      */
     var waitingForResourceToFinishLoading = function(timing) {
@@ -671,13 +688,17 @@ var raygunRumFactory = function(window, $, Raygun) {
           offset
         ),
         size: timing.decodedBodySize || 0,
+        parentResource: self.parentResource
       };
 
       log('retrieving secondary timing data for', timing.name);
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        timingData.statusCode = this.xhrStatusMap[url].shift().status;
+        var request = this.xhrStatusMap[url].shift();
+        
+        timingData.statusCode = request.status;
+        timingData.parentResource = request.parentResource;
 
         log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
@@ -943,6 +964,46 @@ var raygunRumFactory = function(window, $, Raygun) {
     // =                                                                              =
     // ================================================================================
 
+    function getPageUrl(pathname, shouldIgnoreCasing) {
+      var _pathname = pathname;
+
+      if (shouldIgnoreCasing) {
+        _pathname = _pathname.toLowerCase();
+      }
+
+      var url = window.location.protocol + '//' + window.location.host + _pathname;
+
+      if (url.length > 800) {
+        url = url.substring(0, 800);
+      }
+
+      return url;
+    }
+    
+    function createParentResource(url, type) {
+      return {
+        url: url,
+        type: type
+      };
+    }
+
+    function attachParentResource(obj, parentResource) {
+      if(parentResource) {
+        return Raygun.Utilities.merge(obj, { parentResource: parentResource });
+      }
+
+      return obj;
+    }
+
+    function attachParentResourceToCollection(array, parentResource) {
+      var _array = [];
+      for(var i = 0; i < array.length; i++) {
+        var item = array[i];
+        _array.push(attachParentResource(item, parentResource));
+      }
+      return _array;
+    }
+
     function getTimingDuration(timing) {
       /**
        * Safari timing entries (predominantly 'fetch' types) can have a
@@ -1006,13 +1067,15 @@ var raygunRumFactory = function(window, $, Raygun) {
      * and stops collecting metrics until this request has completed.
      */
     function xhrRequestHandler(request) {
+
       if(!this.xhrRequestMap[request.baseUrl]) {
         this.xhrRequestMap[request.baseUrl] = [];
       }
 
       log('adding request to xhr request map', request);
 
-      this.xhrRequestMap[request.baseUrl].push(request);
+      var requestWithParent = attachParentResource(request, self.parentResource);
+      this.xhrRequestMap[request.baseUrl].push(requestWithParent);
     }
 
     /**
@@ -1020,7 +1083,6 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function xhrErrorHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
-
       if(request && request.length > 0) {
         this.xhrRequestMap[response.baseUrl].shift();
         log('request encountered an error', response);
@@ -1028,16 +1090,18 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     /**
-     * Removes the asset from the requestMap if found and adds the response to the
-     * statusMap so that the status code can be associated with the request.
-     *
-     * If the 'captureMissingRequests' option is enabled and the timing metric is missing
+     * Removes the asset from the requestMap if found and adds the response to the 
+     * statusMap so that the status code can be associated with the request. 
+     * 
+     * If the 'captureMissingRequests' option is enabled and the timing metric is missing 
      * the duration will also be used to create a new XHR timing.
      */
     function xhrResponseHandler(response) {
-      var request = this.xhrRequestMap[response.baseUrl];
+      var requests = this.xhrRequestMap[response.baseUrl];
 
-      if(request && request.length > 0) {
+      if(requests && requests.length > 0) {
+        var parentResource = requests[0].parentResource;
+
         this.xhrRequestMap[response.baseUrl].shift();
 
         if(this.xhrRequestMap[response.baseUrl].length === 0) {
@@ -1049,7 +1113,8 @@ var raygunRumFactory = function(window, $, Raygun) {
         }
 
         log('adding response to xhr status map', response);
-        this.xhrStatusMap[response.baseUrl].push(response);
+        var responseWithParent = attachParentResource(response, parentResource);
+        this.xhrStatusMap[response.baseUrl].push(responseWithParent);
       } else {
         log('response fired from non-handled request');
       }

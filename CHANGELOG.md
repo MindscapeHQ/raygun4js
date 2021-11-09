@@ -1,3 +1,6 @@
+* v2.25.0
+- Attach a parent resource to non-page load events to assist with resource parenting.
+
 * v2.24.0
 - Send the browser's viewport width and height with each RUM session payload.
 
