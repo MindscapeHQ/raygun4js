@@ -97,10 +97,10 @@ Download the [production version][min] or the [development version][max]. You ca
 the jQuery hooks if you are not using jQuery or you wish to provide your own hooks. Get this as a
 [production version][min.vanilla] or [development version][max.vanilla].
 
-[min]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.min.js
-[max]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.js
-[min.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.min.js
-[max.vanilla]: https://raw.github.com/MindscapeHQ/raygun4js/master/dist/raygun.vanilla.js
+[min]: https://cdn.raygun.io/raygun4js/raygun.min.js
+[max]: https://cdn.raygun.io/raygun4js/raygun.js
+[min.vanilla]: https://cdn.raygun.io/raygun4js/raygun.vanilla.min.js
+[max.vanilla]: https://cdn.raygun.io/raygun4js/raygun.vanilla.js
 
 ## Usage
 
