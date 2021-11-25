@@ -81,7 +81,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
           Raygun.Utilities.enhance(
             this,
             'send',
-            self.wrapWithHandler(function() {
+            function() {
               var metadata = {
                 method: method,
                 requestURL: url,
@@ -93,12 +93,12 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
               }
 
               self.executeHandlers(self.requestHandlers, metadata);
-            })
+            }
           );
 
           this.addEventListener(
             'load',
-            self.wrapWithHandler(function() {
+            function() {
               var body = 'N/A for non text responses';
 
               if (this.responseType === '' || this.responseType === 'text') {
@@ -114,18 +114,18 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 body: body,
                 duration: new Date().getTime() - initTime,
               });
-            })
+            }
           );
 
           this.addEventListener(
             'error',
-            self.wrapWithHandler(function() {
+            function() {
               self.executeHandlers(self.errorHandlers, {
                 requestURL: url,
                 responseURL: this.responseURL,
                 duration: new Date().getTime() - initTime,
               });
-            })
+            }
           );
         })
       );
@@ -146,7 +146,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     // Can't reliably detect when it has been polyfilled but no IE version supports fetch
     // So if this is IE, don't hook into fetch
     if (typeof originalFetch === 'function' && typeof originalFetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
-
 
       var processFetch = function() {
         var fetchInput = arguments[0];
@@ -215,7 +214,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
             executeHandlers();
           })
         ).catch(
-          self.wrapWithHandler(function(error) {
+          function(error) {
             self.executeHandlers(self.errorHandlers, {
               metadata: {
                 requestUrl: url,
@@ -223,7 +222,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 duration: new Date().getTime() - initTime,
               },
             });
-          })
+          }
         );
 
         return promise;
