@@ -132,14 +132,14 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     }
 
     var disableFetchLogging = function() {};
-    
+
     /**
      * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
      * These are used to intercept the original fetch method before a reference to it can be made.
-     * Because if a stored reference to the fetch method is made, we cannot get the status code from that point onwards. 
-     * 
+     * Because if a stored reference to the fetch method is made, we cannot get the status code from that point onwards.
+     *
      * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
-     * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called 
+     * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called
      */
     var originalFetch = window.__raygunOriginalFetch || window.fetch;
 
@@ -149,7 +149,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     // So if this is IE, don't hook into fetch
     if (typeof originalFetch === 'function' && typeof originalFetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
 
-      
+
       var processFetch = function() {
         var fetchInput = arguments[0];
         var url, baseUrl;
@@ -203,19 +203,19 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 });
               }
 
-              if (ourResponse) {
-                try {
-                  ourResponse.text().then(function(text) {
+              if (ourResponse && typeof ourResponse.text === 'function') {
+                // Return the promise so that it may be handled by the
+                // parent catch should `executeHandlers` fail.
+                return ourResponse.text()
+                  .then(function(text) {
                     body = Raygun.Utilities.truncate(text, 500);
 
                     executeHandlers();
-                  }).catch(function() { executeHandlers(); });
-                } catch(_e) {
-                  executeHandlers();
-                }
-              } else {
-                executeHandlers();
+                  })
+                  .catch(function() { executeHandlers(); });
               }
+
+              executeHandlers();
             })
           ).catch(
             self.wrapWithHandler(function(error) {
