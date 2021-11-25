@@ -131,8 +131,6 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
       );
     }
 
-    var disableFetchLogging = function() {};
-
     /**
      * Two window objects can be defined inside the installation code snippets that users inject into their page when using Raygun4JS.
      * These are used to intercept the original fetch method before a reference to it can be made.
@@ -173,64 +171,60 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
 
         var promise = originalFetch.apply(null, arguments);
 
-        try {
-          var metadata = {
-            method: method,
-            requestURL: url,
-            baseUrl: baseUrl,
-          };
+        var metadata = {
+          method: method,
+          requestURL: url,
+          baseUrl: baseUrl,
+        };
 
-          if (options && options.body) {
-            metadata.body = options.body;
-          }
-
-          self.executeHandlers(self.requestHandlers, metadata);
-
-          promise.then(
-            self.wrapWithHandler(function(response) {
-              var body = 'N/A when the fetch response does not support clone()';
-              var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
-
-              function executeHandlers() {
-                Raygun.Utilities.log('tracking fetch response for', url);
-                self.executeHandlers(self.responseHandlers, {
-                  status: response.status,
-                  requestURL: url,
-                  responseURL: response.url,
-                  body: body,
-                  baseUrl: baseUrl,
-                  duration: new Date().getTime() - initTime,
-                });
-              }
-
-              if (ourResponse && typeof ourResponse.text === 'function') {
-                // Return the promise so that it may be handled by the
-                // parent catch should `executeHandlers` fail.
-                return ourResponse.text()
-                  .then(function(text) {
-                    body = Raygun.Utilities.truncate(text, 500);
-
-                    executeHandlers();
-                  })
-                  .catch(function() { executeHandlers(); });
-              }
-
-              executeHandlers();
-            })
-          ).catch(
-            self.wrapWithHandler(function(error) {
-              self.executeHandlers(self.errorHandlers, {
-                metadata: {
-                  requestUrl: url,
-                  error: error.toString(),
-                  duration: new Date().getTime() - initTime,
-                },
-              });
-            })
-          );
-        } catch (e) {
-          Raygun.Utilities.log(e);
+        if (options && options.body) {
+          metadata.body = options.body;
         }
+
+        self.executeHandlers(self.requestHandlers, metadata);
+
+        promise.then(
+          self.wrapWithHandler(function(response) {
+            var body = 'N/A when the fetch response does not support clone()';
+            var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
+
+            function executeHandlers() {
+              Raygun.Utilities.log('tracking fetch response for', url);
+              self.executeHandlers(self.responseHandlers, {
+                status: response.status,
+                requestURL: url,
+                responseURL: response.url,
+                body: body,
+                baseUrl: baseUrl,
+                duration: new Date().getTime() - initTime,
+              });
+            }
+
+            if (ourResponse && typeof ourResponse.text === 'function') {
+              // Return the promise so that it may be handled by the
+              // parent catch should `executeHandlers` fail.
+              return ourResponse.text()
+                .then(function(text) {
+                  body = Raygun.Utilities.truncate(text, 500);
+
+                  executeHandlers();
+                })
+                .catch(function() { executeHandlers(); });
+            }
+
+            executeHandlers();
+          })
+        ).catch(
+          self.wrapWithHandler(function(error) {
+            self.executeHandlers(self.errorHandlers, {
+              metadata: {
+                requestUrl: url,
+                error: error.toString(),
+                duration: new Date().getTime() - initTime,
+              },
+            });
+          })
+        );
 
         return promise;
       };
