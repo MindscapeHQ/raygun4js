@@ -240,12 +240,12 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
       } else {
         window.fetch = processFetch;
       }
-
-      disableFetchLogging = function() {
-        window.fetch = originalFetch;
-        delete window.__raygunFetchCallback;
-      };
     }
+  };
+
+  NetworkTracking.prototype.disableFetchLogging = function() {
+    window.fetch = originalFetch;
+    delete window.__raygunFetchCallback;
   };
 
   NetworkTracking.prototype.wrapPrototypeWithHandlers = function() {
