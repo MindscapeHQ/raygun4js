@@ -16,6 +16,8 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
     this.responseHandlers = [];
     this.errorHandlers = [];
 
+    this.originalFetch = undefined;
+
     this.wrapWithHandler = function(method) {
       return function() {
         try {
@@ -139,14 +141,17 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
      * window.__raygunOriginalFetch - the window.fetch method as of when the code snippet was executed
      * window.__raygunFetchCallback - a callback which is executed when the code snippet fetch method is called
      */
-    var originalFetch = window.__raygunOriginalFetch || window.fetch;
+    self.originalFetch = window.__raygunOriginalFetch || window.fetch;
 
     // If fetch has been polyfilled we don't want to hook into it as it then uses XMLHttpRequest
     // This results in doubled up breadcrumbs
     // Can't reliably detect when it has been polyfilled but no IE version supports fetch
     // So if this is IE, don't hook into fetch
-    if (typeof originalFetch === 'function' && typeof originalFetch.polyfill === 'undefined' && !Raygun.Utilities.isIE()) {
-
+    if (
+      typeof self.originalFetch === 'function' &&
+      typeof self.originalFetch.polyfill === 'undefined' &&
+      !Raygun.Utilities.isIE()
+    ) {
       var processFetch = function() {
         var fetchInput = arguments[0];
         var url, baseUrl;
@@ -168,7 +173,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
         url = Raygun.Utilities.resolveFullUrl(url);
         baseUrl = url.split('?')[0];
 
-        var promise = originalFetch.apply(null, arguments);
+        var promise = self.originalFetch.apply(null, arguments);
 
         var metadata = {
           method: method,
@@ -237,8 +242,10 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
   };
 
   NetworkTracking.prototype.disableFetchLogging = function() {
-    window.fetch = originalFetch;
-    delete window.__raygunFetchCallback;
+    if (this.originalFetch !== undefined) {
+      window.fetch = this.originalFetch;
+      delete window.__raygunFetchCallback;
+    }
   };
 
   NetworkTracking.prototype.wrapPrototypeWithHandlers = function() {
