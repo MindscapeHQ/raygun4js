@@ -187,12 +187,11 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
 
         self.executeHandlers(self.requestHandlers, metadata);
 
-        promise.then(
-          self.wrapWithHandler(function(response) {
-            var body = 'N/A when the fetch response does not support clone()';
+        promise
+          .then(function (response) {
             var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
 
-            function executeHandlers() {
+            function executeResponseHandlers(body) {
               Raygun.Utilities.log('tracking fetch response for', url);
               self.executeHandlers(self.responseHandlers, {
                 status: response.status,
@@ -205,21 +204,29 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
             }
 
             if (ourResponse && typeof ourResponse.text === 'function') {
-              // Return the promise so that it may be handled by the
-              // parent catch should `executeHandlers` fail.
-              return ourResponse.text()
-                .then(function(text) {
-                  body = Raygun.Utilities.truncate(text, 500);
-
-                  executeHandlers();
-                })
-                .catch(function() { executeHandlers(); });
+              // Return the promise so that it may be handled by the parent catch.
+              return ourResponse.text().then(
+                // Fulfilled
+                function (text) {
+                  var truncatedResponseText = Raygun.Utilities.truncate(text, 500);
+                  executeResponseHandlers(truncatedResponseText);
+                },
+                // Rejected
+                function (reason) {
+                  var err = '';
+                  if (reason instanceof Error) {
+                    err = ': ' + reason.message;
+                  } else if (typeof reason === 'string') {
+                    err = ': ' + reason;
+                  }
+                  executeResponseHandlers('N/A response.text() rejected' + err);
+                }
+              );
             }
 
-            executeHandlers();
+            executeResponseHandlers('N/A when the fetch response does not support clone()');
           })
-        ).catch(
-          function(error) {
+          .catch(function (error) {
             self.executeHandlers(self.errorHandlers, {
               metadata: {
                 requestUrl: url,
@@ -227,8 +234,7 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
                 duration: new Date().getTime() - initTime,
               },
             });
-          }
-        );
+          });
 
         return promise;
       };
