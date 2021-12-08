@@ -1,3 +1,6 @@
+* v2.25.1
+- Fixes an issue where errors on promises, which have been caught, were still being reported to raygun. Thanks @codex- for identifying and fixing the problem.
+
 * v2.25.0
 - Attach a parent resource to non-page load events to assist with resource parenting.
 
@@ -35,7 +38,7 @@
 - Replace the "Script error" message on an unhandled rejection to be "Unhandled promise rejection" to better distinguish between the two
 
 * v2.20.3
-  - Adds a fallback for calculating the duration for timing entries which have a `.duration` value of zero. This fixes a issue where Safari reports `fetch` calls as having a duration of zero.   
+  - Adds a fallback for calculating the duration for timing entries which have a `.duration` value of zero. This fixes a issue where Safari reports `fetch` calls as having a duration of zero.
 
 * v2.20.2
   - Fixes an issue with ionic-cordova errors not reporting due to the stack-trace being null. Thanks @nirajrajbhandari for identifying and fixing the problem 
