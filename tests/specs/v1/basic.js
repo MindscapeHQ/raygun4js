@@ -26,7 +26,7 @@ describe("Basic Raygun4JS V1 API tests", function() {
     expect(result).toBe(true);
   });
 
-  it('has Pulse trackEvent function', function () {
+  it('has RUM trackEvent function', function () {
     var result = browser.execute(function () {
       return typeof Raygun.trackEvent === 'function';
     });

@@ -176,13 +176,13 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `disableCrashReporting` - Prevent uncaught errors from being sent.
 
-`disablePulse` - Prevent Pulse real user monitoring events from being sent.
+`disablePulse` - Prevent real user monitoring events from being sent.
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
 `pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes).
 
-`pulseIgnoreUrlCasing` - Ignore URL casing when sending data to Pulse.
+`pulseIgnoreUrlCasing` - Ignore URL casing when sending data to RUM.
 
 An example:
 
@@ -204,17 +204,17 @@ Raygun.init('apikey', {
 .attach(); // This enables Crash Reporting by attaching the automatic window.onerror handler callback
 ```
 
-### Pulse API
+### RUM API
 
 #### Tracking Single Page Application (SPA) events
 
-Raygun Pulse supports client-side SPAs through the `trackEvent` function:
+Raygun RUM supports client-side SPAs through the `trackEvent` function:
 
 ```javascript
 Raygun.trackEvent('pageView', { path: '/' + foo });
 ```
 
-When a route or view change is triggered in your SPA, this function should be called with `pageView` as the first parameter and an object with a `path` key set to a path representing the new view or route. Pulse will collect up all timing information that is available and send it to the dashboard. These are then viewable as 'virtual pages'.
+When a route or view change is triggered in your SPA, this function should be called with `pageView` as the first parameter and an object with a `path` key set to a path representing the new view or route. RUM will collect up all timing information that is available and send it to the dashboard. These are then viewable as 'virtual pages'.
 
 The following are a couple of configuration examples that you can use or adapt for your client-side view library/framework. Naturally, if you are using a more full-featured routing system, you should trigger a pageView inside there when the route changes.
 
@@ -297,7 +297,7 @@ Raygun.onAfterSend(function (xhrResponse) {
 });
 ```
 
-Call this function and pass in a function which takes one parameter (see the example below). This callback function will be immediately called after the XHR request for a Crash Reporting or Pulse event responds successfully, or errors out (its `onerror` was called). You can inspect the one parameter, which is the XHR object containing the HTTP response data.
+Call this function and pass in a function which takes one parameter (see the example below). This callback function will be immediately called after the XHR request for a Crash Reporting or RUM event responds successfully, or errors out (its `onerror` was called). You can inspect the one parameter, which is the XHR object containing the HTTP response data.
 
 #### onBeforeXHR
 

@@ -49,7 +49,7 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
 
-This will also disrupt Pulse timings, making them erroneous. For Pulse, it is especially importing that the async snippet method above is used, instead of one of the following.
+This will also disrupt RUM timings, making them erroneous. For RUM, it is especially importing that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -189,7 +189,7 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `pulseMaxVirtualPageDuration` - The maximum time a virtual page can be considered viewed, in milliseconds (defaults to 30 minutes).
 
-`pulseIgnoreUrlCasing` - Ignore URL casing when sending data to Pulse.
+`pulseIgnoreUrlCasing` - Ignore URL casing when sending data to RUM.
 
 `captureUnhandledRejections` - Automatically catch send errors relating to unhandled promise rejections. See [MDN for browser support](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
 
@@ -226,11 +226,11 @@ rg4js('options', {
 });
 ```
 
-### Pulse API
+### RUM API
 
 #### Tracking Single Page Application (SPA) events
 
-Raygun Pulse supports client-side SPAs through the `trackEvent` function:
+Raygun RUM supports client-side SPAs through the `trackEvent` function:
 
 ```javascript
 rg4js('trackEvent', {
@@ -239,7 +239,7 @@ rg4js('trackEvent', {
 });
 ```
 
-When a route or view change is triggered in your SPA, this function should be called with type being `pageView` and `path` set to a string representing the new view or route. Pulse will collect up all timing information that is available and send it to the dashboard. These are then viewable as 'virtual pages'.
+When a route or view change is triggered in your SPA, this function should be called with type being `pageView` and `path` set to a string representing the new view or route. RUM will collect up all timing information that is available and send it to the dashboard. These are then viewable as 'virtual pages'.
 
 The following are a couple of configuration examples that you can use or adapt for your client-side view library/framework. Naturally, if you are using a more full-featured routing system, you should trigger a pageView inside there when the route changes.
 
@@ -481,7 +481,7 @@ rg4js('onAfterSend', function (xhrResponse) {
 });
 ```
 
-Call this function and pass in a function which takes one parameter (see the example below). This callback function will be immediately called after the XHR request for a Crash Reporting or Pulse event responds successfully, or errors out (its `onerror` was called). You can inspect the one parameter, which is the XHR object containing the HTTP response data.
+Call this function and pass in a function which takes one parameter (see the example below). This callback function will be immediately called after the XHR request for a Crash Reporting or RUM event responds successfully, or errors out (its `onerror` was called). You can inspect the one parameter, which is the XHR object containing the HTTP response data.
 
 #### onBeforeXHR
 

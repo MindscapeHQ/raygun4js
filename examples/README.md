@@ -56,10 +56,10 @@ Custom error grouping key
 
 ---
 
-### Pulse
+### RUM
 
 ---
 
-##### [BasicPulse.html](BasicPulse.html)
+##### [BasicRUM.html](BasicRUM.html)
 
-Basic Crash Reporting and Pulse setup using Raygun4JS
+Basic Crash Reporting and RUM setup using Raygun4JS

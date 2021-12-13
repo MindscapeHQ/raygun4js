@@ -184,7 +184,7 @@
   - Fix JSON parsing issue when attempting to use RUM custom timings
 
 * v2.8.1
-  - Strip querystring out of pulse virtual page urls
+  - Strip querystring out of RUM virtual page urls
 
 * v2.8.0
   - New onBeforeSendRUM callback to modify and cancel sending of RUM payloads
@@ -198,7 +198,7 @@
   - Update TraceKit regexes to handle stacktraces in RN android release builds
 
 * v2.6.7
-  - Fix a rare initialization issue with Pulse and recording events before the provider has finished loading
+  - Fix a rare initialization issue with RUM and recording events before the provider has finished loading
   - Small bugfixes to some of the Breadcrumbs operations
 
 * v2.6.6
@@ -239,7 +239,7 @@
   - Adds UMD module support for React Native and other non-web bundled app scenarios
 
 * v2.4.3
-  - Max length of Pulse URLs is clamped to 800 chars (aligned with existing backend behaviour)
+  - Max length of RUM URLs is clamped to 800 chars (aligned with existing backend behaviour)
   - Guard against an undefined options object causing undefined messages for thrown non-Error objects (strings)
 
 * v2.4.2
@@ -257,10 +257,10 @@
   - The most recent pending virtual page is now sent when the tab/window is closed from unload (where available)
 
 * v2.3.3
-  - Pulse URLs lowercase by default
+  - RUM URLs lowercase by default
 
 * v2.3.2
-  - Add ability to ignore Pulse URL casing
+  - Add ability to ignore RUM URL casing
 
 * v2.3.1
   - Guard against undefined fetchStart bug in Mobile Safari 8.0 which passed the existing Browser Timing checks
@@ -283,9 +283,9 @@
   - Release version of v2.2.0-beta with bug fixes and improvements; trackEvent officially added to API
 
 * v2.2.0-beta
-  - Adds experimental support for SPA sites to Pulse
+  - Adds experimental support for SPA sites to RUM
   - noConflict mode improved for V2
-  - Fixed a bug when attaching onBeforeUnload handler when Pulse enabled
+  - Fixed a bug when attaching onBeforeUnload handler when RUM enabled
 
 - v2.1.1
   - Fix issue where when filterScope set to 'all' resulted in payload 400 errors
@@ -293,7 +293,7 @@
 
 * v2.1.0
   - Add custom grouping key function
-  - Add ability to ignore hostnames and user agents for Pulse
+  - Add ability to ignore hostnames and user agents for RUM
   - Calls to rg4js() for config setters made after the script has been downloaded by the snippet are now proxied through to the Raygun object, making the V2 API experience like V1
   - Guard against data set with V2 API being null for certain out-of-order declaration scenarios
   - Fix API rejection issue for large heartbeat payloads
@@ -306,7 +306,7 @@
   - Fixes an issue with isAnonymous from setUser
 
 - v2.0.1
-  - Guard against NaNs in Pulse timing data
+  - Guard against NaNs in RUM timing data
 
 * v2.0.0
   - Adds support for Real User Monitoring
