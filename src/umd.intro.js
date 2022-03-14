@@ -42,7 +42,7 @@
         (wind[wind['RaygunObject']].o = wind[wind['RaygunObject']].o || []).push(arguments)
       } else {
         // onload has been called and provider has executed, call the executor proxy function
-        wind[wind['RaygunObject']](arguments[0], arguments[1]);
+        return wind[wind['RaygunObject']](arguments[0], arguments[1]);
       }
       
   }})(windw);
