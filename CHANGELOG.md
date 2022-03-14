@@ -1,3 +1,6 @@
+* v2.25.2
+- Fixes an issue where the rg4js proxy in the umd loader was throwing away the return value of the executor, preventing the use of commands like 'getRaygunInstance'
+
 * v2.25.1
 - Fixes an issue where errors on promises, which have been caught, were still being reported to raygun. Thanks @codex- for identifying and fixing the problem.
 
