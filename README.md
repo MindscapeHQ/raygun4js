@@ -167,7 +167,7 @@ The second parameter should contain one or more of these keys and a value to cus
 
 `ignore3rdPartyErrors` - ignores any errors that have no stack trace information. This will discard any errors that occur completely
 within 3rd party scripts - if code loaded from the current domain called the 3rd party function, it will have at least one stack line
-and will still be sent. Errors that occur in browser extensions or that have been triggered by bots/crawlers that appear to come from 
+and will still be sent. Errors that occur in browser extensions or that have been triggered by bots/crawlers that appear to come from
 your website will also be ignored. _Note: IE 9 and below have no stacktrace information and errors will be discarded with this enabled._
 
 `excludedHostnames` - Prevents errors from being sent from certain hostnames (domains) by providing an array of strings or RegExp
@@ -181,7 +181,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `apiEndpoint` - A string URI containing the protocol, domain and port (optional) where all payloads will be sent to. This can be used to proxy payloads to the Raygun API through your own server. When not set this defaults internally to the Raygun API, and for most usages you won't need to set this.
 
-`clientIp` - A string containing the client's IP address. RUM requests will be associated to this IP address when set. Particularly useful when proxying payloads to the Raygun API using the `apiEndpoint` option and maintaining RUM's geographic lookup feature. 
+`clientIp` - A string containing the client's IP address. RUM requests will be associated to this IP address when set. Particularly useful when proxying payloads to the Raygun API using the `apiEndpoint` option and maintaining RUM's geographic lookup feature.
 
 _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloading. As such the `clientIp` feature will not associate this last payload._
 
@@ -193,7 +193,7 @@ _Note: navigator.sendBeacon is used to send RUM payloads when a page is unloadin
 
 `setCookieAsSecure` - If the cookies are being used (only used on browsers which don't support localStorage or sessionStorage) then they will be created using the `; secure` flag and thus cookies only work on HTTPS.
 
-`captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all non-2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default due these timings being as accurate as the performance API. 
+`captureMissingRequests` - RUM uses the window.performance API to track XHR timing information and (depending on the browser) not all non-2XX XHR timings are recorded by this API. This option enables the tracking of these missing XHR's calls by tracking the difference between send & success XHR handlers. This is not enabled by default due these timings being as accurate as the performance API.
 
 `automaticPerformanceCustomTimings` - When enabled Raygun4JS will track each `window.performance.measure` call as a custom timing entry. This enables developers to use a more native API for tracking performance timings. More information about `performance.measure` can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure).
 
@@ -265,7 +265,7 @@ $scope.$on('$routeChangeSuccess', function () {
 
 #### Tracking custom timings
 
-Custom timings allow you to track custom performance measurements across your website and application. For example, you can track the time it takes for a video to play after the user clicks a button or the time for a component to mount. 
+Custom timings allow you to track custom performance measurements across your website and application. For example, you can track the time it takes for a video to play after the user clicks a button or the time for a component to mount.
 
 ```javascript
   rg4js('trackEvent', {
@@ -349,7 +349,7 @@ You may use the above argument format
 
 ### Unhandled Promise Rejection
 
-As of 2.10.0 Raygun4JS captures unhandled promise rejections automatically. Browser support for this feature is currently spotty and you can view browser support at [MDN](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).  
+As of 2.10.0 Raygun4JS captures unhandled promise rejections automatically. Browser support for this feature is currently spotty and you can view browser support at [MDN](https://developer.mozilla.org/en-US/docs/Web/Events/unhandledrejection).
 
 To disable this functionality by default you can set the `captureUnhandledRejections` key in the [Initialization Options](Initialization Options).
 
@@ -413,6 +413,13 @@ To then get an instance of the Raygun object when using V2, call this once the p
 
 ```javascript
 var raygun = rg4js('getRaygunInstance');
+```
+
+You can also provide a callback with `'getRaygunInstance'` and it will be called after raygun4js has loaded with the Raygun instance as an argument:
+
+```javascript
+rg4js('getRaygunInstance', raygun => {
+});
 ```
 
 ### Callback Events
