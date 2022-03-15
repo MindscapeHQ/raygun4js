@@ -1,3 +1,6 @@
+* v2.25.3
+- Allows passing a callback with 'getRaygunInstance' to allow for easier access to checking if a raygun instance exists when raygun4js may not have finished loading
+
 * v2.25.2
 - Fixes an issue where the rg4js proxy in the umd loader was throwing away the return value of the executor, preventing the use of commands like 'getRaygunInstance'
 
