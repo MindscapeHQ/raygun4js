@@ -79,6 +79,10 @@
           rg.detach();
           break;
         case 'getRaygunInstance':
+          if (value && typeof value === 'function') {
+            value(rg);
+          }
+
           return rg;
         case 'setUser':
           rg.setUser(
