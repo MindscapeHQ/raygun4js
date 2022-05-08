@@ -1,3 +1,6 @@
+* v2.25.4
+- Adds support for the Ionic Capacitor cross-platform app runtime
+
 * v2.25.3
 - Allows passing a callback with 'getRaygunInstance' to allow for easier access to checking if a raygun instance exists when raygun4js may not have finished loading
 
