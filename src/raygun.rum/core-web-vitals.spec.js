@@ -19,7 +19,8 @@ describe("core-web-vitals", () => {
                 timing: {
                     t: "w",
                     du: "1"
-                }
+                },
+                parentResource: undefined
             });
         });
     });
