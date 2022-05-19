@@ -44,7 +44,8 @@ describe("Custom Timing tests", function() {
           du: "100.00",
           t: "t"
         }, 
-        url: "timingName"
+        url: "timingName",
+        parentResource: { url: 'http://localhost:4567/fixtures/v2/customTiming.html', type: 'p' }
       });
     });
   });
