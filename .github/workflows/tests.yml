@@ -19,6 +19,6 @@ jobs:
           node-version: 16.x
       - uses: browser-actions/setup-chrome@latest
         with:
-          chrome-version: '101.0.4951.64'
+          chrome-version: 982053
       - run: npm ci
       - run: npm test
