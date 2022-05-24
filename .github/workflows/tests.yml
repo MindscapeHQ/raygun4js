@@ -21,4 +21,5 @@ jobs:
         with:
           chrome-version: 982053
       - run: npm ci
+      - run: npx grunt
       - run: npm test
