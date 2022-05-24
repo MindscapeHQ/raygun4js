@@ -1,4 +1,4 @@
-name: Continous Integration
+name: Continuous Integration
 
 on:
   push:
@@ -13,12 +13,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 14.x
       - uses: browser-actions/setup-chrome@latest
         with:
-          chrome-version: '101.0.4951.64'
+          chrome-version: 982053
       - run: npm ci
+      - run: npx grunt
       - run: npm test
