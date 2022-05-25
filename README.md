@@ -603,7 +603,7 @@ Only `identifier` or the first parameter is required. This method takes addition
 setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 ```
 
-`user|identifier` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using Customers.
+`user|identifier` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using [Customers](https://raygun.com/documentation/product-guides/customers/).
 
 `isAnonymous` is a bool indicating whether the user is anonymous or actually has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
 
@@ -615,7 +615,7 @@ setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 
 `uuid` is the identifier of the device the app is running on. This could be used to correlate user accounts over multiple machines.
 
-This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called no Customers will be performed. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
+This will be transmitted with each message. A count of unique users will appear on the dashboard in the individual error view. If you provide an email address, the user's Gravatar will be displayed (if they have one). This method is optional; if it is not called, the [Customers](https://raygun.com/documentation/product-guides/customers/) feature is disabled. Note that if the user context changes (such as in an SPA), you should call this method again to update it.
 
 #### Resetting the user
 
