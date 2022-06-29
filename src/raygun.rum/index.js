@@ -6,12 +6,33 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2018 MindscapeHQ
+ * Copyright (c) 2022 MindscapeHQ
  * Licensed under the MIT license.
  */
 
-var raygunRumFactory = function(window, $, Raygun) {
-  Raygun.RealUserMonitoring = function(
+window.raygunUserAgentData = null;
+if (window && window.navigator && window.navigator.userAgentData) {
+  window.raygunUserAgentData = window.navigator.userAgentData;
+
+  if (!!window.navigator.userAgentData.getHighEntropyValues) {
+    var hints = [
+      /* "model", */ //We may want model (device) info in the future
+      "platformVersion",
+      "fullVersionList"];
+
+
+    //Run this asap so that the High Entropy user agent data will be available, when we send data to the server
+    window.navigator.userAgentData
+      .getHighEntropyValues(hints)
+      .then(
+        function (highEntropyUserAgentData) { window.raygunUserAgentData = highEntropyUserAgentData; },
+        function (e) { window.console.warn('Error calling getHighEntropyValues: ', e); });
+  }
+}
+
+
+var raygunRumFactory = function (window, $, Raygun) {
+  Raygun.RealUserMonitoring = function (
     apiKey,
     apiUrl,
     makePostCorsRequest,
@@ -53,7 +74,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     this.beforeSend =
       beforeSendCb ||
-      function(payload) {
+      function (payload) {
         return payload;
       };
 
@@ -97,39 +118,40 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     this.Utilities = {};
 
+
     // ================================================================================
     // =                                                                              =
     // =                                 Public Api                                   =
     // =                                                                              =
     // ================================================================================
 
-    this.attach = function() {
+    this.attach = function () {
 
-      getSessionId(function(isNewSession) {
+      getSessionId(function (isNewSession) {
         self.pageLoaded(isNewSession);
       });
 
-      if(this.trackCoreWebVitals) {
+      if (this.trackCoreWebVitals) {
         Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings, self.parentResource);
       }
 
-      var clickHandler = function() {
+      var clickHandler = function () {
         this.updateStorageTimestamp();
       }.bind(_private);
 
-      var unloadHandler = function() {
+      var unloadHandler = function () {
         self.sendUsingNavigatorBeacon = true;
         sendChildAssets(true);
         sendQueuedItems();
       }.bind(_private);
 
-      var visibilityChangeHandler = function() {
+      var visibilityChangeHandler = function () {
         if (document.visibilityState === 'visible') {
           this.updateStorageTimestamp();
         }
       }.bind(_private);
 
-      var pageHideHandler = function() {
+      var pageHideHandler = function () {
         self.sendUsingNavigatorBeacon = true;
         sendChildAssets(true);
         sendQueuedItems();
@@ -150,7 +172,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       Raygun.NetworkTracking.on('response', xhrResponseHandler.bind(this));
     };
 
-    this.pageLoaded = function(isNewSession) {
+    this.pageLoaded = function (isNewSession) {
       // Only create a session if we don't have one.
       if (isNewSession) {
         sendNewSessionStart();
@@ -167,7 +189,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       self.initalStaticPageLoadTimestamp = getPerformanceNow(0);
     };
 
-    this.virtualPageLoaded = function(path) {
+    this.virtualPageLoaded = function (path) {
       if (typeof path === 'string') {
         if (path.length > 0 && path[0] !== '/') {
           path = path + '/';
@@ -189,15 +211,15 @@ var raygunRumFactory = function(window, $, Raygun) {
       sendPerformance(false, parentResource);
     };
 
-    this.setUser = function(user) {
+    this.setUser = function (user) {
       self.user = user;
     };
 
-    this.withTags = function(tags) {
+    this.withTags = function (tags) {
       self.tags = tags;
     };
 
-    this.endSession = function() {
+    this.endSession = function () {
       self.pendingPayloadData = false;
       sendQueuedPerformancePayloads();
 
@@ -214,7 +236,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     };
 
     // Legacy Custom Timings
-    this.sendCustomTimings = function(customTimings, parentResource) {
+    this.sendCustomTimings = function (customTimings, parentResource) {
       if (
         typeof customTimings === 'object' &&
         (typeof customTimings.custom1 === 'number' ||
@@ -239,8 +261,8 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
-    this.trackCustomTiming = function(name, duration, offset, parentResource) {
-      if(typeof duration === "number") {
+    this.trackCustomTiming = function (name, duration, offset, parentResource) {
+      if (typeof duration === "number") {
         var newTimings = [];
         var customTiming = createCustomTimingMeasurement(name, duration, offset);
         newTimings.push(attachParentResource(customTiming, parentResource));
@@ -250,7 +272,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     };
 
-    this.captureMissingRequests = function(val) {
+    this.captureMissingRequests = function (val) {
       this._captureMissingRequests = val;
     };
 
@@ -266,7 +288,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         return;
       }
 
-      self.heartBeatInterval = setInterval(function() {
+      self.heartBeatInterval = setInterval(function () {
         sendChildAssets();
         sendQueuedItems();
 
@@ -297,11 +319,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       var nullValue = storageItem === null;
       var expired = false;
 
-      if(!nullValue) {
+      if (!nullValue) {
         expired = hasSessionExpired(storageItem);
       }
 
-      if(nullValue || expired) {
+      if (nullValue || expired) {
         generateNewSessionId();
         callback(true);
       } else {
@@ -316,11 +338,11 @@ var raygunRumFactory = function(window, $, Raygun) {
       var storageItem = getFromStorage();
       var expired = false;
 
-      if(storageItem) {
+      if (storageItem) {
         expired = hasSessionExpired(storageItem);
       }
 
-      if(expired || !storageItem){
+      if (expired || !storageItem) {
         self.sessionId = randomKey(32);
       }
 
@@ -331,7 +353,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       }
     }
 
-    function generateNewSessionId(){
+    function generateNewSessionId() {
       self.sessionId = randomKey(32);
       saveToStorage(self.sessionId);
     }
@@ -394,20 +416,20 @@ var raygunRumFactory = function(window, $, Raygun) {
         eventData: itemsToSend,
       };
 
-      var successCallback = function() {
+      var successCallback = function () {
         log('Raygun4JS: Items sent successfully. Queue length: ' + self.queuedItems.length);
       };
 
-      var errorCallback = function(response) {
+      var errorCallback = function (response) {
 
         // Requeue:
         requeueItemsToFront(itemsToSend);
 
         log(
           'Raygun4JS: Items failed to send. Queue length: ' +
-            self.queuedItems.length +
-            ' Response status code: ' +
-            response.status
+          self.queuedItems.length +
+          ' Response status code: ' +
+          response.status
         );
       };
 
@@ -424,13 +446,13 @@ var raygunRumFactory = function(window, $, Raygun) {
       var payloadIncludesPageTiming = false;
       var data, i;
 
-      var addCurrentPayloadEvents = function() {
+      var addCurrentPayloadEvents = function () {
         payloadTimings.push(createTimingPayload(currentPayloadTimingData));
         currentPayloadTimingData = [];
         payloadIncludesPageTiming = false;
       };
 
-      var sendTimingData = function() {
+      var sendTimingData = function () {
         if (currentPayloadTimingData.length > 0) {
           addCurrentPayloadEvents();
         }
@@ -446,7 +468,7 @@ var raygunRumFactory = function(window, $, Raygun) {
         data = self.queuedPerformanceTimings[i];
         var isPageOrVirtualPage =
           data.timing.t === Timings.Page || data.timing.t === Timings.VirtualPage;
-        
+
         if (payloadIncludesPageTiming && isPageOrVirtualPage) {
           // Ensure that pages/virtual pages are both not included in the same 'web_request_timing'
           addCurrentPayloadEvents();
@@ -484,7 +506,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function addPerformanceTimingsToQueue(performanceData, forceSend) {
-      if(self.stopCollectingMetrics === false) {
+      if (self.stopCollectingMetrics === false) {
         self.queuedPerformanceTimings = self.queuedPerformanceTimings.concat(performanceData);
         sendQueuedPerformancePayloads(forceSend);
       }
@@ -545,10 +567,10 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         for (i = self.offset; i < resources.length; i++) {
           var resource = resources[i];
-          if(!forceSend && waitingForResourceToFinishLoading(resource)) {
+          if (!forceSend && waitingForResourceToFinishLoading(resource)) {
             break;
           } else if (isCustomTimingMeasurement(resource)) {
-            if(self.automaticPerformanceCustomTimings) {
+            if (self.automaticPerformanceCustomTimings) {
               var customTiming = getCustomTimingMeasurement(resource);
               collection.push(attachParentResource(customTiming, self.parentResource));
             }
@@ -559,7 +581,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
         self.offset = i;
 
-        if(this._captureMissingRequests) {
+        if (this._captureMissingRequests) {
           addMissingWrtData(collection, offset);
         }
       } catch (e) {
@@ -573,7 +595,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * It creates a fake WRT payload containing only the duration & XHR type as those are the minimum
      * required set of fields
      */
-    var addMissingWrtData = function(collection, offset) {
+    var addMissingWrtData = function (collection, offset) {
       log('checking for missing WRT data', this.xhrStatusMap);
 
       for (var url in this.xhrStatusMap) {
@@ -587,7 +609,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
               if (!shouldIgnoreResourceByName(response.baseUrl)) {
                 log('adding missing WRT data for url');
-                
+
                 var payload = {
                   url: response.baseUrl,
                   statusCode: response.status,
@@ -652,7 +674,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       };
     }
 
-    var getTimingUrl = function(timing) {
+    var getTimingUrl = function (timing) {
       var url = timing.name.split('?')[0];
 
       if (self.ignoreUrlCasing) {
@@ -671,14 +693,14 @@ var raygunRumFactory = function(window, $, Raygun) {
      * This is to prevent issues where multiple timings for the same asset can be sent. 
      * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
      */
-    var waitingForResourceToFinishLoading = function(timing) {
+    var waitingForResourceToFinishLoading = function (timing) {
       var url = getTimingUrl(timing);
       var request = this.xhrRequestMap[url];
 
       return request && request.length > 0;
     }.bind(this);
 
-    var getSecondaryTimingData = function(timing, offset) {
+    var getSecondaryTimingData = function (timing, offset) {
       var url = getTimingUrl(timing);
 
       var timingData = {
@@ -696,7 +718,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
         var request = this.xhrStatusMap[url].shift();
-        
+
         timingData.statusCode = request.status;
         timingData.parentResource = request.parentResource;
 
@@ -787,21 +809,21 @@ var raygunRumFactory = function(window, $, Raygun) {
      * the difference between 'msFirstPaint' and 'connectStart' to get first-paint for Edge/IE.
      */
     function addPaintTimings(data) {
-      if(!performanceEntryExists('getEntriesByName', 'function')) {
+      if (!performanceEntryExists('getEntriesByName', 'function')) {
         return data;
       }
 
       var firstPaint = window.performance.getEntriesByName('first-paint');
 
-      if(firstPaint.length > 0 && firstPaint[0].startTime > 0) {
+      if (firstPaint.length > 0 && firstPaint[0].startTime > 0) {
         data.fp = firstPaint[0].startTime.toFixed(2);
-      } else if(window.performance.timing && !!window.performance.timing.msFirstPaint) {
+      } else if (window.performance.timing && !!window.performance.timing.msFirstPaint) {
         data.fp = (window.performance.timing.msFirstPaint - window.performance.timing.fetchStart).toFixed(2);
       }
 
       var firstContentfulPaint = window.performance.getEntriesByName('first-contentful-paint');
 
-      if(firstContentfulPaint.length > 0 && firstContentfulPaint[0].startTime > 0) {
+      if (firstContentfulPaint.length > 0 && firstContentfulPaint[0].startTime > 0) {
         data.fcp = firstContentfulPaint[0].startTime.toFixed(2);
       }
 
@@ -876,11 +898,11 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function postPayload(payload, _successCallback, _errorCallback) {
       if (typeof _successCallback !== 'function') {
-        _successCallback = function() {};
+        _successCallback = function () { };
       }
 
       if (typeof _errorCallback !== 'function') {
-        _errorCallback = function() {};
+        _errorCallback = function () { };
       }
 
       makePostCorsRequestRum(
@@ -922,11 +944,15 @@ var raygunRumFactory = function(window, $, Raygun) {
         return;
       }
 
+
+      updateUserAgentData(data);
+
       var payload = self.beforeSend(data);
       if (!payload) {
         log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
         return;
       }
+
 
       if (!!payload.eventData) {
         for (var i = 0; i < payload.eventData.length; i++) {
@@ -958,6 +984,82 @@ var raygunRumFactory = function(window, $, Raygun) {
       makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
     }
 
+     function updateUserAgentData(payload) {
+       if (!payload.eventData) { return; }
+
+       for (var i = 0; i < payload.eventData.length; i++) {
+         if (!!payload.eventData[i].data && Array.isArray(payload.eventData[i].data)) {
+
+           if (!!payload.eventData[i].device) {
+             payload.eventData[i].device = getHighFidelityUAString(payload.eventData[i].device);
+           }
+
+           for (var k = 0; k < payload.eventData[i].data.length; k++) {
+             var dataFragment = payload.eventData[i].data[k];
+
+             if (!!dataFragment.userAgent) {
+              dataFragment.userAgent = getHighFidelityUAString(dataFragment.userAgent);
+             }
+
+             if (!!window.raygunUserAgentData && !!window.raygunUserAgentData.platformVersion) {
+               var platformVersion = (window.raygunUserAgentData.platformVersion || '').split(".");
+               dataFragment.device = {
+                 Family: window.raygunUserAgentData.platform,
+                 Major: platformVersion[0] || '',
+                 Minor: platformVersion[1] || '',
+                 Patch: platformVersion[2] || '',
+                 PatchMinor: platformVersion[3] || ''
+               };
+             }
+           }
+         }
+       }
+     }
+
+    function getHighFidelityUAString(userAgentString) {
+
+      if (!window.raygunUserAgentData) {
+        return userAgentString;
+      }
+      if (window.raygunUserAgentData.platform === "Windows") {
+        var platformVersion = (window.raygunUserAgentData.platformVersion || '').split(".");
+        var majorVersion = parseInt(platformVersion[0], 10) || 0;
+        if (majorVersion >= 13) {
+          userAgentString = userAgentString.replace('Windows NT 10.0', 'Windows NT 11.0');
+        }
+      }
+      var fullVersionList = window.raygunUserAgentData.fullVersionList;
+
+      if (!fullVersionList) {
+        return userAgentString;
+      }
+
+      var regexChrome = /Chrome\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i;
+      var regexEdge = /Edg\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i;
+      // var regexOpera = /OPR\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i; // Not used below, yet???
+
+      for (var n = 0; n < fullVersionList.length; n++) {
+
+        var version = fullVersionList[n].version;
+        var brand = fullVersionList[n].brand;
+
+        if (brand === "Chromium") {
+          userAgentString = userAgentString.replace(regexChrome, 'Chrome\/' + version);
+        }
+        if (brand === "Microsoft Edge") {
+          userAgentString = userAgentString.replace(regexEdge, 'Edg\/' + version);
+        }
+        //Opera (version 88) behaves differently, it correctly populates the UserAgent string; but not the high entropy UserAgentData. This may change in the future?! 
+        /* 
+        if (brand === "Opera") {                         
+           userAgentString = userAgentString.replace(regexOpera, 'OPR\/' + version);
+        }
+         */
+      }
+
+      return userAgentString;
+    }
+
     // ================================================================================
     // =                                                                              =
     // =                                  Utilities                                   =
@@ -979,7 +1081,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
       return url;
     }
-    
+
     function createParentResource(url, type) {
       return {
         url: url,
@@ -988,7 +1090,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     }
 
     function attachParentResource(obj, parentResource) {
-      if(parentResource) {
+      if (parentResource) {
         return Raygun.Utilities.merge(obj, { parentResource: parentResource });
       }
 
@@ -997,7 +1099,7 @@ var raygunRumFactory = function(window, $, Raygun) {
 
     function attachParentResourceToCollection(array, parentResource) {
       var _array = [];
-      for(var i = 0; i < array.length; i++) {
+      for (var i = 0; i < array.length; i++) {
         var item = array[i];
         _array.push(attachParentResource(item, parentResource));
       }
@@ -1014,7 +1116,7 @@ var raygunRumFactory = function(window, $, Raygun) {
        */
       var duration = timing.duration;
 
-      if(duration !== 0) {
+      if (duration !== 0) {
         return duration;
       }
 
@@ -1023,7 +1125,7 @@ var raygunRumFactory = function(window, $, Raygun) {
     this.Utilities["getTimingDuration"] = getTimingDuration;
 
     function resumeCollectingMetrics() {
-      if(self.stopCollectingMetrics) {
+      if (self.stopCollectingMetrics) {
         self.offset = window.performance.getEntries().length;
         self.stopCollectingMetrics = false;
       }
@@ -1068,7 +1170,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function xhrRequestHandler(request) {
 
-      if(!this.xhrRequestMap[request.baseUrl]) {
+      if (!this.xhrRequestMap[request.baseUrl]) {
         this.xhrRequestMap[request.baseUrl] = [];
       }
 
@@ -1083,7 +1185,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      */
     function xhrErrorHandler(response) {
       var request = this.xhrRequestMap[response.baseUrl];
-      if(request && request.length > 0) {
+      if (request && request.length > 0) {
         this.xhrRequestMap[response.baseUrl].shift();
         log('request encountered an error', response);
       }
@@ -1099,12 +1201,12 @@ var raygunRumFactory = function(window, $, Raygun) {
     function xhrResponseHandler(response) {
       var requests = this.xhrRequestMap[response.baseUrl];
 
-      if(requests && requests.length > 0) {
+      if (requests && requests.length > 0) {
         var parentResource = requests[0].parentResource;
 
         this.xhrRequestMap[response.baseUrl].shift();
 
-        if(this.xhrRequestMap[response.baseUrl].length === 0) {
+        if (this.xhrRequestMap[response.baseUrl].length === 0) {
           delete this.xhrRequestMap[response.baseUrl];
         }
 
@@ -1219,7 +1321,7 @@ var raygunRumFactory = function(window, $, Raygun) {
       var lastActivityTimestamp = new Date().toISOString();
       var updatedValue = 'id|' + value + '&timestamp|' + lastActivityTimestamp;
 
-      if(Raygun.Utilities.localStorageAvailable()) {
+      if (Raygun.Utilities.localStorageAvailable()) {
         localStorage.setItem(self.cookieName, updatedValue);
       } else {
         Raygun.Utilities.createCookie(self.cookieName, updatedValue, null, self.setCookieAsSecure);
@@ -1233,16 +1335,16 @@ var raygunRumFactory = function(window, $, Raygun) {
        */
       var value;
 
-      if(Raygun.Utilities.localStorageAvailable()) {
+      if (Raygun.Utilities.localStorageAvailable()) {
         value = localStorage.getItem(self.cookieName);
-        if(value !== null) {
+        if (value !== null) {
           return value;
         }
       }
 
-      if(Raygun.Utilities.sessionStorageAvailable()) {
+      if (Raygun.Utilities.sessionStorageAvailable()) {
         value = sessionStorage.getItem(self.cookieName);
-        if(value !== null) {
+        if (value !== null) {
           saveToStorage(value);
           return value;
         }
@@ -1254,7 +1356,7 @@ var raygunRumFactory = function(window, $, Raygun) {
        * If there was a cookie and localStorage is avaliable then
        * clear the cookie as sessionStorage will be the storage mechanism going forward
        */
-      if(value !== null && Raygun.Utilities.localStorageAvailable()) {
+      if (value !== null && Raygun.Utilities.localStorageAvailable()) {
         Raygun.Utilities.clearCookie(self.cookieName);
         localStorage.setItem(self.cookieName, value);
       }
@@ -1327,7 +1429,7 @@ var raygunRumFactory = function(window, $, Raygun) {
      * @return {function} (a, b) => number
      */
     function getCompareFunction(property) {
-      return function(a, b) {
+      return function (a, b) {
         if (!a.hasOwnProperty(property) || !b.hasOwnProperty(property)) {
           log('Raygun4JS: Property "' + property + '" not found in items in this collection');
           return 0;
@@ -1370,3 +1472,5 @@ var raygunRumFactory = function(window, $, Raygun) {
 };
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
+
+
