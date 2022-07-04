@@ -1,7 +1,7 @@
-- * v2.25.4
+* v2.25.5
 - Adds support for including High Entropy user agent data
 
-- * v2.25.4
+* v2.25.4
 - Adds support for the Ionic Capacitor cross-platform app runtime
 
 * v2.25.3
