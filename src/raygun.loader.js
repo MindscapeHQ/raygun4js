@@ -71,6 +71,7 @@
           attach = value;
           hasLoaded = true;
           break;
+        case 'enableRUM':
         case 'enablePulse':
           enablePulse = value;
           hasLoaded = true;
