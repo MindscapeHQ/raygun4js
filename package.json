@@ -6,7 +6,7 @@
   ],
   "title": "Raygun4js",
   "description": "Raygun.com plugin for JavaScript",
-  "version": "2.25.5",
+  "version": "2.25.6-pre",
   "homepage": "https://github.com/MindscapeHQ/raygun4js",
   "author": {
     "name": "MindscapeHQ",

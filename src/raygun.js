@@ -12,6 +12,7 @@
 
 /*globals __DEV__, raygunUtilityFactory, raygunErrorUtilitiesFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunViewportFactory, raygunCoreWebVitalFactory */
 
+
 var raygunFactory = function(window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
@@ -735,7 +736,7 @@ var raygunFactory = function(window, $, undefined) {
     if (_excludedUserAgents instanceof Array && !Raygun.Utilities.isReactNative()) {
       for (var userAgentIndex in _excludedUserAgents) {
         if (_excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-          if (navigator.userAgent.match(_excludedUserAgents[userAgentIndex])) {
+          if (window.raygunUserAgent.match(_excludedUserAgents[userAgentIndex])) {
             Raygun.Utilities.log(
               'Raygun4JS: cancelling send as error originates from an excluded user agent'
             );
@@ -748,7 +749,7 @@ var raygunFactory = function(window, $, undefined) {
 
     if (
       !Raygun.Utilities.isReactNative() &&
-      navigator.userAgent.match('RaygunPulseInsightsCrawler')
+      window.raygunUserAgent.match('RaygunPulseInsightsCrawler')
     ) {
       return;
     }
@@ -910,7 +911,7 @@ var raygunFactory = function(window, $, undefined) {
           Url: pageLocation,
           QueryString: qs,
           Headers: {
-            'User-Agent': navigator.userAgent,
+            'User-Agent': window.raygunUserAgent,
             Referer: !Raygun.Utilities.isReactNative() ? document.referrer : 'Not available',
             Host: !Raygun.Utilities.isReactNative() ? document.domain : 'Not available',
           },

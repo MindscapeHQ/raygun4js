@@ -10,25 +10,7 @@
  * Licensed under the MIT license.
  */
 
-window.raygunUserAgentData = null;
-if (window && window.navigator && window.navigator.userAgentData) {
-  window.raygunUserAgentData = window.navigator.userAgentData;
 
-  if (!!window.navigator.userAgentData.getHighEntropyValues) {
-    var hints = [
-      /* "model", */ //We may want model (device) info in the future
-      "platformVersion",
-      "fullVersionList"];
-
-
-    //Run this asap so that the High Entropy user agent data will be available, when we send data to the server
-    window.navigator.userAgentData
-      .getHighEntropyValues(hints)
-      .then(
-        function (highEntropyUserAgentData) { window.raygunUserAgentData = highEntropyUserAgentData; },
-        function (e) { window.console.warn('Error calling getHighEntropyValues: ', e); });
-  }
-}
 
 
 var raygunRumFactory = function (window, $, Raygun) {
@@ -304,7 +286,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         user: self.user,
         version: self.version || 'Not supplied',
         tags: self.tags,
-        device: navigator.userAgent,
+        device: window.raygunUserAgent,
       }));
     }
 
@@ -645,7 +627,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
       return {
         url: url,
-        userAgent: navigator.userAgent,
+        userAgent: window.raygunUserAgent,
         timing: getEncodedTimingData(),
         size: 0,
       };
@@ -668,7 +650,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
       return {
         url: url,
-        userAgent: navigator.userAgent,
+        userAgent: window.raygunUserAgent,
         timing: prepareVirtualEncodedTimingData(virtualPageStartTime),
         size: 0,
       };
@@ -917,7 +899,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       if (self.excludedUserAgents instanceof Array) {
         for (var userAgentIndex in self.excludedUserAgents) {
           if (self.excludedUserAgents.hasOwnProperty(userAgentIndex)) {
-            if (navigator.userAgent.match(self.excludedUserAgents[userAgentIndex])) {
+            if (window.raygunUserAgent.match(self.excludedUserAgents[userAgentIndex])) {
               log('Raygun4JS: cancelling send as error originates from an excluded user agent');
               return;
             }
@@ -940,125 +922,80 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
       }
 
-      if (navigator.userAgent.match('RaygunPulseInsightsCrawler')) {
+      if (window.raygunUserAgent.match('RaygunPulseInsightsCrawler')) {
         return;
       }
 
+  
 
-      updateUserAgentData(data);
+      setTimeout(function () {
 
-      var payload = self.beforeSend(data);
-      if (!payload) {
-        log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
-        return;
-      }
+        updateUserAgentData(data);
 
+        var payload = self.beforeSend(data);
+        if (!payload) {
+          log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
+          return;
+        }
 
-      if (!!payload.eventData) {
-        for (var i = 0; i < payload.eventData.length; i++) {
-          if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-            payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+        if (!!payload.eventData) {
+          for (var i = 0; i < payload.eventData.length; i++) {
+            if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
+              payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+            }
+          }
+        }
+
+        var stringifiedPayload = JSON.stringify(payload);
+
+        /**
+         * Use the navigator.sendBeacon method instead of a XHR requests when transmitting data
+         * This occurs mostly when the document is about to be discarded or hidden as
+         * all inflight XHR requests either will be or can be canceled.
+         */
+        if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
+          try {
+            navigator.sendBeacon(url, stringifiedPayload);
+          } catch (e) {
+            log(e, {
+              url: url,
+              payload: stringifiedPayload
+            });
+          }
+          return;
+        }
+
+        makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
+
+          
+
+      }, (window.raygunUserAgentDataStatus === 1?200:0));
+    }
+
+    function updateUserAgentData(payload) {
+      if (!payload.eventData) { return; }
+
+      for (var i = 0; i < payload.eventData.length; i++) {
+        if (!!payload.eventData[i].data && Array.isArray(payload.eventData[i].data)) {
+
+          for (var k = 0; k < payload.eventData[i].data.length; k++) {
+            var dataFragment = payload.eventData[i].data[k];
+
+            if (dataFragment.device && !!window.raygunUserAgentData && !!window.raygunUserAgentData.platformVersion) {
+              var platformVersion = (window.raygunUserAgentData.platformVersion || '').split(".");
+              dataFragment.device = {
+                Family: window.raygunUserAgentData.platform,
+                Major: platformVersion[0] || '',
+                Minor: platformVersion[1] || '',
+                Patch: platformVersion[2] || '',
+                PatchMinor: platformVersion[3] || ''
+              };
+            }
           }
         }
       }
-
-      var stringifiedPayload = JSON.stringify(payload);
-
-      /**
-       * Use the navigator.sendBeacon method instead of a XHR requests when transmitting data
-       * This occurs mostly when the document is about to be discarded or hidden as
-       * all inflight XHR requests either will be or can be canceled.
-       */
-      if (self.sendUsingNavigatorBeacon && navigator.sendBeacon) {
-        try {
-          navigator.sendBeacon(url, stringifiedPayload);
-        } catch (e) {
-          log(e, {
-            url: url,
-            payload: stringifiedPayload
-          });
-        }
-        return;
-      }
-
-      makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
     }
 
-     function updateUserAgentData(payload) {
-       if (!payload.eventData) { return; }
-
-       for (var i = 0; i < payload.eventData.length; i++) {
-         if (!!payload.eventData[i].data && Array.isArray(payload.eventData[i].data)) {
-
-           if (!!payload.eventData[i].device) {
-             payload.eventData[i].device = getHighFidelityUAString(payload.eventData[i].device);
-           }
-
-           for (var k = 0; k < payload.eventData[i].data.length; k++) {
-             var dataFragment = payload.eventData[i].data[k];
-
-             if (!!dataFragment.userAgent) {
-              dataFragment.userAgent = getHighFidelityUAString(dataFragment.userAgent);
-             }
-
-             if (!!window.raygunUserAgentData && !!window.raygunUserAgentData.platformVersion) {
-               var platformVersion = (window.raygunUserAgentData.platformVersion || '').split(".");
-               dataFragment.device = {
-                 Family: window.raygunUserAgentData.platform,
-                 Major: platformVersion[0] || '',
-                 Minor: platformVersion[1] || '',
-                 Patch: platformVersion[2] || '',
-                 PatchMinor: platformVersion[3] || ''
-               };
-             }
-           }
-         }
-       }
-     }
-
-    function getHighFidelityUAString(userAgentString) {
-
-      if (!window.raygunUserAgentData) {
-        return userAgentString;
-      }
-      if (window.raygunUserAgentData.platform === "Windows") {
-        var platformVersion = (window.raygunUserAgentData.platformVersion || '').split(".");
-        var majorVersion = parseInt(platformVersion[0], 10) || 0;
-        if (majorVersion >= 13) {
-          userAgentString = userAgentString.replace('Windows NT 10.0', 'Windows NT 11.0');
-        }
-      }
-      var fullVersionList = window.raygunUserAgentData.fullVersionList;
-
-      if (!fullVersionList) {
-        return userAgentString;
-      }
-
-      var regexChrome = /Chrome\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i;
-      var regexEdge = /Edg\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i;
-      // var regexOpera = /OPR\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i; // Not used below, yet???
-
-      for (var n = 0; n < fullVersionList.length; n++) {
-
-        var version = fullVersionList[n].version;
-        var brand = fullVersionList[n].brand;
-
-        if (brand === "Chromium") {
-          userAgentString = userAgentString.replace(regexChrome, 'Chrome\/' + version);
-        }
-        if (brand === "Microsoft Edge") {
-          userAgentString = userAgentString.replace(regexEdge, 'Edg\/' + version);
-        }
-        //Opera (version 88) behaves differently, it correctly populates the UserAgent string; but not the high entropy UserAgentData. This may change in the future?! 
-        /* 
-        if (brand === "Opera") {                         
-           userAgentString = userAgentString.replace(regexOpera, 'OPR\/' + version);
-        }
-         */
-      }
-
-      return userAgentString;
-    }
 
     // ================================================================================
     // =                                                                              =
@@ -1307,7 +1244,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         type: 'web_request_timing',
         user: self.user,
         version: self.version || 'Not supplied',
-        device: navigator.userAgent,
+        device: window.raygunUserAgent,
         tags: self.tags,
         data: data,
       });
