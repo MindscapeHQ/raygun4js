@@ -6,7 +6,7 @@
   ],
   "title": "Raygun4js",
   "description": "Raygun.com plugin for JavaScript",
-  "version": "2.25.6-pre",
+  "version": "2.25.6",
   "homepage": "https://github.com/MindscapeHQ/raygun4js",
   "author": {
     "name": "MindscapeHQ",
@@ -45,7 +45,6 @@
     "jasmine": "jasmine --config=jasmine.json",
     "wdio": "cross-env node_modules/.bin/wdio wdio.conf.js"
   },
-  "dependencies": {},
   "keywords": [
     "error",
     "tracking",
