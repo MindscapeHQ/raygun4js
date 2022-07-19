@@ -194,7 +194,7 @@ TraceKit.report = (function reportModuleWrapper() {
                     'message': message,
                     'url': document.location.href,
                     'stack': [location],
-                    'useragent': navigator.userAgent
+                    'useragent': window.raygunUserAgent
                 };
             }
         }
@@ -723,7 +723,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': ex ? ex.message : '',
             'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
-            'useragent': navigator ? navigator.userAgent : '',
+            'useragent': navigator ? window.raygunUserAgent : '',
             'stackstring': ex && ex.stack ? ex.stack.toString() : ''
         };
 
@@ -784,7 +784,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': ex.message,
             'url': document.location.href,
             'stack': stack,
-            'useragent': navigator.userAgent,
+            'useragent': window.raygunUserAgent,
             'stackstring': stacktrace
         };
     }
@@ -897,7 +897,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': lines[0],
             'url': document.location.href,
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': window.raygunUserAgent
         };
     }
 
@@ -1036,7 +1036,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': ex.message,
             'url': document.location.href,
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': window.raygunUserAgent
         };
         augmentStackTraceWithInitialElement(result, ex.sourceURL || ex.fileName, ex.line || ex.lineNumber, ex.message || ex.description);
         return result;

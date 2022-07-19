@@ -23,6 +23,7 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'dist/raygun.js': [
+            'src/useragent.js',
             'tracekit/tracekit.js',
             'src/raygun.tracekit.jquery.js',
             'src/polyfills.js',
@@ -38,7 +39,8 @@ module.exports = function(grunt) {
             'src/raygun.rum/index.js',
             'src/raygun.loader.js'
           ],
-          'dist/raygun.vanilla.js': [
+          'dist/raygun.vanilla.js': [            
+            'src/useragent.js',
             'tracekit/tracekit.js',
             'src/polyfills.js',
             'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
@@ -53,7 +55,8 @@ module.exports = function(grunt) {
             'src/raygun.rum/index.js',
             'src/raygun.loader.js'
           ],
-          'dist/raygun.umd.js': [
+          'dist/raygun.umd.js': [            
+            'src/useragent.js',
             'src/umd.intro.js',
             'tracekit/tracekit.js',
             'src/polyfills.js',

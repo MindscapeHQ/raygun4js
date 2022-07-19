@@ -1,4 +1,7 @@
-* v2.25.5
+* v2.25.6
+- Improved support for including High Entropy user agent data
+  
+- * v2.25.5
 - Adds support for including High Entropy user agent data
 
 * v2.25.4
