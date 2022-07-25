@@ -17,7 +17,8 @@
     attach,
     enablePulse,
     noConflict,
-    captureUnhandledRejections;
+    captureUnhandledRejections,
+    hasCalledOnLoad = false;
 
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
@@ -60,8 +61,7 @@
           noConflict = value;
           break;
         case 'apiKey':
-          apiKey = value;
-          hasLoaded = true;
+          onApiKeySetHandler(value);
           break;
         case 'options':
           options = value;
@@ -218,8 +218,25 @@
     }
   };
 
-  var installGlobalExecutor = function() {
-    window[window['RaygunObject']] = function() {
+  var onApiKeySetHandler = function (newApiKey) {
+    apiKey = newApiKey;
+
+    // If the API key is set after onLoadHandler has been called
+    // rg4js is in an uninitialised state.
+    //
+    // Users work around this by manually calling `'boot'`.
+    //
+    // If we set an API key after onLoadHandler has been called,
+    // simply call onLoadHandler again to get rg4js initialised.
+    if (hasCalledOnLoad) {
+      onLoadHandler();
+    }
+
+    hasLoaded = true;
+  };
+
+  var installGlobalExecutor = function () {
+    window[window['RaygunObject']] = function () {
       return executor(arguments);
     };
 
@@ -276,6 +293,8 @@
     }
 
     window[window['RaygunObject']].q = errorQueue;
+
+    hasCalledOnLoad = true;
   };
 
   if (!Raygun.Utilities.isReactNative()) {
