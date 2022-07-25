@@ -5,3 +5,4 @@ dist/snippet
 .idea/
 index.html
 dist/*
+*.nupkg
