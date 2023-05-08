@@ -8,7 +8,9 @@
 
 **Step 1**
 
-Add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
+### CDN/Asynchronous method
+
+No package installation required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
 
 ```javascript
 <script type="text/javascript">
@@ -21,6 +23,8 @@ Add the following snippet to the beginning of the `<head>` tag within your marku
 ```
 
 The above snippet will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
+
+For installations via the package manager, refer to the [Synchronous methods](#synchronous-methods) section if this document.
 
 **Step 2**
 
