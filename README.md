@@ -6,11 +6,11 @@
 
 ## Getting Started
 
+### Asynchronous method - Highly reconmmended
+
 **Step 1**
 
-### CDN/Asynchronous method
-
-No package installation required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
+No installation via a package manager required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
 
 ```javascript
 <script type="text/javascript">
@@ -24,11 +24,12 @@ No package installation required. Just add the following snippet to the beginnin
 
 The above snippet will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
-For installations via the package manager, refer to the [Synchronous methods](#synchronous-methods) section if this document.
+### Via package manager installation 
+For installations and usage via a package manager, refer to the [Synchronous methods](#synchronous-methods) section of this document.
 
 **Step 2**
 
-Add the following lines to your JS site code and paste in your API key (from your Raygun dashboard), to set up the provider to automatically send errors to your Raygun:
+Add the following lines to your JS site code and paste in your API key (from your Raygun dashboard), to set up the provider to automatically send errors to your Raygun app:
 
 ```javascript
 <script type="text/javascript">
@@ -105,6 +106,8 @@ the jQuery hooks if you are not using jQuery or you wish to provide your own hoo
 [max.vanilla]: https://cdn.raygun.io/raygun4js/raygun.vanilla.js
 
 ## Usage
+
+If you are using the CDN, be sure to call these usage methods after the installation.
 
 To send errors manually:
 
@@ -596,7 +599,7 @@ rg4js('getRaygunInstance').resetAnonymousUser();
 rg4js('options', { disableAnonymousUserTracking: true });
 ```
 
-#### Rich user data
+#### Rich user data/user tracking
 
 You can provide additional information about the currently logged in user to Raygun by calling:
 
