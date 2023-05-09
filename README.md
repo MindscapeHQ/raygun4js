@@ -6,11 +6,11 @@
 
 ## Getting Started
 
-### Asynchronous method - Highly reconmmended
+### Asynchronous method - Highly recommended
 
 **Step 1**
 
-No installation via a package manager required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
+No installation via a package manager is required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
 
 ```javascript
 <script type="text/javascript">
@@ -50,9 +50,9 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 ### Synchronous methods
 
-Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
+Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts and will block the page load while it is being downloaded/parsed/executed.
 
-This will also disrupt RUM timings, making them erroneous. For RUM, it is especially importing that the async snippet method above is used, instead of one of the following.
+This will also disrupt RUM timings, making them erroneous. For RUM, it is especially important that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -72,7 +72,7 @@ Visual Studio users can get it by opening the Package Manager Console and typing
 
 #### React Native/as a UMD module
 
-React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
+React Native and other bundled app frameworks that use packaging/module loading libraries can use Raygun4JS as a UMD module:
 
 ```
 // Install the library
