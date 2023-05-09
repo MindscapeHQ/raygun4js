@@ -29,7 +29,7 @@ For installations and usage via a package manager, refer to the [Synchronous met
 
 **Step 2**
 
-Add the following lines to your JS site code and paste in your API key (from your Raygun dashboard), to set up the provider to automatically send errors to your Raygun app:
+Add the following lines to your JS site code and paste in your API key (from your Raygun Application Settings), to set up the provider to automatically send errors to your Raygun app:
 
 ```javascript
 <script type="text/javascript">

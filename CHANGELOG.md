@@ -1,5 +1,5 @@
 * v2.25.7
-- Improve README documentation to be more clear on our highly recommended installation stesp. 
+- Improve README documentation to be more clear on our highly recommended installation steps. 
 - Minor grammar changes within README
 - Add a note about rich user data within README
 - Update the Github Workflow to use a support chrome-version for the chromedriver
