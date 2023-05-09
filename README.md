@@ -689,7 +689,7 @@ rg4js('setFilterScope', 'customData'); // Just filter the custom data (default)
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the [Raygun souce maps documentation][sourcemaps] for more information.
 
-[sourcemaps]: https://raygun.io/docs/workflow/source-maps
+[sourcemaps]: https://raygun.com/documentation/product-guides/crash-reporting/sourcemaps/
 
 ### Offline saving
 
