@@ -6,9 +6,11 @@
 
 ## Getting Started
 
+### Asynchronous method - Highly recommended
+
 **Step 1**
 
-Add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
+No installation via a package manager is required. Just add the following snippet to the beginning of the `<head>` tag within your markup. Please include this snippet before any other `<script>` tag references are made to ensure that Raygun has the best chance to capture all error events on the page.
 
 ```javascript
 <script type="text/javascript">
@@ -22,9 +24,12 @@ Add the following snippet to the beginning of the `<head>` tag within your marku
 
 The above snippet will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
+### Via package manager installation 
+For installations and usage via a package manager, refer to the [Synchronous methods](#synchronous-methods) section of this document.
+
 **Step 2**
 
-Add the following lines to your JS site code and paste in your API key (from your Raygun dashboard), to set up the provider to automatically send errors to your Raygun:
+Add the following lines to your JS site code and paste in your API key (from your Raygun Application Settings), to set up the provider to automatically send errors to your Raygun app:
 
 ```javascript
 <script type="text/javascript">
@@ -45,9 +50,9 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 ### Synchronous methods
 
-Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
+Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts and will block the page load while it is being downloaded/parsed/executed.
 
-This will also disrupt RUM timings, making them erroneous. For RUM, it is especially importing that the async snippet method above is used, instead of one of the following.
+This will also disrupt RUM timings, making them erroneous. For RUM, it is especially important that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -67,7 +72,7 @@ Visual Studio users can get it by opening the Package Manager Console and typing
 
 #### React Native/as a UMD module
 
-React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
+React Native and other bundled app frameworks that use packaging/module loading libraries can use Raygun4JS as a UMD module:
 
 ```
 // Install the library
@@ -101,6 +106,8 @@ the jQuery hooks if you are not using jQuery or you wish to provide your own hoo
 [max.vanilla]: https://cdn.raygun.io/raygun4js/raygun.vanilla.js
 
 ## Usage
+
+If you are using the CDN, be sure to call these usage methods after the installation.
 
 To send errors manually:
 
@@ -592,7 +599,7 @@ rg4js('getRaygunInstance').resetAnonymousUser();
 rg4js('options', { disableAnonymousUserTracking: true });
 ```
 
-#### Rich user data
+#### Rich user data/user tracking
 
 You can provide additional information about the currently logged in user to Raygun by calling:
 
@@ -682,7 +689,7 @@ rg4js('setFilterScope', 'customData'); // Just filter the custom data (default)
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the [Raygun souce maps documentation][sourcemaps] for more information.
 
-[sourcemaps]: https://raygun.io/docs/workflow/source-maps
+[sourcemaps]: https://raygun.com/documentation/product-guides/crash-reporting/sourcemaps/
 
 ### Offline saving
 
