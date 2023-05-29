@@ -746,33 +746,22 @@ In Chrome, if the origin script tag and remote domain do not meet these requirem
 
 Other browsers may send on a best-effort basis (version dependent) if some data is available but potentially without a useful stacktrace. The provider will cancel the send if no data is available.
 
-## AngularJS
+## Angular
 
-You can hook failed Ajax requests with $http in AngularJS by providing an Interceptor that sends to Raygun on error. One possible simple implementation using custom data:
+You can extend the Angular error handler to send errors directly to Raygun.
 
-```javascript
-$httpProvider.interceptors.push(function($q, dependency1, dependency2) {
-  return {
-   'requestError': function(rejection) {
-       rg4js('send', {
-          error: 'Failed $http request',
-          customData: { rejection: rejection }
-       });
-    },
-
-    'responseError': function(rejection) {
-       rg4js('send', {
-          error: 'Failed $http response',
-          customData: { rejection: rejection}
-       });
-    }
-  };
-});
+```typescript
+// Create a new ErrorHandler and report an issue straight to Raygun
+export class RaygunErrorHandler implements ErrorHandler {
+  handleError(e: any) {
+    rg4js('send', {
+      error: e,
+    });
+  }
+}
 ```
 
 For more information, see the official docs under [Interceptors].
-
-[Interceptors]: https://docs.angularjs.org/api/ng/service/$http
 
 ## Vue.js
 
