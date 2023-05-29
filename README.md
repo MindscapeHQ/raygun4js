@@ -259,15 +259,23 @@ $(window).hashchange(function() {
 });
 ```
 
-**AngularJS**
+**Angular**
 
-```javascript
-$scope.$on('$routeChangeSuccess', function () {
-  rg4js('trackEvent', {
-      type: 'pageView',
-      path: '/' + $scope.area
-  });
-});
+```typescript
+export class AppModule implements OnInit {
+  constructor(private router: Router) {}
+  ngOnInit() {
+    this.router.events.subscribe(event => {
+      // Track page views when the NavigationEnd event occurs
+      if (event instanceof NavigationEnd) {
+        rg4js('trackEvent', {
+          type: 'pageView',
+          path: event.url
+        });
+      }
+    });
+  }
+}
 ```
 
 #### Tracking custom timings
