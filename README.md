@@ -761,8 +761,6 @@ export class RaygunErrorHandler implements ErrorHandler {
 }
 ```
 
-For more information, see the official docs under [Interceptors].
-
 ## Vue.js
 
 You can use the Vue.js error handler to send errors directly to Raygun.
