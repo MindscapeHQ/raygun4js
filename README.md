@@ -765,13 +765,32 @@ export class RaygunErrorHandler implements ErrorHandler {
 
 You can use the Vue.js error handler to send errors directly to Raygun.
 
-```javascript
+For Vue.js 2.x, this can be done by setting a global error handler on the `Vue.config.errorHandler` property.
+
+```typescript
+// Vue 2.x example
 Vue.config.errorHandler = function(err, vm, info) {
   rg4js('send', {
     error: err,
     customData: [{ info: info }]
   });
 };
+```
+
+For Vue.js 3.x, the `.config` property is part of the application instance. You will need to create your application instance first before you can assign the errorHandler property.
+
+```typescript
+// Vue 3.x example
+const app = Vue.createApp({});
+
+app.config.errorHandler = function(err, vm, info) {
+  rg4js('send', {
+    error: err,
+    customData: [{ info: info }]
+  });
+};
+
+app.mount('#app');
 ```
 
 ## Release History
