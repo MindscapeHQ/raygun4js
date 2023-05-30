@@ -1,3 +1,6 @@
+* v2.25.8
+- Improve README documentation to be more clear on the protocol relative and how to use the CDN implemmentation without running a server .
+
 * v2.25.7
 - Improve README documentation to be more clear on our highly recommended installation steps. 
 - Minor grammar changes within README
