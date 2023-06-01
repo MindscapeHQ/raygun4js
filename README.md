@@ -24,6 +24,13 @@ No installation via a package manager is required. Just add the following snippe
 
 The above snippet will fetch the Raygun4JS script from our CDN asynchronously, so it doesn't block other scripts from being loaded. It will also catch errors that are thrown while the page is loading, and send them when the script is ready.
 
+
+**Note:** If you encounter a situation where no events are appearing within Raygun, you may need to hard code the URL protocol so that the CDN matches your hosting environment. This could look like one of the following -
+- `https://cdn.raygun.io/raygun4js/raygun.min.js` 
+- `http://cdn.raygun.io/raygun4js/raygun.min.js` 
+
+This will be in replacement of `//cdn.raygun.io/raygun4js/raygun.min.js`.
+
 ### Via package manager installation 
 For installations and usage via a package manager, refer to the [Synchronous methods](#synchronous-methods) section of this document.
 
