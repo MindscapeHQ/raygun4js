@@ -966,21 +966,15 @@ var raygunFactory = function(window, $, undefined) {
 
   // Create the XHR object.
   function createCORSRequest(method, url) {
-    var xhr;
-
-    xhr = new window.XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
+    xhr.timeout = 10000;
 
     if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
       // XHR for Chrome/Firefox/Opera/Safari
       // as well as React Native's custom XHR implementation
       xhr.open(method, url, true);
-    } 
-    else if (window.XDomainRequest) {
-      xhr = new window.XDomainRequest();
-      xhr.open(method, url);
-    }
+    }     
 
-    xhr.timeout = 10000;
     return xhr;
   }
 
