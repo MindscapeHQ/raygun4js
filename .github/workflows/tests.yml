@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14.x
-      - uses: browser-actions/setup-chrome@103
+      - uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: latest
       - run: npm ci
