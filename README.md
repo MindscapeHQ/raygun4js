@@ -143,17 +143,6 @@ If you need to detach it (this will disable automatic unhandled error sending):
 rg4js('detach');
 ```
 
-**IE8**
-
-If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will
-need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider
-will only submit over HTTPS which IE8 will not allow while being served over HTTP.
-
-```javascript
-rg4js('options', {
-  allowInsecureSubmissions: true
-});
-```
 
 ## Documentation
 
@@ -168,8 +157,6 @@ rg4js('options', {
 ```
 
 The second parameter should contain one or more of these keys and a value to customize the behavior:
-
-`allowInsecureSubmissions` - posts error payloads over HTTP. This allows **IE8** to send JS errors
 
 `ignoreAjaxAbort` - User-aborted Ajax calls result in errors - if this option is true, these will not be sent.
 
@@ -219,7 +206,6 @@ An example raygun4js configuration:
 
 ```javascript
 rg4js('options', {
-  allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
   ignoreAjaxError: true,
   debugMode: true,

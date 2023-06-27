@@ -34,7 +34,6 @@ var raygunFactory = function(window, $, undefined) {
   var _traceKit = TraceKit,
     _raygun = window.Raygun,
     _debugMode = false,
-    _allowInsecureSubmissions = false,
     _ignoreAjaxAbort = false,
     _ignoreAjaxError = false,
     _enableOfflineSave = false,
@@ -112,7 +111,6 @@ var raygunFactory = function(window, $, undefined) {
       }
 
       if (options) {
-        _allowInsecureSubmissions = options.allowInsecureSubmissions || false;
         _ignoreAjaxAbort = options.ignoreAjaxAbort || false;
         _ignoreAjaxError = options.ignoreAjaxError || false;
         _disableAnonymousUserTracking = options.disableAnonymousUserTracking || false;
@@ -968,28 +966,14 @@ var raygunFactory = function(window, $, undefined) {
 
   // Create the XHR object.
   function createCORSRequest(method, url) {
-    var xhr;
-
-    xhr = new window.XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
+    xhr.timeout = 10000;
 
     if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
       // XHR for Chrome/Firefox/Opera/Safari
       // as well as React Native's custom XHR implementation
       xhr.open(method, url, true);
-    } else if (window.XDomainRequest) {
-      // XDomainRequest for IE.
-      if (_allowInsecureSubmissions) {
-        // remove 'https:' and use relative protocol
-        // this allows IE8 to post messages when running
-        // on http
-        url = url.slice(6);
-      }
-
-      xhr = new window.XDomainRequest();
-      xhr.open(method, url);
-    }
-
-    xhr.timeout = 10000;
+    }     
 
     return xhr;
   }

@@ -1327,7 +1327,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       return (
         initiatorType === 'xmlhttprequest' ||
         initiatorType === 'fetch' ||
-        initiatorType === 'preflight' || // 'preflight' initatorType used by Edge for CORS POST/DELETE requests
+        initiatorType === 'preflight' || // 'preflight' initiatorType used by Edge for CORS POST/DELETE requests
         initiatorType === 'beacon' // for navigator.sendBeacon calls in Chrome/Edge. Safari doesn't record the timings and Firefox marks them as 'other'
       );
     }

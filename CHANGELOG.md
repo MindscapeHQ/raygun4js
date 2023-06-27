@@ -1,3 +1,6 @@
+* v2.26.0
+- Removed some dead code related to http support in IE8. As IE8 and http is [no longer supported due to security reasons](https://raygun.com/documentation/product-guides/crash-reporting/troubleshooting/#transport-layer-security-tls-compliance)
+  
 * v2.25.8
 - Improve README documentation to be more clear on the protocol relative URL and how to use the CDN implemmentation without running a server .
 
