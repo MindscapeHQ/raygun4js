@@ -3,14 +3,14 @@ var webdriverio = require('webdriverio');
 describe('endSession', function() {
 
   //Setup
-  beforeEach(function() {
+  beforeEach(async function() {
     await browser.reloadSession();
     await browser.url('http://localhost:4567/fixtures/v2/customTiming.html');
   });
 
 
   //Tests
-  it('generates a new session id and saves to storage', function() {
+  it('generates a new session id and saves to storage', async function() {
 
     var sessionId = await browser.execute(function () {
       return localStorage.getItem("raygun4js-sid");
@@ -22,10 +22,10 @@ describe('endSession', function() {
     });
 
     expect(newSessionId).toBeTruthy;
-    await expect(sessionId).not.toBe(newSessionId);
+    expect(sessionId).not.toBe(newSessionId);
   });
 
-  it('sends a session_end and session_start event', function() {
+  it('sends a session_end and session_start event', async function() {
 
     await browser.execute(function () {
       rg4js('endSession');
@@ -41,7 +41,7 @@ describe('endSession', function() {
       return timings.eventData[0].type;
     });
 
-    await expect(endSessionPayload).toEqual("session_end");
-    await expect(startSessionPayload).toEqual("session_start");
+    expect(endSessionPayload).toEqual("session_end");
+    expect(startSessionPayload).toEqual("session_start");
   });
 });

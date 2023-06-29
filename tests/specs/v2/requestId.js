@@ -4,7 +4,7 @@ describe("Request ID tests", function() {
 
   // Tests
 
-  it('has a unique request ID for each virtual page request', function() {
+  it('has a unique request ID for each virtual page request', async function() {
     await browser.url('http://localhost:4567/fixtures/v2/requestId.html');
 
     await browser.pause(1000);
@@ -18,6 +18,6 @@ describe("Request ID tests", function() {
     var requestId1 = requestPayloads[1].eventData[0].requestId;
     var requestId2 = requestPayloads[2].eventData[0].requestId;
 
-    await expect(requestId1).not.toMatch(requestId2);
+    expect(requestId1).not.toMatch(requestId2);
   });
 });

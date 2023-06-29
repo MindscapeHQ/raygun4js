@@ -7,7 +7,7 @@ var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Payload functional validation tests for V2 manual send", function() {
 
-  it("performs an XHR to /entries when rg4js('send') is called", function () {
+  it("performs an XHR to /entries when rg4js('send') is called", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/manualSend.html');
 
     await browser.pause(4000);
@@ -23,7 +23,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(didPerformRequest).toBe(true);
   });
 
-  it("doesn't performs an XHR to /entries when the API key isn't set", function () {
+  it("doesn't performs an XHR to /entries when the API key isn't set", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/manualSendNoApiKey.html');
 
     await browser.pause(4000);
@@ -39,7 +39,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(didPerformRequest).toBe(false);
   });
 
-  it("has the error message in the payload set", function () {
+  it("has the error message in the payload set", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/manualSend.html');
 
     await browser.pause(4000);
@@ -55,7 +55,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("works with ignore3rdPartyErrors enabled", function() {
+  it("works with ignore3rdPartyErrors enabled", async function() {
     await browser.url('http://localhost:4567/fixtures/v2/manualSend3rdParty.html');
 
     await browser.pause(4000);
@@ -71,7 +71,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("has the classname in the payload set", function () {
+  it("has the classname in the payload set", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/manualSend.html');
 
     await browser.pause(4000);
@@ -89,7 +89,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     }
   });
 
-  it("has the filename in the stacktrace payload set", function () {
+  it("has the filename in the stacktrace payload set", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v2/manualSend.html';
 
     await browser.url(pageUrl);
@@ -110,7 +110,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     }
   });
 
-  it("has tags in the payload when tags are passed in", function () {
+  it("has tags in the payload when tags are passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v2/manualSendTag.html';
 
     await browser.url(pageUrl);
@@ -128,7 +128,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("has custom data in the payload when custom data is passed in", function () {
+  it("has custom data in the payload when custom data is passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v2/manualSendCustomData.html';
 
     await browser.url(pageUrl);
@@ -146,7 +146,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("has correct user payload when rg4js('setUser') is called", function () {
+  it("has correct user payload when rg4js('setUser') is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v2/manualSendUser.html';
 
     await browser.url(pageUrl);
@@ -168,7 +168,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("has correct version in payload when rg4js('setVersion') is called", function () {
+  it("has correct version in payload when rg4js('setVersion') is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v2/manualSendVersion.html';
 
     await browser.url(pageUrl);
@@ -186,7 +186,7 @@ describe("Payload functional validation tests for V2 manual send", function() {
     await expect(passes).toBe(true);
   });
 
-  it("supports sending errors with the error as a string", function () {
+  it("supports sending errors with the error as a string", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/manualSendErrorAsString.html');
 
     await browser.pause(4000);

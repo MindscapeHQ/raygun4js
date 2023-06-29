@@ -10,49 +10,49 @@ async function breadcrumbExists(type, message) {
 }
 
 describe("Navigation events", function() {
-  beforeEach(function() {
+  beforeEach(async function() {
     await browser.url("http://localhost:4567/fixtures/breadcrumbs/automatic.navigation.html");
     await browser.pause(8000);
   });
 
-  it("records a page load breadcrumb first", function() {
+  it("records a page load breadcrumb first", async function() {
     var breadcrumb = await _.first((await common.sentPayloads())[0].Details.Breadcrumbs);
 
-    if (!(await common.isOldIE())) {
-      await expect(breadcrumb.type).toBe("navigation");
-      await expect(breadcrumb.message).toBe("Page loaded");
+    if (!common.isOldIE()) {
+      expect(breadcrumb.type).toBe("navigation");
+      expect(breadcrumb.message).toBe("Page loaded");
     }
   });
 
-  it("records pageShown events", function() {
-    if (!(await common.isOldIE()) && !(await common.isIEVersion('10'))) {
-      await expect(await breadcrumbExists("navigation", "Page shown")).toBe(true);
+  it("records pageShown events", async function() {
+    if (!common.isOldIE() && !common.isIEVersion('10')) {
+      expect(await breadcrumbExists("navigation", "Page shown")).toBe(true);
     }
   });
 
-  it("records replaceState events", function() {
-    if (!(await common.isOldIE())) {
-      await expect(await breadcrumbExists("navigation", "replaceState")).toBe(true);
+  it("records replaceState events", async function() {
+    if (!common.isOldIE()) {
+      expect(await breadcrumbExists("navigation", "replaceState")).toBe(true);
     }
   });
 
-  it("records pushState events", function() {
-    if (!(await common.isOldIE())) {
-      await expect(await breadcrumbExists("navigation", "pushState")).toBe(true);
+  it("records pushState events", async function() {
+    if (!common.isOldIE()) {
+      expect(await breadcrumbExists("navigation", "pushState")).toBe(true);
     }
   });
 
-  it("records popState events", function() {
-    if (!(await common.isOldIE())) {
-      await expect(await breadcrumbExists("navigation", "Navigated back")).toBe(true);
+  it("records popState events", async function() {
+    if (!common.isOldIE()) {
+      expect(await breadcrumbExists("navigation", "Navigated back")).toBe(true);
     }
   });
 
-  it("records hashChange events", function() {
+  it("records hashChange events", async function() {
     // Despite hashchange event being supported by ie9 and tested working
     // the test doesn't pick up the hash change event
-    if (!(await common.isOldIE())) {
-      await expect(await breadcrumbExists("navigation", "Hash change")).toBe(true);
+    if (!common.isOldIE()) {
+      expect(await breadcrumbExists("navigation", "Hash change")).toBe(true);
     }
   });
 });

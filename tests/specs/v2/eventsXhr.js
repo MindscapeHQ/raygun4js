@@ -7,7 +7,7 @@ describe("XHR functional tests for /events with V2", function() {
 
   // Tests
 
-  it("performs an XHR to /events when rg4js('trackEvent') is called", function () {
+  it("performs an XHR to /events when rg4js('trackEvent') is called", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/trackEvent.html');
 
     await browser.pause(4000);
@@ -20,7 +20,7 @@ describe("XHR functional tests for /events with V2", function() {
       return req.url.indexOf(_eventsEndpoint) === 0;
     });
 
-    await expect(didPerformRequest).toBe(true);
+    expect(didPerformRequest).toBe(true);
   });
 
 });

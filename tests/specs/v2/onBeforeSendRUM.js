@@ -4,7 +4,7 @@ var _ = require('underscore');
 var _eventsEndpoint = 'https://api.raygun.io/events';
 
 describe('onBeforeSendRUM callback', function() {
-  it('lets you modify the payload before sending', function() {
+  it('lets you modify the payload before sending', async function() {
     await browser.url('http://localhost:4567/fixtures/v2/onBeforeSendRUM.html');
 
     await browser.pause(4000);
@@ -13,10 +13,10 @@ describe('onBeforeSendRUM callback', function() {
       return window.__requestPayloads[0];
     });
 
-    await expect(modifiedPayload.eventData[0].version).toBe('1.0.0');
+    expect(modifiedPayload.eventData[0].version).toBe('1.0.0');
   });
 
-  it('serializes the eventData.data to a string', function() {
+  it('serializes the eventData.data to a string', async function() {
     await browser.url('http://localhost:4567/fixtures/v2/onBeforeSendRUM.html');
 
     await browser.pause(4000);
@@ -26,10 +26,10 @@ describe('onBeforeSendRUM callback', function() {
     });
 
     var typeOfData = typeof firstPayload.eventData[0].data;
-    await expect(typeOfData === "string").toBe(true);
+    expect(typeOfData === "string").toBe(true);
   });
 
-  it('allows you to cancel sending a payload', function() {
+  it('allows you to cancel sending a payload', async function() {
     await browser.url('http://localhost:4567/fixtures/v2/onBeforeSendRUM.html');
 
     await browser.pause(4000);
@@ -38,6 +38,6 @@ describe('onBeforeSendRUM callback', function() {
       return window.__requestPayloads;
     });
 
-    await expect(allPayloads.length).toBe(1);
+    expect(allPayloads.length).toBe(1);
   });
 });

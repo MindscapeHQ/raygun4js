@@ -4,7 +4,7 @@ var _ = require('underscore');
 
 describe("ClientIp", function() {
 
-  it("X-Remote-Address is null when not set", function () {
+  it("X-Remote-Address is null when not set", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/withoutClientIpSet.html');
 
     await browser.pause(4000);
@@ -20,7 +20,7 @@ describe("ClientIp", function() {
     await expect(remoteAddressIsUndefined).toBe(true);
   });
 
-  it("X-Remote-Address is equal to '192.168.0.12'", function () {
+  it("X-Remote-Address is equal to '192.168.0.12'", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/withClientIpSet.html');
 
     await browser.pause(4000);

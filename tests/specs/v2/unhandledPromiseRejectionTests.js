@@ -4,7 +4,7 @@ var _ = require('underscore');
 describe("Unhandled promise rejection", function() {
     // Tests
 
-    it('sends error on unhandled promise rejection', function() {
+    it('sends error on unhandled promise rejection', async function() {
         await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejection.html');
         await browser.pause(1000);
 
@@ -20,12 +20,12 @@ describe("Unhandled promise rejection", function() {
             });
             var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
 
-            await expect(unhandledPromise).toBe(true);
+            expect(unhandledPromise).toBe(true);
         }
     });
 
     describe('with no reason provided for rejection', function() {
-        it('sends an error with a relevant message and no stacktrace data', function() {
+        it('sends an error with a relevant message and no stacktrace data', async function() {
             await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejectionWithNoReason.html');
             await browser.pause(1000);
 
@@ -42,10 +42,10 @@ describe("Unhandled promise rejection", function() {
 
                 var errorPayload = requestPayloads[0].Details.Error;
 
-                await expect(errorPayload.Message).toEqual('Unhandled promise rejection');
-                await expect(errorPayload.StackTrace.length).toEqual(1);
-                await expect(errorPayload.StackTrace[0].LineNumber).toBeNull();
-                await expect(errorPayload.StackTrace[0].ColumnNumber).toBeNull();
+                expect(errorPayload.Message).toEqual('Unhandled promise rejection');
+                expect(errorPayload.StackTrace.length).toEqual(1);
+                expect(errorPayload.StackTrace[0].LineNumber).toBeNull();
+                expect(errorPayload.StackTrace[0].ColumnNumber).toBeNull();
             }
         });
     });

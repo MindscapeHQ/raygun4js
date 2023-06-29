@@ -5,7 +5,7 @@ var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Payload functional validation tests for V1 automatic unhandled error sending", function() {
 
-  it("performs an XHR to /entries when Raygun.send() is called", function () {
+  it("performs an XHR to /entries when Raygun.send() is called", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
     await browser.pause(6000);
@@ -14,14 +14,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = await _.any(inFlightXhrs, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
     });
 
-    await expect(didPerformRequest).toBe(true);
+    expect(didPerformRequest).toBe(true);
   });
 
-  it("doesn't performs an XHR to /entries when the API key isn't set", function () {
+  it("doesn't performs an XHR to /entries when the API key isn't set", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoApiKey.html');
 
     await browser.pause(4000);
@@ -30,14 +30,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = await _.any(inFlightXhrs, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
     });
 
-    await expect(didPerformRequest).toBe(false);
+    expect(didPerformRequest).toBe(false);
   });
 
-  it("doesn't performs an XHR to /entries when attach() isn't called", function () {
+  it("doesn't performs an XHR to /entries when attach() isn't called", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoAttach.html');
 
     await browser.pause(4000);
@@ -46,15 +46,15 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = await _.any(inFlightXhrs, function (req) {
+    var didPerformRequest = _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_entriesEndpoint) === 0;
     });
 
-    await expect(didPerformRequest).toBe(false);
+    expect(didPerformRequest).toBe(false);
   });
   
   
-  it("has the error message in the payload set", function () {
+  it("has the error message in the payload set", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
     await browser.pause(4000);
@@ -63,14 +63,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.Message.indexOf('Unhandled error') > -1;
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has the filename in the stacktrace payload set", function () {
+  it("has the filename in the stacktrace payload set", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
 
     await browser.url(pageUrl);
@@ -81,14 +81,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.StackTrace[0].FileName === pageUrl;
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has tags in the payload when tags are passed in", function () {
+  it("has tags in the payload when tags are passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
 
     await browser.url(pageUrl);
@@ -99,14 +99,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Tags[0] === 'my_tag';
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has custom data in the payload when custom data is passed in", function () {
+  it("has custom data in the payload when custom data is passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorCustomData.html';
 
     await browser.url(pageUrl);
@@ -117,14 +117,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.UserCustomData.myCustomKey === 'myCustomValue';
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has correct user payload when Raygun.setUser() is called", function () {
+  it("has correct user payload when Raygun.setUser() is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorUser.html';
 
     await browser.url(pageUrl);
@@ -135,18 +135,18 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.User.Identifier === 'user_email_address@localhost.local' &&
         payload.Details.User.IsAnonymous === false &&
         payload.Details.User.FirstName === 'Foo' &&
         payload.Details.User.FullName === 'Foo Bar' &&
-        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
+        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55';
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has correct version in payload when Raygun.setVersion() is called", function () {
+  it("has correct version in payload when Raygun.setVersion() is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorVersion.html';
 
     await browser.url(pageUrl);
@@ -157,14 +157,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Version === '1.0.0.0';
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has a UnhandleException tag for crash vs. error support", function () {
+  it("has a UnhandleException tag for crash vs. error support", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
 
     await browser.url(pageUrl);
@@ -175,16 +175,16 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return _.any(payload.Details.Tags, function (tag) {
         return tag === 'UnhandledException';
       });
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
-  it("has existing tags and an UnhandleException tag for crash vs. error support", function () {
+  it("has existing tags and an UnhandleException tag for crash vs. error support", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
 
     await browser.url(pageUrl);
@@ -195,13 +195,13 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return _.any(payload.Details.Tags, function (tag) {
         return tag === 'UnhandledException';
       });
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
 
 });

@@ -4,7 +4,7 @@ var _ = require('underscore');
 
 describe("RUM status code tracking", function() {
 
-  afterEach(function() {
+  afterEach(async function() {
     await browser.reloadSession();
   });
 
@@ -21,7 +21,7 @@ describe("RUM status code tracking", function() {
     });
 
     if (requestPayloads.length < 3) {
-      await fail("test did not wait long enough for ajax requests to be sent to Raygun");
+      fail("test did not wait long enough for ajax requests to be sent to Raygun");
     }
 
     var timingPayload = await payloadsWithoutRaygunApi(JSON.parse(requestPayloads[2].eventData[0].data));
@@ -42,14 +42,14 @@ describe("RUM status code tracking", function() {
       var pairStatus = expectedPairs[i].statusCode;
       var pairType = expectedPairs[i].type;
 
-      await expect(payloadUrl).toBe(pairUrl, "failed for type: " + pairType);
-      await expect(payloadStatus).toBe(pairStatus, "failed for type: " + pairType);
-      await expect(payloadDataType).toBe(payloadDataType, "XHR data type missing for: " + pairType);
+      expect(payloadUrl).toBe(pairUrl, "failed for type: " + pairType);
+      expect(payloadStatus).toBe(pairStatus, "failed for type: " + pairType);
+      expect(payloadDataType).toBe(payloadDataType, "XHR data type missing for: " + pairType);
     }
   }
 
 
-  it("attaches the status codes to xhr calls for XmlHttpRequest", function () {
+  it("attaches the status codes to xhr calls for XmlHttpRequest", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
 
     await browser.pause(35000);
@@ -57,7 +57,7 @@ describe("RUM status code tracking", function() {
     await checkStatusCodes();
   });
 
-  it("attaches status codes to requests for fetch requests", function() {
+  it("attaches status codes to requests for fetch requests", async function() {
     await browser.url('http://localhost:4567/fixtures/v2/rumFetchStatusCodes.html');
 
     await browser.pause(1000);
@@ -115,7 +115,7 @@ describe("RUM status code tracking", function() {
         });
     
         if (completedCalls.length < 4) {
-          await fail("test did not wait long enough for ajax requests to be sent to Raygun");
+          fail("test did not wait long enough for ajax requests to be sent to Raygun");
         }
     
         var expectedCalls = [
@@ -127,13 +127,13 @@ describe("RUM status code tracking", function() {
 
         for (var i = 0; i < expectedCalls.length; i++) {
           var url = expectedCalls[i];
-          await expect(completedCalls.indexOf(url)).not.toBe(-1);
+          expect(completedCalls.indexOf(url)).not.toBe(-1);
         }
       });
     });
   });
 
-  it("attaches the status codes for polyfilled fetch requests", function() {
+  it("attaches the status codes for polyfilled fetch requests", async function() {
     await browser.url('http://localhost:4567/fixtures/v2/rumFetchPolyfillStatusCodes.html');
 
     await browser.pause(35000);

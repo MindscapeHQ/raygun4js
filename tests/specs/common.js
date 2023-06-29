@@ -6,8 +6,8 @@ module.exports = {
     return browser.capabilities.browserName === 'internet explorer' &&
            browser.capabilities.browserVersion === version;
   },
-  isOldIE: function() {
-    return (await this.isIEVersion('9')) || (await this.isIEVersion('10'));
+  isOldIE:  function() {
+    return (this.isIEVersion('9')) || (this.isIEVersion('10'));
   },
   inFlightXHRs: function() {
     return browser.execute(function() {
@@ -19,7 +19,7 @@ module.exports = {
       return window.__requestPayloads;
     });
   },
-  getBreadcrumbs: function(pulseEnabled = false) {
+  getBreadcrumbs: async function(pulseEnabled = false) {
     var crumbs = await browser.execute(function(pulseEnabled) {
       return pulseEnabled ?
         window.__requestPayloads[(window.__requestPayloads.length - 1)].Details.Breadcrumbs :
@@ -28,7 +28,7 @@ module.exports = {
 
     return crumbs;
   },
-  firstBreadcrumb: function() {
+  firstBreadcrumb: async function() {
     return (await this.getBreadcrumbs())[0];
   },
   getLocalStorageValue: function(key) {
@@ -41,12 +41,12 @@ module.exports = {
       return localStorage.getItem(name);
     }, key);
   },
-  setCookieValue: function(key, value) {
+  setCookieValue: async function(key, value) {
     await browser.execute(function(cookieName, cookieValue) {
       document.cookie = cookieName + '=' + cookieValue + '; path=/';
     }, key, value);
   },
-  getCookieValue: function(key) {
+  getCookieValue: async function(key) {
     var cookieResult = await browser.execute(function(name) {
         var nameEQ = name + '=';
         var ca = document.cookie.split(';');

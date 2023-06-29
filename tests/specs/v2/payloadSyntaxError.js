@@ -5,7 +5,7 @@ var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Payload functional validation tests for V2 syntax error caught with the Snippet", function() {
 
-  it("performs an XHR to /entries when a syntax error is present", function () {
+  it("performs an XHR to /entries when a syntax error is present", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/syntaxErrorSnippet.html');
     
     await browser.pause(6000);
@@ -14,10 +14,10 @@ describe("Payload functional validation tests for V2 syntax error caught with th
       return window.__requestPayloads;
     });
 
-    var doesHaveLineNumbersAndColumnNumbers = await _.any(requestPayloads, function (req) {
+    var doesHaveLineNumbersAndColumnNumbers = _.any(requestPayloads, function (req) {
       console.log('[stacktrace]');
       var stackTracesToCheck = req.Details.Error.StackTrace.slice(0, 2);
-      return _.every(stackTracesToCheck, function(trace) {
+      return _.every(stackTracesToCheck, function (trace) {
         if (trace.MethodName === 'eval') {
           return true;
         }
@@ -26,7 +26,7 @@ describe("Payload functional validation tests for V2 syntax error caught with th
       });
     });
 
-    await expect(doesHaveLineNumbersAndColumnNumbers).toBe(true);
+    expect(doesHaveLineNumbersAndColumnNumbers).toBe(true);
   });
 
 });
