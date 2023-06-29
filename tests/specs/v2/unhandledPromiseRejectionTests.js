@@ -5,47 +5,47 @@ describe("Unhandled promise rejection", function() {
     // Tests
 
     it('sends error on unhandled promise rejection', function() {
-        browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejection.html');
-        browser.pause(1000);
+        await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejection.html');
+        await browser.pause(1000);
 
-        var supportsUnHandledRejections = browser.execute(function() {
+        var supportsUnHandledRejections = await browser.execute(function() {
             return window.supportsOnunhandledrejection;
         });
 
         if(supportsUnHandledRejections) {
-            browser.pause(10000);
+            await browser.pause(10000);
 
-            var requestPayloads = browser.execute(function () {
+            var requestPayloads = await browser.execute(function () {
                 return window.__requestPayloads;
             });
             var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
 
-            expect(unhandledPromise).toBe(true);
+            await expect(unhandledPromise).toBe(true);
         }
     });
 
     describe('with no reason provided for rejection', function() {
         it('sends an error with a relevant message and no stacktrace data', function() {
-            browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejectionWithNoReason.html');
-            browser.pause(1000);
+            await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejectionWithNoReason.html');
+            await browser.pause(1000);
 
-            var supportsUnHandledRejections = browser.execute(function() {
+            var supportsUnHandledRejections = await browser.execute(function() {
                 return window.supportsOnunhandledrejection;
             });
 
             if (supportsUnHandledRejections) {
-                browser.pause(10000);
+                await browser.pause(10000);
 
-                var requestPayloads = browser.execute(function () {
+                var requestPayloads = await browser.execute(function () {
                     return window.__requestPayloads;
                 });
 
                 var errorPayload = requestPayloads[0].Details.Error;
 
-                expect(errorPayload.Message).toEqual('Unhandled promise rejection');
-                expect(errorPayload.StackTrace.length).toEqual(1);
-                expect(errorPayload.StackTrace[0].LineNumber).toBeNull();
-                expect(errorPayload.StackTrace[0].ColumnNumber).toBeNull();
+                await expect(errorPayload.Message).toEqual('Unhandled promise rejection');
+                await expect(errorPayload.StackTrace.length).toEqual(1);
+                await expect(errorPayload.StackTrace[0].LineNumber).toBeNull();
+                await expect(errorPayload.StackTrace[0].ColumnNumber).toBeNull();
             }
         });
     });

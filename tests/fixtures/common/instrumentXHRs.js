@@ -15,7 +15,7 @@
     }
     this.__headers[arguments[0]] = arguments[1];
 
-    origSetRequestHeader.apply(this, arguments);
+    await origSetRequestHeader.apply(this, arguments);
   };
 
   XMLHttpRequest.prototype.getRequestHeader = function() {
@@ -36,11 +36,11 @@
       url: arguments[1]
     });
 
-    this.addEventListener('load', function() {
+    await this.addEventListener('load', function() {
         window.__completedXHRs.push(this);
     });
 
-    origOpen.apply(this, arguments);
+    await origOpen.apply(this, arguments);
   };
 
   XMLHttpRequest.prototype.send = function() {
@@ -52,10 +52,10 @@
 
     window.__sentXHRs.push({
       xhr: this,
-      clientIp: this.getRequestHeader('X-Remote-Address')
+      clientIp: await this.getRequestHeader('X-Remote-Address')
     });
 
-    origSend.apply(this, arguments);
+    await origSend.apply(this, arguments);
   };
 
   if (window.XDomainRequest) {
@@ -77,13 +77,13 @@
         window.__completedXHRs.push(this);
       };
 
-      origXOpen.apply(this, arguments);
+      await origXOpen.apply(this, arguments);
     };
 
     XDomainRequest.prototype.send = function() {
       window.__requestPayloads.push(JSON.parse(arguments[0]));
 
-      origXSend.apply(this, arguments);
+      await origXSend.apply(this, arguments);
     };
   }
 })()

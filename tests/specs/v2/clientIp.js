@@ -5,11 +5,11 @@ var _ = require('underscore');
 describe("ClientIp", function() {
 
   it("X-Remote-Address is null when not set", function () {
-    browser.url('http://localhost:4567/fixtures/v2/withoutClientIpSet.html');
+    await browser.url('http://localhost:4567/fixtures/v2/withoutClientIpSet.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var sentXhrs = browser.execute(function () {
+    var sentXhrs = await browser.execute(function () {
       return window.__sentXHRs;
     });
 
@@ -17,15 +17,15 @@ describe("ClientIp", function() {
       return req.clientIp === null;
     });
 
-    expect(remoteAddressIsUndefined).toBe(true);
+    await expect(remoteAddressIsUndefined).toBe(true);
   });
 
   it("X-Remote-Address is equal to '192.168.0.12'", function () {
-    browser.url('http://localhost:4567/fixtures/v2/withClientIpSet.html');
+    await browser.url('http://localhost:4567/fixtures/v2/withClientIpSet.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var sentXhrs = browser.execute(function () {
+    var sentXhrs = await browser.execute(function () {
       return window.__sentXHRs;
     });
 
@@ -33,6 +33,6 @@ describe("ClientIp", function() {
       return req.clientIp === "192.168.0.12";
     });
 
-    expect(remoteAddressIsSet).toBe(true);
+    await expect(remoteAddressIsSet).toBe(true);
   });
 });

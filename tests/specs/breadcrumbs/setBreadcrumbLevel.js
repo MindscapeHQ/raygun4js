@@ -4,17 +4,17 @@ var common = require("../common");
 
 describe("Changing breadcrumbLevel", function() {
   beforeEach(function() {
-    browser.url("http://localhost:4567/fixtures/breadcrumbs/setBreadcrumbLevel.html");
-    browser.pause(8000);
+    await browser.url("http://localhost:4567/fixtures/breadcrumbs/setBreadcrumbLevel.html");
+    await browser.pause(8000);
   });
 
   it("Only records the right breadcrumbs for the current level", function() {
-    var breadcrumbs = common.getBreadcrumbs();
+    var breadcrumbs = await common.getBreadcrumbs();
 
-    expect(breadcrumbs[0].level).toBe("debug");
-    expect(breadcrumbs[0].message).toContain("foo");
+    await expect(breadcrumbs[0].level).toBe("debug");
+    await expect(breadcrumbs[0].message).toContain("foo");
 
-    expect(breadcrumbs[1].level).toBe("error");
-    expect(breadcrumbs[1].message).toContain("foo");
+    await expect(breadcrumbs[1].level).toBe("error");
+    await expect(breadcrumbs[1].message).toContain("foo");
   });
 });

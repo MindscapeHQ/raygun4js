@@ -7,7 +7,7 @@ module.exports = {
            browser.capabilities.browserVersion === version;
   },
   isOldIE: function() {
-    return this.isIEVersion('9') || this.isIEVersion('10');
+    return (await this.isIEVersion('9')) || (await this.isIEVersion('10'));
   },
   inFlightXHRs: function() {
     return browser.execute(function() {
@@ -20,7 +20,7 @@ module.exports = {
     });
   },
   getBreadcrumbs: function(pulseEnabled = false) {
-    var crumbs = browser.execute(function(pulseEnabled) {
+    var crumbs = await browser.execute(function(pulseEnabled) {
       return pulseEnabled ?
         window.__requestPayloads[(window.__requestPayloads.length - 1)].Details.Breadcrumbs :
         window.__requestPayloads[0].Details.Breadcrumbs ;
@@ -29,7 +29,7 @@ module.exports = {
     return crumbs;
   },
   firstBreadcrumb: function() {
-    return this.getBreadcrumbs()[0];
+    return (await this.getBreadcrumbs())[0];
   },
   getLocalStorageValue: function(key) {
     return browser.execute(function (name) {
@@ -42,12 +42,12 @@ module.exports = {
     }, key);
   },
   setCookieValue: function(key, value) {
-    browser.execute(function(cookieName, cookieValue) {
+    await browser.execute(function(cookieName, cookieValue) {
       document.cookie = cookieName + '=' + cookieValue + '; path=/';
     }, key, value);
   },
   getCookieValue: function(key) {
-    var cookieResult = browser.execute(function(name) {
+    var cookieResult = await browser.execute(function(name) {
         var nameEQ = name + '=';
         var ca = document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {
