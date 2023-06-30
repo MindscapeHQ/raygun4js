@@ -13,7 +13,7 @@ describe("Crash Reporting Anonymous User Tracking", function() {
 
       var result = await common.getLocalStorageValue("raygun4js-userid");
 
-      expect(result).not.toBe(null);
+      expect(result !== null).toBeTruthy();
     });
 
     it("retrieves user id from localStorage when one exists", async function() {

@@ -31,8 +31,8 @@ module.exports = {
   firstBreadcrumb: async function() {
     return (await this.getBreadcrumbs())[0];
   },
-  getLocalStorageValue: function(key) {
-    return browser.execute(function (name) {
+  getLocalStorageValue: async function(key) {
+    return await browser.execute(function (name) {
       return localStorage.getItem(name);
     }, key);
   },
