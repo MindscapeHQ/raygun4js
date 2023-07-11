@@ -4,14 +4,14 @@ var _ = require('underscore');
 
 describe("RUM status code tracking", function() {
 
-//   beforeEach(function() {
-//     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-//     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-// });
+  beforeEach(function() {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+});
 
 
   afterEach(async function() {
- //   jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 
     await browser.reloadSession();
   });
