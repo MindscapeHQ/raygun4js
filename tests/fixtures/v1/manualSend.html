@@ -2,12 +2,12 @@
 <html>
   <head>
     <title>Raygun4JS with V1 API</title>
-    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="./../common/instrumentXHRs.js"></script>
     <script src="/dist/raygun.js"></script>
   </head>
   <body>
     <script type="text/javascript">
-      Raygun.init('abcdef==', {allowInsecureSubmissions: true});
+      Raygun.init('abcdef==');
 
       setTimeout(function () {
         try {
