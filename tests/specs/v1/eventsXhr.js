@@ -8,7 +8,7 @@ describe("XHR functional tests for /events with V1", function() {
 
   // Tests
 
-  it("performs an XHR to /events when Raygun.trackEvent() is called", function () {
+  it("performs an XHR to /events when Raygun.trackEvent() is called", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/trackEvent.html');
 
     await browser.pause(6000);
@@ -17,7 +17,7 @@ describe("XHR functional tests for /events with V1", function() {
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = await _.any(inFlightXhrs, function (req) {
+    var didPerformRequest =  _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_eventsEndpoint) === 0;
     });
 
