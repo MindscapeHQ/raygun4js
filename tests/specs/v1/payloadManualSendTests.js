@@ -42,9 +42,9 @@ describe("Payload functional validation tests for V1 manual send", function() {
   it("has the error message in the payload set", async function () {
     await browser.url('http://localhost:4567/fixtures/v1/manualSend.html');
 
-    await browser.pause(4000);
+    await browser.pause(1000);
 
-    var requestPayloads =  browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -60,7 +60,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
 
     await browser.pause(4000);
 
-    var requestPayloads =  browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -69,7 +69,7 @@ describe("Payload functional validation tests for V1 manual send", function() {
     });
 
     if (!( common.isOldIE())) {
-      await expect(passes).toBeTrue();
+       expect(passes).toBeTrue();
     }
   });
 
