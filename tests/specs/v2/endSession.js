@@ -22,7 +22,7 @@ describe('endSession', function() {
     });
 
     expect(newSessionId).toBeTruthy;
-    expect(sessionId).not.toBe(newSessionId);
+    expect(sessionId !== newSessionId).toBeTrue();
   });
 
   it('sends a session_end and session_start event', async function() {

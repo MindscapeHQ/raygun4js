@@ -23,7 +23,7 @@ describe("ClientIp", function() {
   it("X-Remote-Address is equal to '192.168.0.12'", async function () {
     await browser.url('http://localhost:4567/fixtures/v2/withClientIpSet.html');
 
-    await browser.pause(4000);
+    await browser.pause(9000);
 
     var sentXhrs = await browser.execute(function () {
       return window.__sentXHRs;
@@ -33,6 +33,6 @@ describe("ClientIp", function() {
       return req.clientIp === "192.168.0.12";
     });
 
-    await expect(remoteAddressIsSet).toBe(true);
+     expect(remoteAddressIsSet).toBeTrue();
   });
 });

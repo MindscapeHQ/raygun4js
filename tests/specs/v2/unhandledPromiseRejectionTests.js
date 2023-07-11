@@ -13,14 +13,14 @@ describe("Unhandled promise rejection", function() {
         });
 
         if(supportsUnHandledRejections) {
-            await browser.pause(10000);
+            await browser.pause(1000);
 
             var requestPayloads = await browser.execute(function () {
                 return window.__requestPayloads;
             });
             var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
 
-            expect(unhandledPromise).toBe(true);
+            expect(unhandledPromise).toBeTrue();
         }
     });
 
@@ -34,7 +34,7 @@ describe("Unhandled promise rejection", function() {
             });
 
             if (supportsUnHandledRejections) {
-                await browser.pause(10000);
+                await browser.pause(1000);
 
                 var requestPayloads = await browser.execute(function () {
                     return window.__requestPayloads;

@@ -3,7 +3,7 @@
 <html>
   <head>
     <title>Raygun4JS with Client IP</title>
-    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="../common/instrumentXHRs.js"></script>
     <script type="text/javascript">
         !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
         (a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
@@ -17,7 +17,6 @@
       rg4js('apiKey', 'abcd==');
       rg4js('enablePulse', true);
       rg4js('options', {
-        allowInsecureSubmissions: true,
         debugMode: true,
         clientIp: '192.168.0.12'
       });

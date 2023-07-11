@@ -12,11 +12,13 @@ async function breadcrumbExists(type, message) {
 describe("Navigation events", function() {
   beforeEach(async function() {
     await browser.url("http://localhost:4567/fixtures/breadcrumbs/automatic.navigation.html");
-    await browser.pause(8000);
+    await browser.pause(1000);
   });
 
   it("records a page load breadcrumb first", async function() {
-    var breadcrumb = await _.first((await common.sentPayloads())[0].Details.Breadcrumbs);
+    
+    var payload = await common.sentPayloads();  
+    var breadcrumb =  _.first(payload[0].Details.Breadcrumbs);
 
     if (!common.isOldIE()) {
       expect(breadcrumb.type).toBe("navigation");

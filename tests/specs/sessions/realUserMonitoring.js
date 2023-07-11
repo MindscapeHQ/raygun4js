@@ -21,7 +21,7 @@ describe("RUM Session Tracking", function() {
     await browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
     var result = await common.getLocalStorageValue("raygun4js-sid");
-    expect(result).not.toBe(null);
+    expect(result !== null).toBeTrue();
   });
 
   it("uses the session id and updates the timestamp when it is found and is less than 30 minutes old", async function() {
@@ -83,7 +83,7 @@ describe("RUM Session Tracking", function() {
       var result = await common.getLocalStorageValue("raygun4js-sid")
 
       expect(result.indexOf('id|expiredId')).toBe(-1);
-      expect(result.split('&')[0]).not.toBe('id|expiredId');
+      expect(result.split('&')[0] !== 'id|expiredId').toBeTrue();
     });
 
     it("creates a new session id if value stored is null", async function() {
@@ -94,7 +94,7 @@ describe("RUM Session Tracking", function() {
       await browser.url("http://localhost:4567/fixtures/sessions/rumSession.html");
 
       var result = await common.getLocalStorageValue("raygun4js-sid")
-      expect(result).not.toBe(null);
+      expect(result !== null).toBeTrue();
     });
   });
 });
