@@ -1,3 +1,6 @@
+* v2.26.1
+- Fixed timing bug, where rarely some xhr requests may miss attributed to a different page from which they were started on. Updated unit test libraries and re-enabled running on PR creation
+
 * v2.26.0
 - Removed some dead code related to http support in IE8. As IE8 and http is [no longer supported due to security reasons](https://raygun.com/documentation/product-guides/crash-reporting/troubleshooting/#transport-layer-security-tls-compliance)
   
