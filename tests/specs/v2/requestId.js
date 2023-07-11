@@ -18,6 +18,6 @@ describe("Request ID tests", function() {
     var requestId1 = requestPayloads[1].eventData[0].requestId;
     var requestId2 = requestPayloads[2].eventData[0].requestId;
 
-    expect(requestId1).not.toMatch(requestId2);
+    expect(requestId1 !== requestId2).toBeTrue(requestId2);
   });
 });
