@@ -5,7 +5,7 @@
     <title>Raygun4JS with V2 API</title>
     <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.0/dist/fetch.umd.min.js"></script>
-    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="../common/instrumentXHRs.js"></script>
     <script type="text/javascript">
         !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
         (a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
@@ -19,16 +19,15 @@
       rg4js('apiKey', 'abcd==');
       rg4js('enablePulse', true);
       rg4js('options', {
-        allowInsecureSubmissions: true,
         debugMode: true,
         captureMissingRequests: true
       });
 
-      setTimeout(function () {
-        fetch('rumXhrStatusCodes.html');
-        fetch('rumXhrStatusCodes.html?foo=bar');
-        fetch('foo.html');
-        fetch('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
+      setTimeout(async function () {
+       await fetch('rumXhrStatusCodes.html');
+       await fetch('rumXhrStatusCodes.html?foo=bar');
+       await fetch('foo.html');
+       await fetch('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
       }, 500);
     </script>
 

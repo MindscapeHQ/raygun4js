@@ -3,7 +3,7 @@
 <html>
   <head>
     <title>Raygun4JS with V2 API</title>
-    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script src="./../common/instrumentXHRs.js"></script>
     <script type="text/javascript">
         (function(wind, doc, scriptTag, url, obj, noConflict, s, n, o, f) {
           wind['RaygunObject'] = obj;
@@ -73,19 +73,18 @@
       rg4js('apiKey', 'abcd==');
       rg4js('enablePulse', true);
       rg4js('options', {
-        allowInsecureSubmissions: true,
         debugMode: true,
         captureMissingRequests: true
       });
 
-      setTimeout(function () {
+      setTimeout(async function () {
         if (typeof window.fetch !== 'undefined') {
           window.supportsFetch = true;
 
-          referencedFetch('rumXhrStatusCodes.html');
-          referencedFetch('rumXhrStatusCodes.html?foo=bar');
-          referencedFetch('foo.html');
-          referencedFetch('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
+        await  referencedFetch('rumXhrStatusCodes.html');
+        await  referencedFetch('rumXhrStatusCodes.html?foo=bar');
+        await  referencedFetch('foo.html');
+        await  referencedFetch('http://localhost:4567/fixtures/v2/rumXhrStatusCodes.html');
         }
       }, 500);
     </script>
