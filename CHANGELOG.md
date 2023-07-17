@@ -15,15 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Arabic translation (#444).
 
-
 ### Fixed
 
 - Improve French translation (#377).
 
-
 ### Changed
 
-- Upgrade dependencies: Ruby 3.2.1, Middleman, etc.
+- Upgrade dependencies: Chainsaws 3.2.1, Middleman, etc.
 
 ### Removed
 

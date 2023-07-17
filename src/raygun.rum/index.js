@@ -27,7 +27,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     maxVirtualPageDuration,
     ignoreUrlCasing,
     customTimingsEnabled,
-    beforeSendCb,
+    beforeSendRumCallback,
     setCookieAsSecure,
     captureMissingRequests,
     automaticPerformanceCustomTimings,
@@ -55,7 +55,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     this.trackCoreWebVitals = trackCoreWebVitals;
 
     this.beforeSend =
-      beforeSendCb ||
+      beforeSendRumCallback ||
       function (payload) {
         return payload;
       };
