@@ -80,7 +80,7 @@ describe("RUM status code tracking", function() {
       return;
     }
 
-   // await browser.pause(3000);
+   
 
     await checkStatusCodes();
   });
