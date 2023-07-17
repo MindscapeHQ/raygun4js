@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed timing bug, where  some xhr requests may rarely be mis-attributed to a different page from which they were started on.
+- Fixed timing bug, where some xhr requests may rarely be mis-attributed to a different page from which they were started on.
 
 ### Changed
 
