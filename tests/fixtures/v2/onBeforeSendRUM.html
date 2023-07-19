@@ -15,9 +15,7 @@
     <script type="text/javascript">
       rg4js('apiKey', 'abcdef==');
       rg4js('enablePulse', true);
-      rg4js('options', {
-        allowInsecureSubmissions: true
-      });
+      
       var count = 0;
       rg4js('onBeforeSendRUM', function(payload) {
         payload.eventData[0].version = '1.0.0';

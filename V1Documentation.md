@@ -113,14 +113,6 @@ If you need to detach it (this will disable automatic unhandled error sending):
 Raygun.detach();
 ```
 
-**IE8**
-
-If you are serving your site over HTTP and want IE8 to be able to submit JavaScript errors then you will need to set the following setting which will allow IE8 to submit the error over HTTP. Otherwise the provider will only submit over HTTPS which IE8 will not allow while being served over HTTP.
-
-```javascript
-Raygun.init('yourApiKey', { allowInsecureSubmissions: true });
-```
-
 ## Documentation
 
 ### Differences between Raygun4JS V1 and V2
@@ -155,8 +147,6 @@ Raygun.init('your_apikey', {
 
 The second parameter should contain one or more of these keys and a value to customize the behavior:
 
-`allowInsecureSubmissions` - posts error payloads over HTTP. This allows **IE8** to send JS errors
-
 `ignoreAjaxAbort` - User-aborted Ajax calls result in errors - if this option is true, these will not be sent.
 
 `ignoreAjaxError` - Ajax requests that return error codes will not be sent as errors to Raygun if this options is true.
@@ -188,7 +178,6 @@ An example:
 
 ```javascript
 Raygun.init('apikey', {
-  allowInsecureSubmissions: true,
   ignoreAjaxAbort: true,
   ignoreAjaxError: true,
   debugMode: true,
