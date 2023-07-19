@@ -49,9 +49,5 @@
     "tracking",
     "raygun",
     "clientside"
-  ],
-  "dependencies": {
-    "@wdio/codemod": "^0.12.0",
-    "jscodeshift": "^0.15.0"
-  }
+  ]
 }
