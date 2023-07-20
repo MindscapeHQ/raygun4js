@@ -6,8 +6,8 @@ module.exports = {
     return browser.capabilities.browserName === 'internet explorer' &&
            browser.capabilities.browserVersion === version;
   },
-  isOldIE: function() {
-    return this.isIEVersion('9') || this.isIEVersion('10');
+  isOldIE:  function() {
+    return (this.isIEVersion('9')) || (this.isIEVersion('10'));
   },
   inFlightXHRs: function() {
     return browser.execute(function() {
@@ -19,8 +19,8 @@ module.exports = {
       return window.__requestPayloads;
     });
   },
-  getBreadcrumbs: function(pulseEnabled = false) {
-    var crumbs = browser.execute(function(pulseEnabled) {
+  getBreadcrumbs: async function(pulseEnabled = false) {
+    var crumbs = await browser.execute(function(pulseEnabled) {
       return pulseEnabled ?
         window.__requestPayloads[(window.__requestPayloads.length - 1)].Details.Breadcrumbs :
         window.__requestPayloads[0].Details.Breadcrumbs ;
@@ -28,11 +28,11 @@ module.exports = {
 
     return crumbs;
   },
-  firstBreadcrumb: function() {
-    return this.getBreadcrumbs()[0];
+  firstBreadcrumb: async function() {
+    return (await this.getBreadcrumbs())[0];
   },
-  getLocalStorageValue: function(key) {
-    return browser.execute(function (name) {
+  getLocalStorageValue: async function(key) {
+    return await browser.execute(function (name) {
       return localStorage.getItem(name);
     }, key);
   },
@@ -41,13 +41,13 @@ module.exports = {
       return localStorage.getItem(name);
     }, key);
   },
-  setCookieValue: function(key, value) {
-    browser.execute(function(cookieName, cookieValue) {
+  setCookieValue: async function(key, value) {
+    await browser.execute(function(cookieName, cookieValue) {
       document.cookie = cookieName + '=' + cookieValue + '; path=/';
     }, key, value);
   },
-  getCookieValue: function(key) {
-    var cookieResult = browser.execute(function(name) {
+  getCookieValue: async function(key) {
+    var cookieResult = await browser.execute(function(name) {
         var nameEQ = name + '=';
         var ca = document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {

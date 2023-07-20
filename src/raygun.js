@@ -1023,25 +1023,9 @@ var raygunFactory = function(window, $, undefined) {
           _successCallback(xhr, url, data);
         }
       };
-    } else if (window.XDomainRequest) {
-      xhr.ontimeout = function() {
-        if (_enableOfflineSave) {
-          Raygun.Utilities.log('Raygun: saved locally');
-          offlineSave(url, data);
-        }
-      };
+    } 
+    
 
-      xhr.onload = function() {
-        Raygun.Utilities.log('posted to Raygun');
-
-        sendSavedErrors();
-        callAfterSend(this);
-
-        if (_successCallback && typeof _successCallback === 'function') {
-          _successCallback(xhr, url, data);
-        }
-      };
-    }
 
     xhr.onerror = function() {
       Raygun.Utilities.log('failed to post to Raygun');

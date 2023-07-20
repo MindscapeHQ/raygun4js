@@ -27,7 +27,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     maxVirtualPageDuration,
     ignoreUrlCasing,
     customTimingsEnabled,
-    beforeSendCb,
+    beforeSendRumCallback,
     setCookieAsSecure,
     captureMissingRequests,
     automaticPerformanceCustomTimings,
@@ -55,7 +55,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     this.trackCoreWebVitals = trackCoreWebVitals;
 
     this.beforeSend =
-      beforeSendCb ||
+      beforeSendRumCallback ||
       function (payload) {
         return payload;
       };
@@ -563,7 +563,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         self.offset = i;
 
-        if (this._captureMissingRequests) {
+        if (self._captureMissingRequests) {
           addMissingWrtData(collection, offset);
         }
       } catch (e) {
@@ -1028,7 +1028,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function attachParentResource(obj, parentResource) {
       if (parentResource) {
-        return Raygun.Utilities.merge(obj, { parentResource: parentResource });
+        return Raygun.Utilities.merge({ parentResource: parentResource }, obj);
       }
 
       return obj;

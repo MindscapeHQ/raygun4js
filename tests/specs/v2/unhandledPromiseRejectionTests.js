@@ -4,39 +4,39 @@ var _ = require('underscore');
 describe("Unhandled promise rejection", function() {
     // Tests
 
-    it('sends error on unhandled promise rejection', function() {
-        browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejection.html');
-        browser.pause(1000);
+    it('sends error on unhandled promise rejection', async function() {
+        await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejection.html');
+        await browser.pause(1000);
 
-        var supportsUnHandledRejections = browser.execute(function() {
+        var supportsUnHandledRejections = await browser.execute(function() {
             return window.supportsOnunhandledrejection;
         });
 
         if(supportsUnHandledRejections) {
-            browser.pause(10000);
+            await browser.pause(1000);
 
-            var requestPayloads = browser.execute(function () {
+            var requestPayloads = await browser.execute(function () {
                 return window.__requestPayloads;
             });
             var unhandledPromise = requestPayloads[0].Details.Error.Message.indexOf('rejected promise') > -1;
 
-            expect(unhandledPromise).toBe(true);
+            expect(unhandledPromise).toBeTrue();
         }
     });
 
     describe('with no reason provided for rejection', function() {
-        it('sends an error with a relevant message and no stacktrace data', function() {
-            browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejectionWithNoReason.html');
-            browser.pause(1000);
+        it('sends an error with a relevant message and no stacktrace data', async function() {
+            await browser.url('http://localhost:4567/fixtures/v2/unhandledPromiseRejectionWithNoReason.html');
+            await browser.pause(1000);
 
-            var supportsUnHandledRejections = browser.execute(function() {
+            var supportsUnHandledRejections = await browser.execute(function() {
                 return window.supportsOnunhandledrejection;
             });
 
             if (supportsUnHandledRejections) {
-                browser.pause(10000);
+                await browser.pause(1000);
 
-                var requestPayloads = browser.execute(function () {
+                var requestPayloads = await browser.execute(function () {
                     return window.__requestPayloads;
                 });
 

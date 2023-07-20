@@ -5,12 +5,12 @@ var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Payload functional validation tests for V1 automatic unhandled error sending", function() {
 
-  it("performs an XHR to /entries when Raygun.send() is called", function () {
-    browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
+  it("performs an XHR to /entries when Raygun.send() is called", async function () {
+    await browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
-    browser.pause(6000);
+    await browser.pause(6000);
 
-    var inFlightXhrs = browser.execute(function () {
+    var inFlightXhrs = await browser.execute(function () {
       return window.__inFlightXHRs;
     });
 
@@ -21,12 +21,12 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(didPerformRequest).toBe(true);
   });
 
-  it("doesn't performs an XHR to /entries when the API key isn't set", function () {
-    browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoApiKey.html');
+  it("doesn't performs an XHR to /entries when the API key isn't set", async function () {
+    await browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoApiKey.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var inFlightXhrs = browser.execute(function () {
+    var inFlightXhrs = await browser.execute(function () {
       return window.__inFlightXHRs;
     });
 
@@ -37,12 +37,12 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(didPerformRequest).toBe(false);
   });
 
-  it("doesn't performs an XHR to /entries when attach() isn't called", function () {
-    browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoAttach.html');
+  it("doesn't performs an XHR to /entries when attach() isn't called", async function () {
+    await browser.url('http://localhost:4567/fixtures/v1/unhandledErrorNoAttach.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var inFlightXhrs = browser.execute(function () {
+    var inFlightXhrs = await browser.execute(function () {
       return window.__inFlightXHRs;
     });
 
@@ -54,12 +54,12 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
   });
   
   
-  it("has the error message in the payload set", function () {
-    browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
+  it("has the error message in the payload set", async function () {
+    await browser.url('http://localhost:4567/fixtures/v1/unhandledError.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -70,14 +70,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has the filename in the stacktrace payload set", function () {
+  it("has the filename in the stacktrace payload set", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -88,14 +88,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has tags in the payload when tags are passed in", function () {
+  it("has tags in the payload when tags are passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -106,14 +106,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has custom data in the payload when custom data is passed in", function () {
+  it("has custom data in the payload when custom data is passed in", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorCustomData.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -124,14 +124,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has correct user payload when Raygun.setUser() is called", function () {
+  it("has correct user payload when Raygun.setUser() is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorUser.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -140,20 +140,20 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
         payload.Details.User.IsAnonymous === false &&
         payload.Details.User.FirstName === 'Foo' &&
         payload.Details.User.FullName === 'Foo Bar' &&
-        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55'
+        payload.Details.User.UUID === 'BAE62917-ACE8-ab3D-9287-B6A33B8E8C55';
     });
 
     expect(passes).toBe(true);
   });
 
-  it("has correct version in payload when Raygun.setVersion() is called", function () {
+  it("has correct version in payload when Raygun.setVersion() is called", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorVersion.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(6000);
+    await browser.pause(6000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -164,14 +164,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has a UnhandleException tag for crash vs. error support", function () {
+  it("has a UnhandleException tag for crash vs. error support", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledError.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 
@@ -184,14 +184,14 @@ describe("Payload functional validation tests for V1 automatic unhandled error s
     expect(passes).toBe(true);
   });
 
-  it("has existing tags and an UnhandleException tag for crash vs. error support", function () {
+  it("has existing tags and an UnhandleException tag for crash vs. error support", async function () {
     var pageUrl = 'http://localhost:4567/fixtures/v1/unhandledErrorTag.html';
 
-    browser.url(pageUrl);
+    await browser.url(pageUrl);
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var requestPayloads = browser.execute(function () {
+    var requestPayloads = await browser.execute(function () {
       return window.__requestPayloads;
     });
 

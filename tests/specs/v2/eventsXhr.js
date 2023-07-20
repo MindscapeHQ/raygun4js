@@ -7,16 +7,16 @@ describe("XHR functional tests for /events with V2", function() {
 
   // Tests
 
-  it("performs an XHR to /events when rg4js('trackEvent') is called", function () {
-    browser.url('http://localhost:4567/fixtures/v2/trackEvent.html');
+  it("performs an XHR to /events when rg4js('trackEvent') is called", async function () {
+    await browser.url('http://localhost:4567/fixtures/v2/trackEvent.html');
 
-    browser.pause(4000);
+    await browser.pause(4000);
 
-    var inFlightXhrs = browser.execute(function () {
+    var inFlightXhrs = await browser.execute(function () {
       return window.__inFlightXHRs;
     });
 
-    var didPerformRequest = _.any(inFlightXhrs, function (req) {
+    var didPerformRequest = await _.any(inFlightXhrs, function (req) {
       return req.url.indexOf(_eventsEndpoint) === 0;
     });
 

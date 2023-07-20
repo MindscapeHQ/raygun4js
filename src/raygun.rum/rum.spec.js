@@ -20,7 +20,7 @@ describe("raygun.rum", () => {
             undefined, //maxVirtualPageDuration,
             true, //ignoreUrlCasing,
             true,
-            undefined, //beforeSendCb,
+            undefined, //beforeSendRumCallback,
             false, //setCookieAsSecure,
             false, //captureMissingRequests,
             false // automaticPerformanceCustomTimings

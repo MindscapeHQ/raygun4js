@@ -4,36 +4,36 @@ var _ = require('underscore');
 var common = require("../common");
 
 describe("Recording a basic breadcrumb", function() {
-  beforeEach(function() {
-    browser.url("http://localhost:4567/fixtures/breadcrumbs/basic.html");
-    browser.pause(2000);
+  beforeEach(async function() {
+    await browser.url("http://localhost:4567/fixtures/breadcrumbs/basic.html");
+    await browser.pause(2000);
   });
 
-  it("adds the breadcrumb to the payload", function() {
-    var sentPayloads = common.sentPayloads();
+  it("adds the breadcrumb to the payload", async function() {
+    var sentPayloads = await common.sentPayloads();
 
-    expect(_.any(sentPayloads, function(payload) {
-      return !!payload.Details.Breadcrumbs;
-    })).toBe(true);
+    expect(_.any(sentPayloads, function (payload) {
+        return !!payload.Details.Breadcrumbs;
+      })).toBe(true);
   });
 
-  it("has the correct message", function() {
-    expect(common.firstBreadcrumb().message).toBe("a message");
+  it("has the correct message", async function() {
+    expect((await common.firstBreadcrumb()).message).toBe("a message");
   });
 
-  it("can take metadata", function() {
-    expect(common.firstBreadcrumb().CustomData).toEqual({customData: true});
+  it("can take metadata", async function() {
+    expect((await common.firstBreadcrumb()).CustomData).toEqual({ customData: true });
   });
 });
 
 describe("Recording a basic breadcrumb with an object", function() {
-  beforeEach(function() {
-    browser.url("http://localhost:4567/fixtures/breadcrumbs/basicWithObject.html");
-    browser.pause(4000);
+  beforeEach(async function() {
+    await browser.url("http://localhost:4567/fixtures/breadcrumbs/basicWithObject.html");
+    await browser.pause(4000);
   });
 
-  it("merges the passed object with the default crumb", function() {
-    var breadcrumb = common.firstBreadcrumb();
+  it("merges the passed object with the default crumb", async function() {
+    var breadcrumb = await common.firstBreadcrumb();
 
     var keys = Object.keys(breadcrumb).sort();
     var expectedKeys = [
@@ -45,6 +45,6 @@ describe("Recording a basic breadcrumb with an object", function() {
       'type'
     ].sort();
 
-    expect(keys).toEqual(expectedKeys);
+    await expect(keys).toEqual(expectedKeys);
   });
 });

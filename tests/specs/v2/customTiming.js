@@ -1,22 +1,22 @@
 var webdriverio = require('webdriverio');
 
 describe("Custom Timing tests", function() {
-  beforeEach(function() {
+  beforeEach(async function() {
     /**
      * Clears the session between tests to ensure
      * that the sessionstart event is always fired 
      */
-    browser.reloadSession();
+    await browser.reloadSession();
   });
 
   describe('legacy custom timings', function() {
-    beforeEach(function() {
-      browser.url('http://localhost:4567/fixtures/v2/legacyCustomTiming.html');
-      browser.pause(1000);
+    beforeEach(async function() {
+      await browser.url('http://localhost:4567/fixtures/v2/legacyCustomTiming.html');
+      await browser.pause(1000);
     });
 
-    it('sends custom timing events', function () {
-      var customTimingData = browser.execute(function () {
+    it('sends custom timing events', async function () {
+      var customTimingData = await browser.execute(function () {
         return window.__requestPayloads[1];
       });
 
@@ -28,13 +28,13 @@ describe("Custom Timing tests", function() {
   });
   
   describe('new custom timings', function() {
-    beforeEach(function() {
-      browser.url('http://localhost:4567/fixtures/v2/customTiming.html');
-      browser.pause(1000);
+    beforeEach(async function() {
+      await browser.url('http://localhost:4567/fixtures/v2/customTiming.html');
+      await browser.pause(1000);
     });
 
-    it('sends custom timing events', function () {
-      var customTimingData = browser.execute(function () {
+    it('sends custom timing events', async function () {
+      var customTimingData = await browser.execute(function () {
         return window.__requestPayloads[2];
       });
 
@@ -43,7 +43,7 @@ describe("Custom Timing tests", function() {
           a: "0.00",
           du: "100.00",
           t: "t"
-        }, 
+        },
         url: "timingName",
         parentResource: { url: 'http://localhost:4567/fixtures/v2/customTiming.html', type: 'p' }
       });
