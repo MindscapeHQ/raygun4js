@@ -476,7 +476,7 @@ Raygun.setFilterScope('customData'); // Just filter the custom data (default)
 
 Raygun4JS now features source maps support through the transmission of column numbers for errors, where available. This is confirmed to work in recent version of Chrome, Safari and Opera, and IE 10 and 11. See the [Raygun souce maps documentation][sourcemaps] for more information.
 
-[sourcemaps]: https://raygun.io/docs/workflow/source-maps
+[sourcemaps]: https://raygun.com/docs/workflow/source-maps
 
 ### Offline saving
 
@@ -549,7 +549,7 @@ Due to browser API and security limitations, in cases where the message is 'Scri
 
 For more information, check out this blog post on [CORS requirements for Script Errors].
 
-[CORS requirements for Script Errors]: https://raygun.io/blog/2015/05/fix-script-error-and-get-the-most-data-possible-from-cross-domain-js-errors/
+[CORS requirements for Script Errors]: https://raygun.com/blog/2015/05/fix-script-error-and-get-the-most-data-possible-from-cross-domain-js-errors/
 
 ## AngularJS
 
