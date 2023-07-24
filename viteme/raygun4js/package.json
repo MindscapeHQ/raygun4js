@@ -1,0 +1,25 @@
+{
+  "name": "raygun4js",
+  "version": "2.27.0",
+  "type": "module",
+  "main": "./dist/raygun4js.umd.cjs",
+  "module": "./dist/raygun4js.js",
+  "types": "./dist/raygun4js.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/raygun4js.js",
+      "require": "./dist/raygun4js.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.3.1"
+  }
+}
