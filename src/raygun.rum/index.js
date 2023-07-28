@@ -932,7 +932,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         updateUserAgentData(data);
 
-        var payload = self.beforeSend(data);
+        var clonedData = (!!window.structuredClone ? window.structuredClone(data): data); //clone in supported browsers (everything but IE)
+
+        var payload = self.beforeSend(clonedData);
         if (!payload) {
           log('Raygun4JS: cancelling send because onBeforeSendRUM returned falsy value');
           return;
