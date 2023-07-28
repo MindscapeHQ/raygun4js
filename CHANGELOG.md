@@ -31,6 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Replaced old company name
+- Documentation points to 'new' url
+
+### Changed
+
+- Updated the Raygun url to send events to preferred ingestion endpoint
+
 ## v2.26.1 - 2023-07-12
 
 ### Fixed
