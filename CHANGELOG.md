@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- EXAMPLE 
 
-## [1.1.1] - 2023-03-05
+## [1.1.1] 
 
 ### Added
 
@@ -28,8 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
 
 -->
+## v2.26.3
 
-## [Unreleased]
+### Changed
+
+- The 'OnBeforeSend' and 'OnBeforeSendRUM' callbacks now pass a clone of the payload, to prevent accidental pollution of global objects
+- Updated the Github Action (Pre commit unit tests) Node to version 20
+
+## v2.26.2
 
 ### Fixed
 
@@ -40,7 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the Raygun url to send events to preferred ingestion endpoint
 
-## v2.26.1 - 2023-07-12
+## v2.26.1
+
+### Changed
+
+- Updated the Raygun url to send events to preferred ingestion endpoint
+
 
 ### Fixed
 
