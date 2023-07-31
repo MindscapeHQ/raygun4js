@@ -1,15 +1,15 @@
 {
   "name": "raygun4js",
-  "version": "2.26.1",
-  "homepage": "http://raygun.io",
+  "version": "2.26.2",
+  "homepage": "http://raygun.com",
   "authors": [
-    "Mindscape <hello@raygun.io>"
+    "Mindscape <hello@raygun.com>"
   ],
   "repository": {
     "type": "git",
     "url": "git://github.com/MindscapeHQ/raygun4js.git"
   },
-  "description": "Official Raygun.io automatic error tracking plugin for JavaScript",
+  "description": "Official Raygun.com automatic error tracking plugin for JavaScript",
   "main": "dist/raygun.js",
   "keywords": [
     "error",
