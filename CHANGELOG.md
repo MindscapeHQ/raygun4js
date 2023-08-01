@@ -48,11 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.26.1
 
-### Changed
-
-- Updated the Raygun url to send events to preferred ingestion endpoint
-
-
 ### Fixed
 
 - Fixed timing bug, where some xhr requests may rarely be mis-attributed to a different page from which they were started on.
