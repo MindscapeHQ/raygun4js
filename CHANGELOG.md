@@ -26,8 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Unused normalize.css file
+  
 
 -->
+
 ## v2.26.3
 
 ### Changed
@@ -39,8 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Replaced old company name
-- Documentation points to 'new' url
+- Replaced old company name in metadata
+- Documentation points to 'new' .com url
 
 ### Changed
 
