@@ -1055,7 +1055,7 @@ var raygunRumFactory = function (window, $, Raygun) {
        */
       var duration = timing.duration;
 
-      if (duration !== 0) {
+      if (duration !== 0 || (timing.responseEnd === undefined || timing.startTime === undefined)) { //Stops potential call to deprecated VisibilityStateEntry.responseEnd
         return duration;
       }
 
@@ -1164,7 +1164,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
 
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation" || resource.entryType === "mark";
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"; //|| resource.entryType === "navigation"; This allows the PerformanceNavigationTiming object to be used to obtain page timing.
     }
 
     function shouldIgnoreResourceByName(name) {
