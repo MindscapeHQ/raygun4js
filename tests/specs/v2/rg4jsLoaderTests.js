@@ -1,7 +1,7 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
 
-var _entriesEndpoint = 'https://api.raygun.com/entries';
+var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Functional tests for rg4js() calls to ensure they are executed by the loader", function() {
 

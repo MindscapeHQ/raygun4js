@@ -2,7 +2,7 @@ var webdriverio = require('webdriverio');
 var _ = require('underscore');
 var common = require('../common');
 
-var _entriesEndpoint = 'https://api.raygun.com/entries';
+var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Payload functional validation tests for v2 automatic unhandled error sending", function() {
 
