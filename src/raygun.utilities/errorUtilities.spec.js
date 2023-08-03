@@ -415,7 +415,7 @@ describe('Error utilities', () => {
                     func: 'show'
                   },
                 ]
-              }, ['api.raygun.com'])).toEqual(false);
+              }, ['api.raygun.io'])).toEqual(false);
             });
           });
 
