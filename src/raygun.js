@@ -943,14 +943,16 @@ var raygunFactory = function(window, $, undefined) {
       payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
     }
 
+    var clonedPayload = (!!window.structuredClone ? window.structuredClone(payload): payload); //clone in supported browsers (everything but IE)
+
     if (typeof _beforeSendCallback === 'function') {
-      var mutatedPayload = _beforeSendCallback(payload);
+      var mutatedPayload = _beforeSendCallback(clonedPayload);
 
       if (mutatedPayload) {
         sendToRaygun(mutatedPayload);
       }
     } else {
-      sendToRaygun(payload);
+      sendToRaygun(clonedPayload);
     }
   }
 
