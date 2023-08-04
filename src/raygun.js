@@ -56,7 +56,7 @@ var raygunFactory = function(window, $, undefined) {
     _groupingKeyCallback,
     _beforeXHRCallback,
     _afterSendCallback,
-    _raygunApiUrl = 'https://api.raygun.com',
+    _raygunApiUrl = 'https://api.raygun.io',
     _excludedHostnames = null,
     _excludedUserAgents = null,
     _filterScope = 'customData',
