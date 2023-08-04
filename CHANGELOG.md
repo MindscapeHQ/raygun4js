@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Use api.raygun.io endpoint to send stored errors
+- Use api.raygun.io endpoint, if URL is not overridden, to send stored events
 
 
 ## v2.26.4
