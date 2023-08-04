@@ -74,7 +74,8 @@ var raygunFactory = function(window, $, undefined) {
     _setCookieAsSecure = false,
     _clientIp,
     _captureMissingRequests = false,
-    detachPromiseRejectionFunction;
+    detachPromiseRejectionFunction,
+    _customEndpointSet = false;
 
   var rand = Math.random();
   var _publicRaygunFunctions = {
@@ -129,6 +130,7 @@ var raygunFactory = function(window, $, undefined) {
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
+          _customEndpointSet = true;
         }
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
@@ -150,6 +152,7 @@ var raygunFactory = function(window, $, undefined) {
 
         if (options.apiEndpoint) {
           _raygunApiUrl = options.apiEndpoint;
+          _customEndpointSet = true;
         }
 
         if (options.from) {
@@ -585,6 +588,12 @@ var raygunFactory = function(window, $, undefined) {
         if (key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1) {
           try {
             var payload = JSON.parse(localStorage[key]);
+
+          // If the url contains 'raygun.com', replace it with 'raygun.io', but only if not custom set already (proxy, testing, etc)
+          if (!_customEndpointSet && payload.url.includes('raygun.com')) {
+            payload.url = payload.url.replace('raygun.com', 'raygun.io');
+          }
+
             makePostCorsRequest(payload.url, payload.data);
           } catch (e) {
             Raygun.Utilities.log('Raygun4JS: Invalid JSON object in LocalStorage');
