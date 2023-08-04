@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--- EXAMPLE 
 
-## [1.1.1] 
+## [2.26.x] 
 
 ### Added
 
@@ -29,6 +29,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   
 
 -->
+
+## [2.26.5]
+
+
+### Fixed
+
+- Replaced usage of `timing.responseEnd` which is now deprecated
+
+
+## v2.26.4
+
+
+### Fixed
+
+- Reverted the default endpoint url from api.raygun.com back to api.raygun.io (From release v2.26.2 which is causing disruptions for some users)
+
 
 ## v2.26.3
 

@@ -1,7 +1,7 @@
 var webdriverio = require('webdriverio');
 var _ = require('underscore');
 
-var _eventsEndpoint = 'https://api.raygun.com/events';
+var _eventsEndpoint = 'https://api.raygun.io/events';
 
 describe("XHR functional tests for /events with V2", function() {
 
