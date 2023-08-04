@@ -31,6 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
+## v2.26.5
+
+
+### Changed
+
+- Use api.raygun.io endpoint to send stored errors
+
+
 ## v2.26.4
 
 
