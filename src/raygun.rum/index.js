@@ -543,8 +543,14 @@ var raygunRumFactory = function (window, $, Raygun) {
       }
 
       try {
-        var resources = window.performance.getEntries();
+        const navigationEntries = window.performance.getEntriesByType('navigation');
+        if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
+          offset = 0; //start time is always 0 with the new api & virtual page
+        } else {
+          offset = window.performance.timing.navigationStart;
+        }
         var i;
+        const resources = window.performance.getEntries();
 
         for (i = self.offset; i < resources.length; i++) {
           var resource = resources[i];
@@ -556,7 +562,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               collection.push(attachParentResource(customTiming, self.parentResource));
             }
           } else if (!shouldIgnoreResource(resource)) {
-            collection.push(getSecondaryTimingData(resource));
+            collection.push(getSecondaryTimingData(resource,offset));
           }
         }
 
@@ -715,8 +721,17 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     function getEncodedTimingData() {
-      var timing = window.performance.timing;
+      const navigationEntries = window.performance.getEntriesByType('navigation');
+      var timing = undefined;
+      // The navigationEntries array will contain one entry, as it represents the current navigation
+      //This is a check for backwards compatability
+      if (navigationEntries && navigationEntries.length > 0) {
+          timing = navigationEntries[0]; //These timings begin at zero
+      } else {
+          timing = window.performance.timing; //These timings are in unix time
+      }
 
+      //- data.a from each makes them relative to zero regardless  
       var data = {
         du: timing.duration,
         t: Timings.Page,
@@ -815,35 +830,35 @@ var raygunRumFactory = function (window, $, Raygun) {
       var data = {
         du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
-        a: timing.fetchStart,
+        a: offset + timing.fetchStart,
       };
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
-        data.b = timing.domainLookupStart - data.a;
+        data.b = offset + timing.domainLookupStart - data.a;
       }
 
       if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
-        data.c = timing.domainLookupEnd - data.a;
+        data.c = offset + timing.domainLookupEnd - data.a;
       }
 
       if (timing.connectStart && timing.connectStart > 0) {
-        data.d = timing.connectStart - data.a;
+        data.d = offset + timing.connectStart - data.a;
       }
 
       if (timing.connectEnd && timing.connectEnd > 0) {
-        data.e = timing.connectEnd - data.a;
+        data.e = offset + timing.connectEnd - data.a;
       }
 
       if (timing.responseStart && timing.responseStart > 0) {
-        data.f = timing.responseStart - data.a;
+        data.f = offset + timing.responseStart - data.a;
       }
 
       if (timing.responseEnd && timing.responseEnd > 0) {
-        data.g = timing.responseEnd - data.a;
+        data.g = offset + timing.responseEnd - data.a;
       }
 
       if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
-        data.n = (timing.secureConnectionStart - timing.connectStart) - data.a;
+        data.n = offset + (timing.secureConnectionStart - timing.connectStart) - data.a;
       }
 
       data.a = data.a.toFixed(2);
