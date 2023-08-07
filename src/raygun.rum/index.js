@@ -543,7 +543,6 @@ var raygunRumFactory = function (window, $, Raygun) {
       }
 
       try {
-        var offset = fromVirtualPage ? 0 : window.performance.timing.navigationStart;
         var resources = window.performance.getEntries();
         var i;
 
@@ -557,7 +556,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               collection.push(attachParentResource(customTiming, self.parentResource));
             }
           } else if (!shouldIgnoreResource(resource)) {
-            collection.push(getSecondaryTimingData(resource, offset));
+            collection.push(getSecondaryTimingData(resource));
           }
         }
 
@@ -812,39 +811,39 @@ var raygunRumFactory = function (window, $, Raygun) {
       return data;
     }
 
-    function getSecondaryEncodedTimingData(timing, offset) {
+    function getSecondaryEncodedTimingData(timing) {
       var data = {
         du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
-        a: offset + timing.fetchStart,
+        a: timing.fetchStart,
       };
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
-        data.b = offset + timing.domainLookupStart - data.a;
+        data.b = timing.domainLookupStart - data.a;
       }
 
       if (timing.domainLookupEnd && timing.domainLookupEnd > 0) {
-        data.c = offset + timing.domainLookupEnd - data.a;
+        data.c = timing.domainLookupEnd - data.a;
       }
 
       if (timing.connectStart && timing.connectStart > 0) {
-        data.d = offset + timing.connectStart - data.a;
+        data.d = timing.connectStart - data.a;
       }
 
       if (timing.connectEnd && timing.connectEnd > 0) {
-        data.e = offset + timing.connectEnd - data.a;
+        data.e = timing.connectEnd - data.a;
       }
 
       if (timing.responseStart && timing.responseStart > 0) {
-        data.f = offset + timing.responseStart - data.a;
+        data.f = timing.responseStart - data.a;
       }
 
       if (timing.responseEnd && timing.responseEnd > 0) {
-        data.g = offset + timing.responseEnd - data.a;
+        data.g = timing.responseEnd - data.a;
       }
 
       if (timing.secureConnectionStart && timing.secureConnectionStart > 0) {
-        data.n = offset + (timing.secureConnectionStart - timing.connectStart) - data.a;
+        data.n = (timing.secureConnectionStart - timing.connectStart) - data.a;
       }
 
       data.a = data.a.toFixed(2);
@@ -1164,7 +1163,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
 
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"; //|| resource.entryType === "navigation"; This allows the PerformanceNavigationTiming object to be used to obtain page timing.
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"|| resource.entryType === "navigation" || resource.entryType === "visibility-state"; //We dont want either the old or the new timings to be used for secondary, they should only be primary
     }
 
     function shouldIgnoreResourceByName(name) {
