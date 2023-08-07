@@ -543,6 +543,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       }
 
       try {
+        offset = 0;
         const navigationEntries = window.performance.getEntriesByType('navigation');
         if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
           offset = 0; //start time is always 0 with the new api & virtual page
