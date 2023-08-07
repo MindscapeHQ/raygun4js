@@ -24,7 +24,7 @@
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb','captureMissineRequests'];
 
   var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
