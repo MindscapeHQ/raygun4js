@@ -32,10 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.26.5]
 
+### Changed
+
+- Page timings are now gathered by default from PerformanceNavigationTiming instead of PerformanceTiming when available. This was done because the PerformanceTiming API has been deprecated.
 
 ### Fixed
 
-- Replaced usage of `timing.responseEnd` which is now deprecated
+- Fixed bug that could stop `captureMissingRequests` from being set.
+- Fixed potential access to PerformanceTiming API in browsers where it has been deprecated
 
 
 ## v2.26.4
