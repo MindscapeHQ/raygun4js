@@ -537,21 +537,21 @@ var raygunRumFactory = function (window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage, forceSend) {
+    function extractChildData(collection, parentIsVirtualPage, forceSend) {
       if (!performanceEntryExists('getEntries', 'function')) {
         return;
       }
 
       try {
-        offset = 0;
-        const navigationEntries = window.performance.getEntriesByType('navigation');
+        var offset = 0;
+        var navigationEntries = window.performance.getEntriesByType('navigation');
         if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
           offset = 0; //start time is always 0 with the new api & virtual page
         } else {
           offset = window.performance.timing.navigationStart;
         }
         var i;
-        const resources = window.performance.getEntries();
+        var resources = window.performance.getEntries();
 
         for (i = self.offset; i < resources.length; i++) {
           var resource = resources[i];
@@ -722,8 +722,8 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     function getEncodedTimingData() {
-      const navigationEntries = window.performance.getEntriesByType('navigation');
-      var timing = undefined;
+      var navigationEntries = window.performance.getEntriesByType('navigation');
+      var timing;
       // The navigationEntries array will contain one entry, as it represents the current navigation
       //This is a check for backwards compatability
       if (navigationEntries && navigationEntries.length > 0) {
