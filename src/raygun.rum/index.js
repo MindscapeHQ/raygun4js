@@ -722,14 +722,8 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     function getEncodedTimingData() {
-      var navigationEntries = window.performance.getEntriesByType('navigation');
-      // The navigationEntries array will contain one entry, as it represents the current navigation      
-      var timing = window.performance.timing; //this timing is in unix time
-      
-      //This is a check for backwards compatability
-      if (navigationEntries && navigationEntries.length > 0) {
-          timing = navigationEntries[0]; //These timings begin at zero
-      }
+      var performanceNavigationTiming = window.performance.getEntriesByType('navigation')[0]; // The navigationEntries array will contain one entry, as it represents the current navigation
+      var timing = performanceNavigationTiming || window.performance.timing;
       
       var data = {
         du: getTimingDuration(timing),
@@ -1066,15 +1060,7 @@ var raygunRumFactory = function (window, $, Raygun) {
        * This utility fallsback to using the responseEnd - startTime when
        * that is the case.
        */
-      var duration = timing.duration;
-
-      var timingsAreDeprecated = !timing.responseEnd && !timing.startTime; //Stops potential call to deprecated VisibilityStateEntry.responseEnd
-      
-      if (duration !== 0 || timingsAreDeprecated) { 
-        return duration;
-      }
-
-      return timing.responseEnd - timing.startTime;
+      return (timing.responseEnd - timing.startTime) || 0;
     }
     this.Utilities["getTimingDuration"] = getTimingDuration;
 
