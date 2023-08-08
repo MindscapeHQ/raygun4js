@@ -732,7 +732,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       }
       
       var data = {
-        du: timing.duration,
+        du: getTimingDuration(timing),
         t: Timings.Page,
       };
 
@@ -1068,7 +1068,9 @@ var raygunRumFactory = function (window, $, Raygun) {
        */
       var duration = timing.duration;
 
-      if (duration !== 0 || (timing.responseEnd === undefined || timing.startTime === undefined)) { //Stops potential call to deprecated VisibilityStateEntry.responseEnd
+      var timingsAreDeprecated = !timing.responseEnd && !timing.startTime; //Stops potential call to deprecated VisibilityStateEntry.responseEnd
+      
+      if (duration !== 0 || timingsAreDeprecated) { 
         return duration;
       }
 
@@ -1176,8 +1178,8 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
-
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"|| resource.entryType === "navigation" || resource.entryType === "visibility-state"; //We dont want either the old or the new timings to be used for secondary, they should only be primary
+      
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"|| resource.entryType === "navigation" || resource.entryType === "visibility-state";
     }
 
     function shouldIgnoreResourceByName(name) {
