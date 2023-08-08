@@ -563,7 +563,7 @@ var raygunRumFactory = function (window, $, Raygun) {
               collection.push(attachParentResource(customTiming, self.parentResource));
             }
           } else if (!shouldIgnoreResource(resource)) {
-            collection.push(getSecondaryTimingData(resource,offset));
+            collection.push(getSecondaryTimingData(resource, offset));
           }
         }
 
@@ -723,16 +723,14 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function getEncodedTimingData() {
       var navigationEntries = window.performance.getEntriesByType('navigation');
-      var timing;
-      // The navigationEntries array will contain one entry, as it represents the current navigation
+      // The navigationEntries array will contain one entry, as it represents the current navigation      
+      var timing = window.performance.timing; //this timing is in unix time
+      
       //This is a check for backwards compatability
       if (navigationEntries && navigationEntries.length > 0) {
           timing = navigationEntries[0]; //These timings begin at zero
-      } else {
-          timing = window.performance.timing; //These timings are in unix time
       }
-
-      //- data.a from each makes them relative to zero regardless  
+      
       var data = {
         du: timing.duration,
         t: Timings.Page,
