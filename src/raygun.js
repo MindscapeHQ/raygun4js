@@ -952,7 +952,7 @@ var raygunFactory = function (window, $, undefined) {
       payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
     }
 
-      var clonedPayload = payload;
+    var clonedPayload = payload;
 
     if (typeof _beforeSendCallback === 'function') {
 
