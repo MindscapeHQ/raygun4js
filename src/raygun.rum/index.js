@@ -933,13 +933,18 @@ var raygunRumFactory = function (window, $, Raygun) {
         return;
       }
 
-  
+
 
       setTimeout(function () {
 
         updateUserAgentData(data);
 
-        var clonedData = (!!window.structuredClone ? window.structuredClone(data): data); //clone in supported browsers (everything but IE)
+        var clonedData = data;
+        try {
+          clonedData = (!!window.structuredClone ? window.structuredClone(data) : data); //clone in supported browsers (everything but IE)
+        } catch (e) {
+          Raygun.Utilities.log('Unable to clone CR payload data":', e);
+        }
 
         var payload = self.beforeSend(clonedData);
         if (!payload) {
@@ -976,9 +981,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
 
-          
 
-      }, (window.raygunUserAgentDataStatus === 1?200:0));
+
+      }, (window.raygunUserAgentDataStatus === 1 ? 200 : 0));
     }
 
     function updateUserAgentData(payload) {

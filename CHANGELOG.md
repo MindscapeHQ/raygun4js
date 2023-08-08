@@ -42,6 +42,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed potential access to PerformanceTiming API in browsers where it has been deprecated
 
 
+## v2.26.6
+
+
+### Fixed
+
+- Bug fix for structuredClone causing errors when used, together, with `rg4js('withTags', function() {});`
+
+## v2.26.5
+
+
+### Changed
+
+- Use api.raygun.io endpoint, if URL is not overridden, to send stored events
+
+
 ## v2.26.4
 
 

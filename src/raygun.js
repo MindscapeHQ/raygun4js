@@ -13,7 +13,7 @@
 /*globals __DEV__, raygunUtilityFactory, raygunErrorUtilitiesFactory, raygunBreadcrumbsFactory, raygunNetworkTrackingFactory, raygunViewportFactory, raygunCoreWebVitalFactory */
 
 
-var raygunFactory = function(window, $, undefined) {
+var raygunFactory = function (window, $, undefined) {
   var Raygun = {};
   Raygun.Utilities = raygunUtilityFactory(window, Raygun);
   Raygun.ErrorUtilities = raygunErrorUtilitiesFactory(window, Raygun);
@@ -74,14 +74,15 @@ var raygunFactory = function(window, $, undefined) {
     _setCookieAsSecure = false,
     _clientIp,
     _captureMissingRequests = false,
-    detachPromiseRejectionFunction;
+    detachPromiseRejectionFunction,
+    _customEndpointSet = false;
 
   var rand = Math.random();
   var _publicRaygunFunctions = {
     Rand: rand,
     Options: {},
 
-    noConflict: function() {
+    noConflict: function () {
       // Because _raygun potentially gets set before other code sets window.Raygun
       // this will potentially overwrite the new Raygun object with undefined
       // Not really much point in restoring undefined so just don't do that
@@ -91,13 +92,13 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    constructNewRaygun: function() {
+    constructNewRaygun: function () {
       var rgInstance = raygunFactory(window, window.jQuery);
 
       return rgInstance;
     },
 
-    init: function(key, options, customdata) {
+    init: function (key, options, customdata) {
       _traceKit.remoteFetching = false;
 
       this.Options._raygunApiKey = key;
@@ -129,6 +130,7 @@ var raygunFactory = function(window, $, undefined) {
 
         if (options.apiUrl) {
           _raygunApiUrl = options.apiUrl;
+          _customEndpointSet = true;
         }
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
@@ -150,13 +152,14 @@ var raygunFactory = function(window, $, undefined) {
 
         if (options.apiEndpoint) {
           _raygunApiUrl = options.apiEndpoint;
+          _customEndpointSet = true;
         }
 
         if (options.from) {
           _loadedFrom = options.from;
         }
 
-        if(options.clientIp) {
+        if (options.clientIp) {
           _clientIp = options.clientIp;
         }
       }
@@ -166,12 +169,12 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    withCustomData: function(customdata) {
+    withCustomData: function (customdata) {
       _customData = customdata;
       return Raygun;
     },
 
-    withTags: function(tags) {
+    withTags: function (tags) {
       _tags = tags;
 
       if (_rum !== undefined && _rum !== null) {
@@ -181,7 +184,7 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    attach: function() {
+    attach: function () {
       if (!Raygun.Utilities.isApiKeyConfigured() || _disableErrorTracking) {
         return Raygun;
       }
@@ -197,12 +200,12 @@ var raygunFactory = function(window, $, undefined) {
       // Attach React Native's handler in Release mode
       if (Raygun.Utilities.isReactNative()) {
         if (__DEV__ !== true && window.ErrorUtils && window.ErrorUtils.setGlobalHandler) {
-          window.ErrorUtils.setGlobalHandler(function(error, fatal) {
+          window.ErrorUtils.setGlobalHandler(function (error, fatal) {
             // Calling the defaultReactNativeGlobalHandler in release mode instantly closes the application
             // If an exception is currently being sent it will be lost, this sets our own afterSendCallback
             // to notify us when the error is done sending so we can call the default handler
             var originalAfterSendCallback = _afterSendCallback;
-            _afterSendCallback = function() {
+            _afterSendCallback = function () {
               if (typeof originalAfterSendCallback === 'function') {
                 originalAfterSendCallback();
               }
@@ -229,7 +232,7 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    detach: function() {
+    detach: function () {
       _traceKit.report.unsubscribe(processException);
       if ($document) {
         $document.unbind('ajaxError', processJQueryAjaxError);
@@ -240,7 +243,7 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    send: function(ex, customData, tags) {
+    send: function (ex, customData, tags) {
       if (_disableErrorTracking) {
         Raygun.Utilities.log('Error not sent due to disabled error tracking');
         return Raygun;
@@ -270,7 +273,7 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    setUser: function(user, isAnonymous, email, fullName, firstName, uuid) {
+    setUser: function (user, isAnonymous, email, fullName, firstName, uuid) {
       _user = {
         Identifier: user,
       };
@@ -297,16 +300,16 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    resetAnonymousUser: function() {
+    resetAnonymousUser: function () {
       clearStorage();
     },
 
-    setVersion: function(version) {
+    setVersion: function (version) {
       _version = version;
       return Raygun;
     },
 
-    saveIfOffline: function(enableOffline) {
+    saveIfOffline: function (enableOffline) {
       if (typeof enableOffline !== 'undefined' && typeof enableOffline === 'boolean') {
         _enableOfflineSave = enableOffline;
       }
@@ -314,57 +317,57 @@ var raygunFactory = function(window, $, undefined) {
       return Raygun;
     },
 
-    filterSensitiveData: function(filteredKeys) {
+    filterSensitiveData: function (filteredKeys) {
       _filteredKeys = filteredKeys;
       return Raygun;
     },
 
-    setFilterScope: function(scope) {
+    setFilterScope: function (scope) {
       if (scope === 'customData' || scope === 'all') {
         _filterScope = scope;
       }
       return Raygun;
     },
 
-    whitelistCrossOriginDomains: function(whitelist) {
+    whitelistCrossOriginDomains: function (whitelist) {
       _whitelistedScriptDomains = whitelist;
       return Raygun;
     },
 
-    onBeforeSend: function(callback) {
+    onBeforeSend: function (callback) {
       _beforeSendCallback = callback;
       return Raygun;
     },
 
-    onBeforeSendRum: function(callback) {
+    onBeforeSendRum: function (callback) {
       _beforeSendRumCallback = callback;
       return Raygun;
     },
 
-    groupingKey: function(callback) {
+    groupingKey: function (callback) {
       _groupingKeyCallback = callback;
       return Raygun;
     },
 
-    onBeforeXHR: function(callback) {
+    onBeforeXHR: function (callback) {
       _beforeXHRCallback = callback;
       return Raygun;
     },
 
-    onAfterSend: function(callback) {
+    onAfterSend: function (callback) {
       _afterSendCallback = callback;
       return Raygun;
     },
 
     // Public Pulse functions
 
-    endSession: function() {
+    endSession: function () {
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
         _rum.endSession();
       }
     },
 
-    trackEvent: function(type, options) {
+    trackEvent: function (type, options) {
       if (_providerState !== ProviderStates.READY) {
         _trackEventQueue.push({ type: type, options: options });
         return;
@@ -382,38 +385,38 @@ var raygunFactory = function(window, $, undefined) {
       }
     },
 
-    setClientIp: function(ip) {
+    setClientIp: function (ip) {
       _clientIp = ip;
     },
-    captureMissingRequests: function(val) {
+    captureMissingRequests: function (val) {
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
         _rum.captureMissingRequests(val);
       }
     },
-    recordBreadcrumb: function() {
+    recordBreadcrumb: function () {
       _breadcrumbs.recordBreadcrumb.apply(_breadcrumbs, arguments);
     },
-    enableAutoBreadcrumbs: function(type) {
+    enableAutoBreadcrumbs: function (type) {
       if (type) {
         _breadcrumbs['enableAutoBreadcrumbs' + type]();
       } else {
         _breadcrumbs.enableAutoBreadcrumbs();
       }
     },
-    disableAutoBreadcrumbs: function(type) {
+    disableAutoBreadcrumbs: function (type) {
       if (type) {
         _breadcrumbs['disableAutoBreadcrumbs' + type]();
       } else {
         _breadcrumbs.disableAutoBreadcrumbs();
       }
     },
-    setBreadcrumbOption: function(option, value) {
+    setBreadcrumbOption: function (option, value) {
       _breadcrumbs.setOption(option, value);
     },
-    setBreadcrumbs: function(breadcrumbs) {
+    setBreadcrumbs: function (breadcrumbs) {
       _breadcrumbs = breadcrumbs;
     },
-    getBreadcrumbs: function() {
+    getBreadcrumbs: function () {
       return _breadcrumbs.all();
     },
   };
@@ -494,7 +497,7 @@ var raygunFactory = function(window, $, undefined) {
     _providerState = ProviderStates.READY;
 
     if (Raygun.RealUserMonitoring !== undefined && !_disablePulse) {
-      var startRum = function() {
+      var startRum = function () {
         _rum = new Raygun.RealUserMonitoring(
           Raygun.Options._raygunApiKey,
           _raygunApiUrl,
@@ -585,6 +588,12 @@ var raygunFactory = function(window, $, undefined) {
         if (key.indexOf('raygunjs+' + Raygun.Options._raygunApiKey) > -1) {
           try {
             var payload = JSON.parse(localStorage[key]);
+
+            // If the url contains 'raygun.com', replace it with 'raygun.io', but only if not custom set already (proxy, testing, etc)
+            if (!_customEndpointSet && payload.url.includes('raygun.com')) {
+              payload.url = payload.url.replace('raygun.com', 'raygun.io');
+            }
+
             makePostCorsRequest(payload.url, payload.data);
           } catch (e) {
             Raygun.Utilities.log('Raygun4JS: Invalid JSON object in LocalStorage');
@@ -686,9 +695,9 @@ var raygunFactory = function(window, $, undefined) {
           : undefined,
       activeTarget:
         event.target &&
-        event.target.activeElement &&
-        event.target.activeElement.outerHTML &&
-        event.target.activeElement.outerHTML.slice
+          event.target.activeElement &&
+          event.target.activeElement.outerHTML &&
+          event.target.activeElement.outerHTML.slice
           ? event.target.activeElement.outerHTML.slice(0, 10240)
           : undefined,
     });
@@ -753,7 +762,7 @@ var raygunFactory = function(window, $, undefined) {
     }
 
     if (stackTrace.stack && stackTrace.stack.length) {
-      Raygun.Utilities.forEach(stackTrace.stack, function(i, frame) {
+      Raygun.Utilities.forEach(stackTrace.stack, function (i, frame) {
         stack.push({
           LineNumber: frame.line,
           ColumnNumber: frame.column,
@@ -767,7 +776,7 @@ var raygunFactory = function(window, $, undefined) {
     var queryString = Raygun.Utilities.parseUrl('?');
 
     if (queryString.length > 0) {
-      Raygun.Utilities.forEach(queryString.split('&'), function(i, segment) {
+      Raygun.Utilities.forEach(queryString.split('&'), function (i, segment) {
         var parts = segment.split('=');
         if (parts && parts.length === 2) {
           var key = decodeURIComponent(parts[0]);
@@ -924,7 +933,7 @@ var raygunFactory = function(window, $, undefined) {
       payload.Details.Breadcrumbs = [];
       var crumbs = _breadcrumbs.all() || [];
 
-      crumbs.forEach(function(crumb) {
+      crumbs.forEach(function (crumb) {
         if (crumb.metadata) {
           crumb.CustomData = crumb.metadata;
           delete crumb.metadata;
@@ -943,9 +952,16 @@ var raygunFactory = function(window, $, undefined) {
       payload.Details.GroupingKey = _groupingKeyCallback(payload, stackTrace, options);
     }
 
-    var clonedPayload = (!!window.structuredClone ? window.structuredClone(payload): payload); //clone in supported browsers (everything but IE)
+    var clonedPayload = payload;
 
     if (typeof _beforeSendCallback === 'function') {
+
+      try {
+        clonedPayload = (!!window.structuredClone ? window.structuredClone(payload) : payload); //clone in supported browsers (everything but IE)
+      } catch (e) {
+        Raygun.Utilities.log('Unable to clone RUM payload data":', e);
+      }
+
       var mutatedPayload = _beforeSendCallback(clonedPayload);
 
       if (mutatedPayload) {
@@ -975,7 +991,7 @@ var raygunFactory = function(window, $, undefined) {
       // XHR for Chrome/Firefox/Opera/Safari
       // as well as React Native's custom XHR implementation
       xhr.open(method, url, true);
-    }     
+    }
 
     return xhr;
   }
@@ -986,7 +1002,7 @@ var raygunFactory = function(window, $, undefined) {
     if (typeof xhr.setRequestHeader === 'function') {
       xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
 
-      if(typeof _clientIp !== "undefined") {
+      if (typeof _clientIp !== "undefined") {
         xhr.setRequestHeader('X-Remote-Address', _clientIp);
       }
     }
@@ -999,7 +1015,7 @@ var raygunFactory = function(window, $, undefined) {
 
     // For some reason this check is false in React Native but these handlers still need to be attached
     if ('withCredentials' in xhr || Raygun.Utilities.isReactNative()) {
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4) {
           return;
         }
@@ -1016,7 +1032,7 @@ var raygunFactory = function(window, $, undefined) {
         }
       };
 
-      xhr.onload = function() {
+      xhr.onload = function () {
         Raygun.Utilities.log('posted to Raygun');
 
         callAfterSend(this);
@@ -1025,11 +1041,11 @@ var raygunFactory = function(window, $, undefined) {
           _successCallback(xhr, url, data);
         }
       };
-    } 
-    
+    }
 
 
-    xhr.onerror = function() {
+
+    xhr.onerror = function () {
       Raygun.Utilities.log('failed to post to Raygun');
 
       callAfterSend(this);
@@ -1054,7 +1070,7 @@ var raygunFactory = function(window, $, undefined) {
 
   // Storage
   function saveToStorage(value) {
-    if(Raygun.Utilities.localStorageAvailable()) {
+    if (Raygun.Utilities.localStorageAvailable()) {
       localStorage.setItem(_userKey, value);
     } else {
       Raygun.Utilities.createCookie(_userKey, value, 24 * 31, _setCookieAsSecure);
@@ -1062,7 +1078,7 @@ var raygunFactory = function(window, $, undefined) {
   }
 
   function clearStorage() {
-    if(Raygun.Utilities.localStorageAvailable()) {
+    if (Raygun.Utilities.localStorageAvailable()) {
       localStorage.removeItem(_userKey);
     } else {
       Raygun.Utilities.clearCookie(_userKey);
@@ -1075,10 +1091,10 @@ var raygunFactory = function(window, $, undefined) {
      * If that doesn't contain a value then try from a cookie as previous versions saved it here
      */
     var value;
-    if(Raygun.Utilities.localStorageAvailable()) {
+    if (Raygun.Utilities.localStorageAvailable()) {
       value = localStorage.getItem(_userKey);
 
-      if(value !== null) {
+      if (value !== null) {
         callback(value);
         return;
       }
@@ -1090,7 +1106,7 @@ var raygunFactory = function(window, $, undefined) {
      * If there was a cookie and localStorage is avaliable then
      * clear the cookie as localStorage will be the storage mechanism going forward
      */
-    if(value !== null && Raygun.Utilities.localStorageAvailable()) {
+    if (value !== null && Raygun.Utilities.localStorageAvailable()) {
       Raygun.Utilities.clearCookie(_userKey);
       localStorage.setItem(_userKey, value);
     }
