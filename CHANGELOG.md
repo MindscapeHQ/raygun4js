@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
+## v2.26.6
+
+
+### Fixed
+
+- Bug fix for structuredClone causing errors when used, together, with `rg4js('withTags', function() {});`
+
 ## v2.26.5
 
 
