@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Page timings are now gathered by default from PerformanceNavigationTiming instead of PerformanceTiming when available. This was done because the PerformanceTiming API has been deprecated.
+- Now defaults to using the `PerformanceObserver` object to trigger RUM. This ensures it occours after the page is fully loaded and all timing objects are populated
 
 ### Fixed
 
