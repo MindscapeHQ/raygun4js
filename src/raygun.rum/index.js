@@ -1065,7 +1065,8 @@ var raygunRumFactory = function (window, $, Raygun) {
        * This utility fallsback to using the responseEnd - startTime when
        * that is the case.
        */
-      return (timing.responseEnd - timing.startTime) || 0;
+       
+      return timing.duration || (timing.responseEnd - timing.startTime) || 0;
     }
     this.Utilities["getTimingDuration"] = getTimingDuration;
 

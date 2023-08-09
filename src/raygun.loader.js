@@ -280,7 +280,18 @@
 
   if (!Raygun.Utilities.isReactNative()) {
     if (document.readyState === 'complete') {
-      onLoadHandler();
+        onLoadHandler();
+    } else if (PerformanceObserver && PerformanceObserver.supportedEntryTypes && PerformanceObserver.supportedEntryTypes.includes('navigation')) {
+        var observer = new PerformanceObserver(function (list) {
+            var performanceTiming = list.getEntries()[0];
+            var loadEventEnd = performanceTiming.loadEventEnd;
+
+            if (loadEventEnd > 0) {
+                onLoadHandler();
+            }
+        });
+
+        observer.observe({ entryTypes: ['navigation'] });
     } else if (window.addEventListener) {
       window.addEventListener('load', onLoadHandler);
     } else {
