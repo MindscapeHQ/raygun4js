@@ -544,9 +544,9 @@ var raygunRumFactory = function (window, $, Raygun) {
 
       try {
         var offset = 0;
-        var navigationEntries = window.performance.getEntriesByType('navigation');
+        var navigationEntries = window.performance.getEntriesByType('navigation'); //this tries to fetch the PerformanceNavigationTiming object (this is the new timing API)
         if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
-          offset = 0; //start time is always 0 with the new api & virtual page
+          offset = 0; //start time is always 0 with the new api & virtual page so the offset is always 0
         } else {
           offset = window.performance.timing.navigationStart;
         }
@@ -722,6 +722,7 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     function getEncodedTimingData() {
+      //Try to default to the new timing object, if not use the old
       var performanceNavigationTiming = window.performance.getEntriesByType('navigation')[0]; // The navigationEntries array will contain one entry, as it represents the current navigation
       var timing = performanceNavigationTiming || window.performance.timing;
       
@@ -1170,7 +1171,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
-      
+      //We want to ignore 'navigation' and 'visibility-state' as they are used for the main page timing, so we dont want to use them for the child objects
       return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"|| resource.entryType === "navigation" || resource.entryType === "visibility-state";
     }
 
