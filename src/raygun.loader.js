@@ -24,7 +24,7 @@
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb','captureMissingRequests'];
 
   var parseSnippetOptions = function() {
     snippetOptions = window[window['RaygunObject']].o;
@@ -279,8 +279,16 @@
   };
 
   if (!Raygun.Utilities.isReactNative()) {
+    var supportsNavigationTiming = !!window.PerformanceObserver && !!window.PerformanceObserver.supportedEntryTypes && window.PerformanceObserver.supportedEntryTypes.includes('navigation');
     if (document.readyState === 'complete') {
-      onLoadHandler();
+        onLoadHandler();
+    } else if (supportsNavigationTiming) {
+        //The other 'load' events are called before the PerformanceNavigationTiming is completed resulting in `loadEventEnd` never being set which is needed to calculate the duration of the timing. This observer triggers after the timing is complete. 
+        var observer = new window.PerformanceObserver(function () {
+          onLoadHandler();
+        });
+
+        observer.observe({ entryTypes: ['navigation'] });
     } else if (window.addEventListener) {
       window.addEventListener('load', onLoadHandler);
     } else {

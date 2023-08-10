@@ -537,15 +537,21 @@ var raygunRumFactory = function (window, $, Raygun) {
       return data;
     }
 
-    function extractChildData(collection, fromVirtualPage, forceSend) {
+    function extractChildData(collection, parentIsVirtualPage, forceSend) {
       if (!performanceEntryExists('getEntries', 'function')) {
         return;
       }
 
       try {
-        var offset = fromVirtualPage ? 0 : window.performance.timing.navigationStart;
-        var resources = window.performance.getEntries();
+        var offset = 0;
+        var navigationEntries = window.performance.getEntriesByType('navigation'); //this tries to fetch the PerformanceNavigationTiming object (this is the new timing API)
+        if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
+          offset = 0; //start time is always 0 with the new api & virtual page so the offset is always 0
+        } else {
+          offset = window.performance.timing.navigationStart;
+        }
         var i;
+        var resources = window.performance.getEntries();
 
         for (i = self.offset; i < resources.length; i++) {
           var resource = resources[i];
@@ -716,10 +722,12 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     function getEncodedTimingData() {
-      var timing = window.performance.timing;
-
+      //Try to default to the new timing object, if not use the old
+      var performanceNavigationTiming = window.performance.getEntriesByType('navigation')[0]; // The navigationEntries array will contain one entry, as it represents the current navigation
+      var timing = performanceNavigationTiming || window.performance.timing;
+      
       var data = {
-        du: timing.duration,
+        du: getTimingDuration(timing),
         t: Timings.Page,
       };
 
@@ -1058,13 +1066,8 @@ var raygunRumFactory = function (window, $, Raygun) {
        * This utility fallsback to using the responseEnd - startTime when
        * that is the case.
        */
-      var duration = timing.duration;
-
-      if (duration !== 0) {
-        return duration;
-      }
-
-      return timing.responseEnd - timing.startTime;
+       
+      return timing.duration || (timing.responseEnd - timing.startTime) || 0;
     }
     this.Utilities["getTimingDuration"] = getTimingDuration;
 
@@ -1168,8 +1171,8 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function shouldIgnoreResource(resource) {
       var name = resource.name.split('?')[0];
-
-      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "navigation" || resource.entryType === "mark";
+      //We want to ignore 'navigation' and 'visibility-state' as they are used for the main page timing, so we dont want to use them for the child objects
+      return shouldIgnoreResourceByName(name) || resource.entryType === "paint" || resource.entryType === "mark"|| resource.entryType === "navigation" || resource.entryType === "visibility-state";
     }
 
     function shouldIgnoreResourceByName(name) {
