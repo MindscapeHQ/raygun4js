@@ -283,7 +283,7 @@
         onLoadHandler();
     } else if (!!window.PerformanceObserver && !!window.PerformanceObserver.supportedEntryTypes && window.PerformanceObserver.supportedEntryTypes.includes('navigation')) {
         //The other 'load' events are called before the PerformanceNavigationTiming is completed resulting in `loadEventEnd` never being set which is needed to calculate the duration of the timing. This observer triggers after the timing is complete. 
-        var observer = new window.PerformanceObserver(function (list) {
+        var observer = new window.PerformanceObserver(function () {
           onLoadHandler();
         });
 
