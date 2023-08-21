@@ -30,6 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -->
 
+## 2023-08-21 Update
+
+
+NPM and nuget packages (2.25.4 and older) were marked deprecated on NPM and Nuget with message:
+
+>This package is deprecated. It may not perform completely in browsers newer than Chromium 114
+
+
 ## [2.27.0]
 
 ### Changed
