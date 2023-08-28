@@ -6,7 +6,9 @@
     <title>Raygun4js</title>
     <authors>Raygun Limited</authors>
     <owners>Raygun Limited</owners>
-    <licenseUrl>https://raw2.github.com/MindscapeHQ/raygun4js/master/LICENSE</licenseUrl>
+    <PackageIcon>128x128-transparent.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/MindscapeHQ/raygun4js</RepositoryUrl>
     <projectUrl>http://raygun.com/raygun-providers/javascript</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Official Raygun JavaScript module - automatic client-side error tracking and Real User Monitoring for your web project</summary>
