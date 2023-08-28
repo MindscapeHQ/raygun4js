@@ -27,6 +27,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Unused normalize.css file
   
+-->
+
+
+## 2023-08-28 Update
+
+[2nd phase of deprecations]
+NPM and nuget packages (2.26.4 and older) were marked deprecated on NPM and Nuget with message:
+
+>This package is deprecated. It may not perform completely in browsers newer than Chromium 114
+
+<!-- 
+npm deprecate "raygun4js@2.26.4"  "This package is deprecated. It may not perform completely in browsers newer than Chromium 114. Please Upgrade to @latest"
+npm deprecate "raygun4js@2.25.6 - 2.26.1"  "This package is deprecated. It may not perform completely in browsers newer than Chromium 114. Please Upgrade to @latest"
 
 -->
 
