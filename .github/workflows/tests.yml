@@ -19,7 +19,7 @@ jobs:
           node-version: 20.x
       - uses: browser-actions/setup-chrome@latest
         with:
-          chrome-version: latest
+          chrome-version: stable
       - run: npm ci
       - run: npx grunt
       - run: npm test
