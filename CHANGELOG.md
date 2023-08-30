@@ -30,6 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
+## [2.27.1]
+
+### Changed
+
+- Fixes a rare condition where 'Custom timings' are showing on pages that aren't related
+
+
+
 ## 2023-08-28 Update
 
 [2nd phase of deprecations]
