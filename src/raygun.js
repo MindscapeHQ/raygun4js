@@ -367,14 +367,15 @@ var raygunFactory = function (window, $, undefined) {
       }
     },
 
-    trackEvent: function (type, options) {
+    trackEvent: function (type, options, parentResource) {
       if (_providerState !== ProviderStates.READY) {
-        _trackEventQueue.push({ type: type, options: options });
+        parentResource =  _rum.parentResource;
+        _trackEventQueue.push({ type: type, options: options, parentResource: parentResource });
         return;
       }
 
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
-        var parentResource = _rum.parentResource;
+         parentResource = parentResource || _rum.parentResource;
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
@@ -556,7 +557,7 @@ var raygunFactory = function (window, $, undefined) {
     _processExceptionQueue = [];
 
     for (i = 0; i < _trackEventQueue.length; i++) {
-      _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+      _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options , _trackEventQueue[i].parentResource || null);
     }
 
     _trackEventQueue = [];
