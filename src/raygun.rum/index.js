@@ -607,7 +607,7 @@ var raygunRumFactory = function (window, $, Raygun) {
                   statusCode: response.status,
                   timing: {
                     du: maxFiveMinutes(response.duration).toFixed(2) || 0,
-                    a: offset.toFixed(2) || 0,
+                    a: (offset  || 0).toFixed(2),
                     t: Timings.XHR
                   },
                 };
