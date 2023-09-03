@@ -287,6 +287,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         version: self.version || 'Not supplied',
         tags: self.tags,
         device: window.raygunUserAgent,
+        client: {
+            name: "raygun4js",
+            version: '{{VERSION}}'
+        },
       }));
     }
 
@@ -602,8 +606,8 @@ var raygunRumFactory = function (window, $, Raygun) {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
-                    du: maxFiveMinutes(response.duration).toFixed(2),
-                    a: offset.toFixed(2),
+                    du: maxFiveMinutes(response.duration).toFixed(2) || 0,
+                    a: offset.toFixed(2) || 0,
                     t: Timings.XHR
                   },
                 };
@@ -1255,6 +1259,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         user: self.user,
         version: self.version || 'Not supplied',
         device: window.raygunUserAgent,
+        client: {
+            name: "raygun4js",
+            version: '{{VERSION}}'
+        },
         tags: self.tags,
         data: data,
       });
