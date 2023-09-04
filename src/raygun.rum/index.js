@@ -606,12 +606,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
-                    du: maxFiveMinutes(response.duration).toFixed(2) || 0,
+                    du: maxFiveMinutes(response.duration || 0).toFixed(2), //These are hacks to stop a potential situation where duration and/or offset are NaN, this is not a feature and needs to be fixed
                     a: (offset  || 0).toFixed(2),
                     t: Timings.XHR
                   },
                 };
-
                 collection.push(attachParentResource(payload, response.parentResource));
               }
             } while (responses.length > 0);
