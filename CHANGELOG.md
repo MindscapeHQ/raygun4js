@@ -43,6 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rolls back the previous change
 
 
+
+## [2.27.2]
+
+### Changed
+
+- Rolls back the previous change which causes issues for typescript users
+- Adds client provider (version) information
+- Adds defaults for timing information payload information
+
 ## [2.27.1]
 
 ### Changed
