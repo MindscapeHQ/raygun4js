@@ -378,7 +378,7 @@ var raygunFactory = function (window, $, undefined) {
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
-          _rum.trackCustomTiming(options.name, options.duration, options.offset, parentResource);
+          _rum.trackCustomTiming(options.name, options.duration, options.offset || 0, parentResource);
         } else if (type === 'customTimings' && options.timings) {
           _rum.sendCustomTimings(options.timings, parentResource);
         }

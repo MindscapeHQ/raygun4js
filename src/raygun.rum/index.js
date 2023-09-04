@@ -827,7 +827,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       var data = {
         du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
-        a: offset + timing.fetchStart,
+        a: offset + timing.fetchStart || timing.startTime || 0,
       };
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
