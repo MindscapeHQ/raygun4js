@@ -734,7 +734,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         t: Timings.Page,
       };
 
-      data.a = timing.fetchStart;
+      data.a = timing.fetchStart || 0;
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
         data.b = timing.domainLookupStart - data.a;
@@ -827,7 +827,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       var data = {
         du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
-        a: offset + (timing.fetchStart || timing.startTime || 0),
+        a: (offset || 0) + (timing.fetchStart || timing.startTime || 0),
       };
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
@@ -1206,7 +1206,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function sanitizeNaNs(data) {
       for (var i in data) {
-        if (isNaN(data[i]) && typeof data[i] !== 'string') {
+        if (data[i] === "NaN") {
           data[i] = 0;
         }
       }
