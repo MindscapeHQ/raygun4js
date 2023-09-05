@@ -287,7 +287,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         version: self.version || 'Not supplied',
         tags: self.tags,
         device: window.raygunUserAgent,
-        client: {
+        client: { //This is incomplete, it does not add the client data to every payload that is sent
             name: "raygun4js",
             version: '{{VERSION}}'
         },
@@ -1258,7 +1258,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         user: self.user,
         version: self.version || 'Not supplied',
         device: window.raygunUserAgent,
-        client: {
+        client: { //This is incomplete, it does not add the client data to every payload that is sent
             name: "raygun4js",
             version: '{{VERSION}}'
         },
