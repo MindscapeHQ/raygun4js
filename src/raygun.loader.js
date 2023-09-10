@@ -222,7 +222,7 @@
     window[window['RaygunObject']] = function() {
       return executor(arguments);
     };
-
+    window['RaygunInitialized'] = true;
     globalExecutorInstalled = true;
   };
 
