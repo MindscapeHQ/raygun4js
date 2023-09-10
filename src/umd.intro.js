@@ -31,11 +31,6 @@
         windw['rg4js'].q = windw['rg4js'].q || [];
         windw['rg4js'].q.push({ e: err });
     };
-    let isWindowLoaded = false;
-
-    window.onload = function() {
-        isWindowLoaded = true;
-    };
     // Similar approach as the snippet, creates the rg4js proxy function, which is exported in umd.outro.js once the
     // script is executed, and later overwritten by the loader once it's finished
     (function(wind) {
@@ -47,8 +42,6 @@
                 (wind[wind['RaygunObject']].o = wind[wind['RaygunObject']].o || []).push(arguments)
             } else {
                 // onload has been called and provider has executed, call the executor proxy function
-                var test = wind[wind['RaygunObject']];
-                console.log(test);
                 return wind[wind['RaygunObject']](arguments[0], arguments[1]);
             }
 
