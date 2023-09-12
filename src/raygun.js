@@ -368,8 +368,9 @@ var raygunFactory = function (window, $, undefined) {
     },
 
     trackEvent: function (type, options) {
-      if (_providerState !== ProviderStates.READY) {
-        _trackEventQueue.push({ type: type, options: options });
+      if (_providerState !== ProviderStates.READY) {   
+        parentResource = _rum === null || _rum === undefined ? null : _rum.parentResource ;
+        _trackEventQueue.push({ type: type, options: options, parentResource: parentResource });
         return;
       }
 
