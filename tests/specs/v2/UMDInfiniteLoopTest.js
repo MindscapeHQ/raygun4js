@@ -1,5 +1,19 @@
 var webdriverio = require('webdriverio');
 
+
+
+
+/**
+* What does this test do?
+* When using the UMD module, if raygun events are fired (e.g. rg4js('send', ...)) 
+* before raygun is fully loaded they are stored in an object on the window.
+* When Raygun loads these are then processed.
+* However a bug was found where we were assuming raygun was loaded when 
+* `document.readyState === complete` but it is not loaded until slightly 
+* after when the `load` event is fired. This means that if a rayugn event 
+* is processed in this gap an infinite loop can be caused.
+* This test ensures graceful handling of this situation
+*/
 describe("UMD Infinite loop test", function() {
     beforeEach(async function() {
         /**
