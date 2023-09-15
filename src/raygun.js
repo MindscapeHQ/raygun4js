@@ -394,7 +394,7 @@ var raygunFactory = function (window, $, undefined) {
       }
 
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
-        var parentResource = parentResource || _rum.parentResource;
+        parentResource = parentResource || _rum.parentResource;
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
