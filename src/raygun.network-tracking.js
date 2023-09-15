@@ -157,6 +157,12 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
         var method = (options && options.method) || 'GET';
         var initTime = new Date().getTime();
 
+
+
+
+        // One idea is to have a typeof bonusUrl 
+        //Where we extract a real url and a reporting one
+        //The user would then need to call fetch({realUrl: "http//:abv.com/api/allTheThings", reportingUrl: "http//:abv.com/api/allTheThings#GetUser(zyz)"}, BODY)
         if (typeof fetchInput === 'string') {
           url = fetchInput;
         } else if (typeof window.Request !== 'undefined' && fetchInput instanceof window.Request) {
@@ -186,10 +192,23 @@ window.raygunNetworkTrackingFactory = function(window, Raygun) {
 
           self.executeHandlers(self.requestHandlers, metadata);
 
-          promise.then(
+          promise
+          .then(()=> {
+            //Call some previously registered callback (like the OnBeforeSendRum)
+            metadata = self.someCallback(metadata);
+            //The trouble with this is there is not a way to also do this with XHRs
+            //This only works with cloneable bodys (not streams) 
+            //I am also worried about the performance impact with cloning every body of each fetch
+            //I was not able to work out any good way of doing things with XHR
+            //This will also need to deal with the fetch error path
+            //This also need try catch handling, so we don't mess up every fetch request
+          })
+          .then(
             self.wrapWithHandler(function(response) {
               var body = 'N/A when the fetch response does not support clone()';
               var ourResponse = typeof response.clone === 'function' ? response.clone() : undefined;
+
+
 
               function executeHandlers() {
                 Raygun.Utilities.log('tracking fetch response for', url);
