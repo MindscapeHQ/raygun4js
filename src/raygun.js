@@ -368,14 +368,15 @@ var raygunFactory = function (window, $, undefined) {
     },
 
     trackEvent: function (type, options) {
+      var parentResource = null;
       if (_providerState !== ProviderStates.READY) {   
-        var parentResource =_rum === null || _rum === undefined ? null : _rum.parentResource;
+         parentResource =_rum === null || _rum === undefined ? null : _rum.parentResource;
         _trackEventQueue.push({ type: type, options: options, parentResource: parentResource });
         return;
       }
 
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
-        var parentResource = parentResource || _rum.parentResource;
+         parentResource = parentResource || _rum.parentResource;
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
