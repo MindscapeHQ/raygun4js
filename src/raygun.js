@@ -369,13 +369,32 @@ var raygunFactory = function (window, $, undefined) {
 
     trackEvent: function (type, options) {
       if (_providerState !== ProviderStates.READY) {   
-        parentResource = _rum === null || _rum === undefined ? null : _rum.parentResource ;
+        var parentResource =_rum === null || _rum === undefined ? null : _rum.parentResource;
         _trackEventQueue.push({ type: type, options: options, parentResource: parentResource });
         return;
       }
 
       if (Raygun.RealUserMonitoring !== undefined && _rum) {
-        var parentResource = _rum.parentResource;
+        var parentResource = parentResource || _rum.parentResource;
+        if (type === 'pageView' && options.path) {
+          _rum.virtualPageLoaded(options.path);
+        } else if (type === 'customTiming') {
+          _rum.trackCustomTiming(options.name, options.duration, options.offset, parentResource);
+        } else if (type === 'customTimings' && options.timings) {
+          _rum.sendCustomTimings(options.timings, parentResource);
+        }
+      }
+    },
+
+    trackEventWithParentResource: function (type, options, parentResource) {
+      if (_providerState !== ProviderStates.READY) {   
+        parentResource = parentResource || (_rum === null || _rum === undefined ? null : _rum.parentResource) ;
+        _trackEventQueue.push({ type: type, options: options, parentResource: parentResource });
+        return;
+      }
+
+      if (Raygun.RealUserMonitoring !== undefined && _rum) {
+        var parentResource = parentResource || _rum.parentResource;
         if (type === 'pageView' && options.path) {
           _rum.virtualPageLoaded(options.path);
         } else if (type === 'customTiming') {
@@ -557,7 +576,12 @@ var raygunFactory = function (window, $, undefined) {
     _processExceptionQueue = [];
 
     for (i = 0; i < _trackEventQueue.length; i++) {
+      if(_trackEventQueue[i].parentResource ){
+      _publicRaygunFunctions.trackEventWithParentResource(_trackEventQueue[i].type, _trackEventQueue[i].options, _trackEventQueue[i].parentResource);
+      }
+      else{        
       _publicRaygunFunctions.trackEvent(_trackEventQueue[i].type, _trackEventQueue[i].options);
+      }
     }
 
     _trackEventQueue = [];
