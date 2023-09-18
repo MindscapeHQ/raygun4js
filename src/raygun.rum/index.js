@@ -1206,7 +1206,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function sanitizeNaNs(data) {
       for (var i in data) {
-        if (data[i] === "NaN") {
+        if (data[i] === "NaN" || data[i] === NaN) {
           data[i] = 0;
         }
       }
