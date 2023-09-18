@@ -28,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [2.28.0]
+
+### Changed
+
+- Adds client provider (version) information
+- Adds defaults for timing information payload information
+
 ## [2.27.3]
 
 ### Changed
@@ -43,14 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rolls back the previous change
 
 
-
-## [2.28.0]
-
-### Changed
-
-- Rolls back the previous change which causes issues for typescript users
-- Adds client provider (version) information
-- Adds defaults for timing information payload information
 
 ## [2.27.1]
 
