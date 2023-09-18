@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds client provider (version) information
 - Adds defaults for timing information payload information
 
+
 ## [2.27.3]
 
 ### Changed
@@ -42,13 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixes a rare condition with UMD where we assume rg4js is initialised but it is not, causing an infinite loop.
 
 
-
 ## [2.27.2]
 
 ### Changed
 
 - Rolls back the previous change
-
 
 
 ## [2.27.1]
