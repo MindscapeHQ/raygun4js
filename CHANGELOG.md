@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [2.27.3]
+
+### Changed
+
+- Fixes a rare condition with UMD where we assume rg4js is initialised but it is not, causing an infinite loop.
+
 
 
 ## [2.27.2]

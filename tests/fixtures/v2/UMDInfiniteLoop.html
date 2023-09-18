@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Raygun4JS with V2 API</title>
+    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script>
+        document.onreadystatechange = () => {
+            if (document.readyState === "complete") {
+                rg4js('apiKey', 'abcdef=='); //this should trigger an infinite loop
+                rg4js('enableCrashReporting', false);
+                rg4js('enablePulse', true);
+            }
+        };
+    </script>
+    <script src="/dist/raygun.umd.min.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        setTimeout(function () {
+            rg4js('trackEvent', {
+                type: 'customTiming',
+                name: 'timingName',
+                duration: 100,
+            });
+        }, 250);
+    </script>
+
+</body>
+
+</html>
