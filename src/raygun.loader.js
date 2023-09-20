@@ -158,7 +158,7 @@
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
           } else if(value.type && value.name && value.duration) {
-            rg.trackEvent(value.type, { name: value.name, duration: value.duration, offset: value.offset });
+            rg.trackEvent(value.type, { name: value.name, duration: value.duration, offset: value.offset || 0 });
           } else if (value.type && value.timings) {
             rg.trackEvent(value.type, { timings: value.timings });
           }

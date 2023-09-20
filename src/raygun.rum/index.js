@@ -287,6 +287,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         version: self.version || 'Not supplied',
         tags: self.tags,
         device: window.raygunUserAgent,
+        client: { //This is incomplete, it does not add the client data to every payload that is sent
+            name: "raygun4js",
+            version: '{{VERSION}}'
+        },
       }));
     }
 
@@ -602,12 +606,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                   url: response.baseUrl,
                   statusCode: response.status,
                   timing: {
-                    du: maxFiveMinutes(response.duration).toFixed(2),
-                    a: offset.toFixed(2),
+                    du: maxFiveMinutes(response.duration || 0).toFixed(2), //These are hacks to stop a potential situation where duration and/or offset are NaN, this is not a feature and needs to be fixed
+                    a: (offset  || 0).toFixed(2),
                     t: Timings.XHR
                   },
                 };
-
                 collection.push(attachParentResource(payload, response.parentResource));
               }
             } while (responses.length > 0);
@@ -731,7 +734,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         t: Timings.Page,
       };
 
-      data.a = timing.fetchStart;
+      data.a = timing.fetchStart || 0;
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
         data.b = timing.domainLookupStart - data.a;
@@ -824,7 +827,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       var data = {
         du: maxFiveMinutes(getTimingDuration(timing)).toFixed(2),
         t: getSecondaryTimingType(timing),
-        a: offset + timing.fetchStart,
+        a: (offset || 0) + (timing.fetchStart || timing.startTime || 0),
       };
 
       if (timing.domainLookupStart && timing.domainLookupStart > 0) {
@@ -1203,7 +1206,7 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function sanitizeNaNs(data) {
       for (var i in data) {
-        if (isNaN(data[i]) && typeof data[i] !== 'string') {
+        if (data[i] === "NaN" || Number.isNaN(data[i])) {
           data[i] = 0;
         }
       }
@@ -1255,6 +1258,10 @@ var raygunRumFactory = function (window, $, Raygun) {
         user: self.user,
         version: self.version || 'Not supplied',
         device: window.raygunUserAgent,
+        client: { //This is incomplete, it does not add the client data to every payload that is sent
+            name: "raygun4js",
+            version: '{{VERSION}}'
+        },
         tags: self.tags,
         data: data,
       });
