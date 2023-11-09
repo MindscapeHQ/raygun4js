@@ -26,7 +26,7 @@
     "@wdio/selenium-standalone-service": "^8.11.0",
     "@wdio/spec-reporter": "^8.11.2",
     "@wdio/static-server-service": "^8.11.0",
-    "chromedriver": "^116.0.0",
+    "chromedriver": "^119.0.1",
     "cross-env": "^7.0.3",
     "grunt": "^1.6.1",
     "grunt-contrib-clean": "^2.0.1",
