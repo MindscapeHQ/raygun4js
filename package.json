@@ -49,5 +49,8 @@
     "tracking",
     "raygun",
     "clientside"
-  ]
+  ],
+  "dependencies": {
+    "web-vitals": "^3.5.0"
+  }
 }
