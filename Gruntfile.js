@@ -27,7 +27,6 @@ module.exports = function(grunt) {
             'tracekit/tracekit.js',
             'src/raygun.tracekit.jquery.js',
             'src/polyfills.js',
-            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
             'src/raygun.utilities/index.js',
             'src/raygun.utilities/errorUtilities.js',
             'src/raygun.network-tracking.js',
@@ -35,7 +34,6 @@ module.exports = function(grunt) {
             'src/raygun.breadcrumbs.js',
             'src/raygun.rum/core-web-vitals.js',
             'src/raygun.js',
-            'src/raygun.rum/vendor/web-vitals.vendor.js',
             'src/raygun.rum/index.js',
             'src/raygun.loader.js'
           ],
@@ -43,7 +41,6 @@ module.exports = function(grunt) {
             'src/useragent.js',
             'tracekit/tracekit.js',
             'src/polyfills.js',
-            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
             'src/raygun.utilities/index.js',
             'src/raygun.utilities/errorUtilities.js',
             'src/raygun.network-tracking.js',
@@ -51,7 +48,6 @@ module.exports = function(grunt) {
             'src/raygun.breadcrumbs.js',
             'src/raygun.rum/core-web-vitals.js',
             'src/raygun.js',
-            'src/raygun.rum/vendor/web-vitals.vendor.js',
             'src/raygun.rum/index.js',
             'src/raygun.loader.js'
           ],
@@ -60,7 +56,6 @@ module.exports = function(grunt) {
             'src/umd.intro.js',
             'tracekit/tracekit.js',
             'src/polyfills.js',
-            'src/raygun.rum/vendor/web-vitals-polyfills.vendor.js',
             'src/raygun.tracekit.jquery.js',
             'src/raygun.utilities/index.js',
             'src/raygun.utilities/errorUtilities.js',
@@ -69,7 +64,6 @@ module.exports = function(grunt) {
             'src/raygun.breadcrumbs.js',
             'src/raygun.rum/core-web-vitals.js',
             'src/raygun.js',
-            'src/raygun.rum/vendor/web-vitals.vendor.js',
             'src/raygun.rum/index.js',
             'src/raygun.loader.js',
             'src/umd.outro.js'
