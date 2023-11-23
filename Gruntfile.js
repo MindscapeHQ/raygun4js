@@ -15,11 +15,7 @@ module.exports = function(grunt) {
     clean: {
       files: ['dist']
     },
-    concat: {
-      options: {
-        banner: '<%= banner %>',
-        stripBanners: true
-      },
+    browserify: {
       dist: {
         files: {
           'dist/raygun.js': [
@@ -50,25 +46,22 @@ module.exports = function(grunt) {
             'src/raygun.js',
             'src/raygun.rum/index.js',
             'src/raygun.loader.js'
-          ],
-          'dist/raygun.umd.js': [            
-            'src/useragent.js',
-            'src/umd.intro.js',
-            'tracekit/tracekit.js',
-            'src/polyfills.js',
-            'src/raygun.tracekit.jquery.js',
-            'src/raygun.utilities/index.js',
-            'src/raygun.utilities/errorUtilities.js',
-            'src/raygun.network-tracking.js',
-            'src/raygun.viewport.js',
-            'src/raygun.breadcrumbs.js',
-            'src/raygun.rum/core-web-vitals.js',
-            'src/raygun.js',
-            'src/raygun.rum/index.js',
-            'src/raygun.loader.js',
-            'src/umd.outro.js'
           ]
         }
+      }
+    },
+    concat: {
+      options: {
+        banner: '<%= banner %>',
+        stripBanners: true
+      },
+      dist: {
+        src: [
+          'src/umd.intro.js',
+          'dist/raygun.js',
+          'src/umd.outro.js'
+        ],
+        dest: 'dist/raygun.umd.js',
       }
     },
     uglify: {
@@ -106,7 +99,7 @@ module.exports = function(grunt) {
       src: {
         options: {
           jshintrc: 'src/.jshintrc',
-          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*', 'src/raygun.rum/vendor/*.js']
+          ignores: ['src/snippet/**/*.js', 'src/umd.*', 'src/**/*.spec.js', 'src/helpers/*', 'src/raygun.rum/core-web-vitals.js']
         },
         src: ['src/**/*.js']
       }
@@ -165,10 +158,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-string-replace');
+  grunt.loadNpmTasks('grunt-browserify');
 
-  grunt.registerTask('compile', ['jshint', 'clean', 'concat', 'uglify:dist']);
+  grunt.registerTask('compile', ['clean', 'browserify', 'jshint', 'concat:dist', 'uglify:dist']);
 
-  grunt.registerTask('build', ['jshint', 'clean', 'concat', 'string-replace', 'uglify']);
-
-  grunt.registerTask('default', ['compile']);
+  grunt.registerTask('build', ['clean', 'browserify', 'jshint', 'concat:dist', 'string-replace', 'uglify']);
+  
+  grunt.registerTask('default', ['build']);
 };

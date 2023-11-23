@@ -10,8 +10,9 @@
  * Licensed under the MIT license.
  */
 
+var webVitals = require('web-vitals');
 
-function raygunCoreWebVitalFactory(window) {
+function raygunCoreWebVitalFactory() {
     var WebVitalTimingType = "w";
     var queueTimings = null;
     var _parentResource = null;
@@ -32,19 +33,10 @@ function raygunCoreWebVitalFactory(window) {
         queueTimings = queueHandler;
         _parentResource = parentResource;
 
-        if(typeof window !== 'undefined' && window.webVitals) {
-            if(window.webVitals.getLCP) {
-                window.webVitals.getLCP(this.handler);
-            }
-
-            if(window.webVitals.getFID) {
-                window.webVitals.getFID(this.handler);
-            }
-
-            if(window.webVitals.getCLS) {
-                window.webVitals.getCLS(this.handler);
-            }
-        }
+        webVitals.onLCP(this.handler);
+        webVitals.onFID(this.handler);
+        webVitals.onCLS(this.handler);
+        webVitals.onINP(this.handler);
     };
 
     CoreWebVitals.prototype.handler = function(event) {
