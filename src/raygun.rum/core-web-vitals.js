@@ -6,7 +6,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2021 MindscapeHQ
+ * Copyright (c) 2023 MindscapeHQ
  * Licensed under the MIT license.
  */
 
@@ -24,7 +24,7 @@ function raygunCoreWebVitalFactory() {
             if(res.value && res.value.toFixed) {
                 res.value = res.value.toFixed(3);
             }
-        
+
             return res;
         };
     };
@@ -37,6 +37,8 @@ function raygunCoreWebVitalFactory() {
         webVitals.onFID(this.handler);
         webVitals.onCLS(this.handler);
         webVitals.onINP(this.handler);
+        webVitals.onFCP(this.handler);
+        webVitals.onTTFB(this.handler);
     };
 
     CoreWebVitals.prototype.handler = function(event) {
