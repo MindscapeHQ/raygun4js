@@ -498,22 +498,26 @@ var raygunRumFactory = function (window, $, Raygun) {
     }
 
     function sendCoreWebVitalTimings(performanceData) {
-      // add beacon sending logic in here for testing.
       var payload = createTimingPayload([performanceData]);
-      var stringifiedPayload = JSON.stringify({eventData: [payload]});
-      var url = self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey);
-
-      if(navigator.sendBeacon) {
-        try {
-          navigator.sendBeacon(url, stringifiedPayload);
-        } catch (e) {
-          log(e, {
-            url: url,
-            payload: stringifiedPayload
-          });
-        }
-      } else {
+      if (!navigator.sendBeacon) {
+        // send the payload immediately if beacon is not supported
         sendItemsImmediately([payload]);
+      } else {
+        // send the payload using beacon, if there is data
+        if (payload.data) {
+          payload.data = JSON.stringify(payload.data);
+          var stringifiedPayload = JSON.stringify({eventData: [payload]});
+          var url = self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey);
+
+          try {
+            navigator.sendBeacon(url, stringifiedPayload);
+          } catch (e) {
+            log(e, {
+              url: url,
+              payload: stringifiedPayload
+            });
+          }
+        }
       }
     }
 
