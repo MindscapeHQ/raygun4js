@@ -117,6 +117,12 @@ var raygunRumFactory = function (window, $, Raygun) {
         Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings, self.parentResource);
       }
 
+      var sendAllQueuedPayloadsWithBeacon = function () {
+        self.sendUsingNavigatorBeacon = true;
+        sendChildAssets(true);
+        sendQueuedItems();
+      }.bind(_private);
+
       var clickHandler = function () {
         this.updateStorageTimestamp();
       }.bind(_private);
@@ -127,22 +133,23 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         if (document.visibilityState === 'hidden') {
-          self.sendUsingNavigatorBeacon = true;
-          sendChildAssets(true);
-          sendQueuedItems();
+          sendAllQueuedPayloadsWithBeacon();
         }
       }.bind(_private);
 
+      var urlChangeHandler = function () {
+        sendAllQueuedPayloadsWithBeacon();
+      }.bind(_private);
+
       var pageHideHandler = function () {
-        self.sendUsingNavigatorBeacon = true;
-        sendChildAssets(true);
-        sendQueuedItems();
+        sendAllQueuedPayloadsWithBeacon();
         self.stopCollectingMetrics = true;
       }.bind(_private);
 
       if (window.addEventListener) {
         window.addEventListener('click', clickHandler);
         document.addEventListener('visibilitychange', visibilityChangeHandler);
+        window.addEventListener('popstate', urlChangeHandler);
         window.addEventListener('pagehide', pageHideHandler);
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
@@ -499,8 +506,8 @@ var raygunRumFactory = function (window, $, Raygun) {
 
     function sendCoreWebVitalTimings(performanceData) {
       var payload = createTimingPayload([performanceData]);
+      // send the payload immediately if beacon is not supported
       if (!navigator.sendBeacon) {
-        // send the payload immediately if beacon is not supported
         sendItemsImmediately([payload]);
       } else {
         // send the payload using beacon, if there is data
