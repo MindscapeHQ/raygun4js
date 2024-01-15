@@ -28,6 +28,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [3.0.0]
+
+### Added
+
+- Adds Browserify support to build pipeline
+- Added new browser mocks for unit tests
+- Added new popstate event listener, to trigger 
+- unloadHandler replacement: Added popstate event listener network logic to [better support mobile devices](https://developer.chrome.com/docs/web-platform/page-lifecycle-api#advice-hidden)
+- unloadHandler replacement: Added hidden visibilityState change network logic to [better support mobile devices](https://developer.chrome.com/docs/web-platform/page-lifecycle-api#advice-hidden)
+
+### Changed
+
+- Changed the way the web-vitals library is imported into the project
+- Moved to using the official web vital callback triggers
+- Updated the sendCoreWebVitalTimings method to fire web vital payloads using beacon if available
+- Upgrade chromedriver dependency to 119.0.1
+
+### Removed
+
+- unloadHandler replacement: Removed the unload event listener network logic in favour of other approaches
+
 ## [2.28.0]
 
 ### Changed

@@ -2,7 +2,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2013-2022 Raygun Limited
+ * Copyright (c) 2013-2024 Raygun Limited
  * Licensed under the MIT license.
  */
 
