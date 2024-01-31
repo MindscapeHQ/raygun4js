@@ -475,7 +475,7 @@ window.raygunBreadcrumbsFactory = function(window, Raygun) {
       error.duration = error.duration + 'ms';
       self.recordBreadcrumb({
         type: 'request',
-        message: 'Failed request to ' + error.requestUrl,
+        message: 'Failed request to ' + error.requestURL,
         level: 'info',
         metadata: error,
       });

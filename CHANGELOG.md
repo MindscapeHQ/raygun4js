@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [3.0.1]
+
+### Fixed
+- Fixed an typo raised by issue #508 that caused breadcrumb messages to be undefined
+
 ## [3.0.0]
 
 ### Added
