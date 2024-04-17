@@ -18,9 +18,12 @@
     enablePulse,
     sendPing = true,
     noConflict,
+    realUserMonitoringEnabled = false,
+    crashReportingEnabled = false,
+    pingIntervalId,
+    failedPings = 0,
     captureUnhandledRejections;
 
-  window.Raygun.failedPings = 0;
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
@@ -74,14 +77,14 @@
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
-          window.Raygun.crashReportingEnabled = true;
+          crashReportingEnabled = true;
           hasLoaded = true;
           break;
         case 'enableRealUserMonitoring':
         case 'enableRUM':
         case 'enablePulse':
           enablePulse = value;
-          window.Raygun.realUserMonitoringEnabled = true;
+          realUserMonitoringEnabled = true;
           hasLoaded = true;
           break;
         case 'detach':
@@ -227,18 +230,16 @@
   };
 
   function ping() {
-    if(window.Raygun.failedPings > 10) {
-        clearInterval(window.Raygun.pingIntervalId);
+    if(failedPings > 10) {
+        clearInterval(pingIntervalId);
     }
 
     var apiKey = window.Raygun.Options._raygunApiKey;
-    var crashReportingEnabled = window.Raygun.crashReportingEnabled || false;
-    var realUserMonitoringEnabled = window.Raygun.realUserMonitoringEnabled || false;
-
+   
     var url = "https://api.raygun.io/ping?apiKey=" + apiKey;
     var data = {
-        crashReportingEnabled: crashReportingEnabled,
-        realUserMonitoringEnabled: realUserMonitoringEnabled,
+        crashReportingEnabled: crashReportingEnabled || false,
+        realUserMonitoringEnabled: realUserMonitoringEnabled || false,
         providerName: "raygun4js",
         providerVersion: '{{VERSION}}'
     };
@@ -251,7 +252,7 @@
         body: JSON.stringify(data)
     })
     .catch(function() {
-        window.Raygun.failedPings++;
+        failedPings++;
     });
   }
 
@@ -315,7 +316,7 @@
 
     if(sendPing) {
       ping(); //call immediately
-      window.Raygun.pingIntervalId = setInterval(ping,1000 * 60 * 5); //5 minutes
+      pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
     }
     window[window['RaygunObject']].q = errorQueue;
   };
