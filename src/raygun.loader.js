@@ -14,16 +14,18 @@
     delayedCommands = [],
     apiKey,
     options,
-    attach,
-    enablePulse,
-    sendPing = true,
     noConflict,
     realUserMonitoringEnabled = false,
     crashReportingEnabled = false,
-    pingIntervalId,
-    failedPings = 0,
     captureUnhandledRejections;
 
+  var metadata = {
+    ping : {
+        sendPing : false,
+        pingIntervalId : -1,
+        failedPings : 0
+    },
+  };
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
@@ -57,7 +59,7 @@
     if (key) {
       switch (key) {
         case 'sendPing':
-          sendPing = value;
+          metadata.ping.sendPing = value;
           break;
         // React Native only
         case 'boot':
@@ -76,15 +78,13 @@
           break;
         case 'attach':
         case 'enableCrashReporting':
-          attach = value;
-          crashReportingEnabled = true;
+          crashReportingEnabled = value;
           hasLoaded = true;
           break;
         case 'enableRealUserMonitoring':
         case 'enableRUM':
         case 'enablePulse':
-          enablePulse = value;
-          realUserMonitoringEnabled = true;
+          realUserMonitoringEnabled = value;
           hasLoaded = true;
           break;
         case 'detach':
@@ -230,8 +230,8 @@
   };
 
   function ping() {
-    if(failedPings > 10) {
-        clearInterval(pingIntervalId);
+    if(metadata.ping.failedPings > 10) {
+        clearInterval(metadata.ping.pingIntervalId);
     }
 
     var apiKey = window.Raygun.Options._raygunApiKey;
@@ -252,7 +252,7 @@
         body: JSON.stringify(data)
     })
     .catch(function() {
-        failedPings++;
+        metadata.ping.failedPings++;
     });
   }
 
@@ -277,7 +277,7 @@
         options = {};
       }
 
-      if (enablePulse) {
+      if (realUserMonitoringEnabled) {
         options.disablePulse = false;
       }
 
@@ -285,7 +285,7 @@
       rg.init(apiKey, options, null);
     }
 
-    if (attach) {
+    if (crashReportingEnabled) {
       rg.attach();
 
       errorQueue = window[window['RaygunObject']].q;
@@ -314,9 +314,9 @@
       installGlobalExecutor();
     }
 
-    if(sendPing) {
+    if(metadata.ping.sendPing) {
       ping(); //call immediately
-      pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
+      metadata.ping.pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
     }
     window[window['RaygunObject']].q = errorQueue;
   };
