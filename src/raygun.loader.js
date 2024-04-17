@@ -16,9 +16,11 @@
     options,
     attach,
     enablePulse,
+    sendPing = true,
     noConflict,
     captureUnhandledRejections;
 
+  window.Raygun.failedPings = 0;
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
@@ -51,6 +53,9 @@
 
     if (key) {
       switch (key) {
+        case 'sendPing':
+            sendPing = value;
+            break;
         // React Native only
         case 'boot':
           onLoadHandler();
@@ -69,11 +74,14 @@
         case 'attach':
         case 'enableCrashReporting':
           attach = value;
+          window.Raygun.crashReportingEnabled = true;
           hasLoaded = true;
           break;
+        case 'enableRealUserMonitoring':
         case 'enableRUM':
         case 'enablePulse':
           enablePulse = value;
+          window.Raygun.realUserMonitoringEnabled = true;
           hasLoaded = true;
           break;
         case 'detach':
@@ -218,6 +226,36 @@
     }
   };
 
+  function ping() {
+    if(window.Raygun.failedPings > 10) {
+        clearInterval(window.Raygun.pingIntervalId);
+    }
+
+    var apiKey = window.Raygun.Options._raygunApiKey;
+    var crashReportingEnabled = window.Raygun.crashReportingEnabled || false;
+    var realUserMonitoringEnabled = window.Raygun.realUserMonitoringEnabled || false;
+
+    var url = "https://api.raygun.io/ping?apiKey=" + apiKey;
+    var data = {
+        crashReportingEnabled: crashReportingEnabled,
+        realUserMonitoringEnabled: realUserMonitoringEnabled,
+        providerName: "raygun4js",
+        providerVersion: '{{VERSION}}'
+    };
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .catch(function() {
+        window.Raygun.failedPings++;
+    });
+  }
+
+
   var installGlobalExecutor = function() {
     window[window['RaygunObject']] = function() {
       return executor(arguments);
@@ -232,7 +270,7 @@
     if (noConflict) {
       rg = Raygun.noConflict();
     }
-
+    
     if (apiKey) {
       if (!options) {
         options = {};
@@ -275,6 +313,9 @@
       installGlobalExecutor();
     }
 
+    if(sendPing) {
+      window.Raygun.pingIntervalId = setInterval(ping,1000);
+    }
     window[window['RaygunObject']].q = errorQueue;
   };
 

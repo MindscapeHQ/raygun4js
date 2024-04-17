@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [3.1.1]
+
+### Added 
+- Moved the typescript types into the main raygun4js repo
+
 ## [3.0.1]
 
 ### Fixed
