@@ -314,7 +314,8 @@
     }
 
     if(sendPing) {
-      window.Raygun.pingIntervalId = setInterval(ping,1000);
+      ping(); //call immediately
+      window.Raygun.pingIntervalId = setInterval(ping,1000 * 60 * 5); //5 minutes
     }
     window[window['RaygunObject']].q = errorQueue;
   };
