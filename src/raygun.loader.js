@@ -54,8 +54,8 @@
     if (key) {
       switch (key) {
         case 'sendPing':
-            sendPing = value;
-            break;
+          sendPing = value;
+          break;
         // React Native only
         case 'boot':
           onLoadHandler();
