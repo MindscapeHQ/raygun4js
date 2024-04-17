@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.1]
 
 ### Added 
+- Added a ping to tell Raygun that raygun4js has been set up correctly, this information will be used to help users when setting up a new application. This can be diasbled using the new `sendPing` option E.g. `rg4js('sendPing', false)`.
 - Moved the typescript types into the main raygun4js repo
 
 ## [3.0.1]
