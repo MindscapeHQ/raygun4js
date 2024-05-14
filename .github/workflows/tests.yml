@@ -22,12 +22,16 @@ jobs:
           chrome-version: latest
       - name: Download ChromeDriver
         run: |
-         # Get the Chrome version
-          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
+          # Get the full Chrome version
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+')
           echo "Chrome version: $CHROME_VERSION"
           
-          # Get the ChromeDriver version that matches the Chrome version
-          CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
+          # Get the major version of Chrome
+          CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d '.' -f 1)
+          echo "Chrome major version: $CHROME_MAJOR_VERSION"
+          
+          # Get the ChromeDriver version that matches the Chrome major version
+          CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION)
           echo "ChromeDriver version: $CHROMEDRIVER_VERSION"
           
           # Verify the ChromeDriver version was fetched correctly
@@ -43,6 +47,7 @@ jobs:
           # Move ChromeDriver to a location in PATH
           sudo mv /tmp/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
+
       - run: npm ci
       - run: npx grunt
       - run: npm test
