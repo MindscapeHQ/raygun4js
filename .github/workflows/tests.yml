@@ -27,7 +27,7 @@ jobs:
           # Get the ChromeDriver version that matches the Chrome version
           CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
           # Download and unzip the ChromeDriver
-          curl -sS -o /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
+          curl -sS -o /tmp/chromedriver.zip "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
           unzip -q /tmp/chromedriver.zip -d /tmp
           # Move ChromeDriver to a location in PATH
           sudo mv /tmp/chromedriver /usr/local/bin/chromedriver
