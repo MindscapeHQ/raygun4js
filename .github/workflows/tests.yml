@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, pp/chrome-driver-integration-failure ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, pp/chrome-driver-integration-failure ]
 
 jobs:
   test:
