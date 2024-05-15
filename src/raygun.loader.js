@@ -21,7 +21,7 @@
 
   var metadata = {
     ping : {
-        sendPing : false,
+        sendPing : true,
         pingIntervalId : -1,
         failedPings : 0
     },
@@ -250,7 +250,14 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
-    })
+    }).then(function(response) {
+    if (response.ok) {
+      metadata.ping.failedPings = 0;
+    } else {
+      // Request failed
+      metadata.ping.failedPings++;
+    }
+  })
     .catch(function() {
         metadata.ping.failedPings++;
     });
