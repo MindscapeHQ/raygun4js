@@ -21,7 +21,7 @@
 
   var metadata = {
     ping : {
-        sendPing : true,
+        sendPing : false,
         pingIntervalId : -1,
         failedPings : 0
     },
