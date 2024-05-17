@@ -234,7 +234,7 @@
         clearInterval(metadata.ping.pingIntervalId);
     }
 
-    var url = "https://api.raygun.io/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
+    var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
     var data = {
         crashReportingEnabled: crashReportingEnabled || false,
         realUserMonitoringEnabled: realUserMonitoringEnabled || false,

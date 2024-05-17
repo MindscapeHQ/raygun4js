@@ -129,8 +129,8 @@ var raygunFactory = function (window, $, undefined) {
         _trackViewportDimensions = options.trackViewportDimensions === undefined ? true : options.trackViewportDimensions;
 
         if (options.apiUrl) {
-          _raygunApiUrl = options.apiUrl;
-          _customEndpointSet = true;
+          this.Options._raygunApiUrl = options.apiUrl;
+          this.Options._customEndpointSet = true;
         }
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
@@ -151,8 +151,8 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         if (options.apiEndpoint) {
-          _raygunApiUrl = options.apiEndpoint;
-          _customEndpointSet = true;
+          this.Options._raygunApiUrl = options.apiEndpoint;
+          this.Options._customEndpointSet = true;
         }
 
         if (options.from) {
@@ -500,7 +500,7 @@ var raygunFactory = function (window, $, undefined) {
       var startRum = function () {
         _rum = new Raygun.RealUserMonitoring(
           Raygun.Options._raygunApiKey,
-          _raygunApiUrl,
+          Raygun.Options._raygunApiUrl,
           makePostCorsRequest,
           _user,
           _version,
@@ -978,7 +978,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     Raygun.Utilities.log('Sending exception data to Raygun:', data);
-    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
+    var url = Raygun.Options._raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
   }
 
