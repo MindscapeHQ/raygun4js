@@ -29,7 +29,6 @@ var raygunFactory = function (window, $, undefined) {
   };
 
   var _userKey = 'raygun4js-userid';
-
   // State variables
   var _traceKit = TraceKit,
     _raygun = window.Raygun,
@@ -56,7 +55,6 @@ var raygunFactory = function (window, $, undefined) {
     _groupingKeyCallback,
     _beforeXHRCallback,
     _afterSendCallback,
-    _raygunApiUrl = 'https://api.raygun.io',
     _excludedHostnames = null,
     _excludedUserAgents = null,
     _filterScope = 'customData',
@@ -101,6 +99,7 @@ var raygunFactory = function (window, $, undefined) {
     init: function (key, options, customdata) {
       _traceKit.remoteFetching = false;
 
+      Raygun.Options._raygunApiUrl = 'https://api.raygun.io';
       this.Options._raygunApiKey = key;
 
       if (customdata) {

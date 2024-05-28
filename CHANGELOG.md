@@ -28,11 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
-## [3.1.1]
+## [3.1.0]
 
 ### Added 
 - Added a ping to tell Raygun that raygun4js has been set up correctly, this information will be used to help users when setting up a new application. This can be disabled using the new `sendPing` option e.g., `rg4js('sendPing', false)`.
 - Moved the typescript types into the main raygun4js repo
+- Added an new option for enabling Real user monitoring 
 
 ## [3.0.1]
 

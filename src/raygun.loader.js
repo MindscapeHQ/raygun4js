@@ -236,8 +236,8 @@
 
     var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
     var data = {
-        crashReportingEnabled: crashReportingEnabled || false,
-        realUserMonitoringEnabled: realUserMonitoringEnabled || false,
+        crashReportingEnabled: crashReportingEnabled ? true : false,
+        realUserMonitoringEnabled: realUserMonitoringEnabled ? true : false,
         providerName: "raygun4js",
         providerVersion: '{{VERSION}}'
     };
