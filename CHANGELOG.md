@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.0]
 
 ### Added 
-- Added a ping to tell Raygun that raygun4js has been set up correctly, this information will be used to help users when setting up a new application. This can be disabled using the new `sendPing` option e.g., `rg4js('sendPing', false)`.
+- Added a ping to tell Raygun that raygun4js has been set up correctly, this information will be used to help users when setting up a new application. This can be disabled using the new `sendPing` option e.g., `rg4js('sendPing', false)`. The ping contains the version of Raygun4js being used, aswell as what products that have been enabled (CrashReporting and or Real User Monitoring) 
 - Moved the typescript types into the main raygun4js repo
 - Added an new option for enabling Real user monitoring 
 
