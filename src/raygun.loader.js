@@ -230,8 +230,13 @@
   };
 
   function ping() {
-    if(metadata.ping.failedPings > 10) {
+    if(metadata.ping.failedPings > 2) {
         clearInterval(metadata.ping.pingIntervalId);
+    }
+
+    if(!Raygun.Options || !Raygun.Options._raygunApiKey || !Raygun.Options._raygunApiUrl){
+        metadata.ping.failedPings++;
+        return;
     }
 
     var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
@@ -245,18 +250,17 @@
     fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     }).then(function(response) {
-    if (response.ok) {
-      metadata.ping.failedPings = 0;
-    } else {
-      // Request failed
-      metadata.ping.failedPings++;
-    }
-  })
-    .catch(function() {
+        if (response.ok) {
+            metadata.ping.failedPings = 0;
+        } else {
+            // Request failed
+            metadata.ping.failedPings++;
+        }
+    }).catch(function() {
         metadata.ping.failedPings++;
     });
   }
