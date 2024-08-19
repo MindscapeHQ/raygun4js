@@ -55,7 +55,7 @@
 
     var keys = ['complete', 'error', 'success'], key;
     while(key = keys.pop()) {
-      if ($.isFunction(options[key])) {
+      if (typeof options[key] === "function") {
         options[key] = TraceKit.wrap(options[key]);
       }
     }
