@@ -13,13 +13,27 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
-      - uses: browser-actions/setup-chrome@latest
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: latest
+          install-chromedriver: true
+
+      - name: Set Chrome and ChromeDriver paths
+        run: |
+          echo "CHROME_BIN=${{ steps.setup-chrome.outputs.chrome-path }}" >> $GITHUB_ENV
+          echo "CHROMEDRIVER_PATH=${{ steps.setup-chrome.outputs.chromedriver-path }}" >> $GITHUB_ENV
+
       - run: npm ci
       - run: npx grunt
       - run: npm test
+        env:
+          CHROME_BIN: ${{ env.CHROME_BIN }}
+          CHROMEDRIVER_PATH: ${{ env.CHROMEDRIVER_PATH }}
