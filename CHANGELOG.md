@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+
+## [3.1.1]
+
+### Fixed
+- Resolved jQuery `isFunction` deprecation warnings. As of jQuery 3.3, `jQuery.isFunction()` is deprecated. It is replaced by `typeof x === "function"` - [source](https://api.jquery.com/jQuery.isFunction/).
+
 ## [3.1.0]
 
 ### Added 
