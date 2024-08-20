@@ -1,53 +1,100 @@
-name: Build & Publish Raygun4JS to the pre-release environment
+name: Publish Raygun4JS to the pre-release environment
 
 on:
-  push:
-    branches: [ master ]  
   workflow_dispatch:
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [12.x]
-    
+        node-version: [ 20.x ]
+
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install Grunt
-      run: npm install -g grunt
+      - name: Install Grunt
+        run: npm install -g grunt
 
-    - name: Install node modules
-      run: npm install
+      - name: Install node modules
+        run: npm install
 
-    - name: Build
-      run: grunt build
+      - name: Build
+        id: build_step
+        run: grunt build
 
-    - name: Complete
-      run: echo Build successfully completed!
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }} 
-        aws-region: ${{ secrets.AWS_REGION }}
-      
-    - name: Publish to S3 Pre-release
-      run: aws s3 sync ./dist ${{ secrets.AWS_PUBLISH_TARGET }}
+      - name: Publish to S3 Pre-release
+        id: publish_s3
+        run: aws s3 sync ./dist ${{ secrets.AWS_PUBLISH_TARGET }}
 
-    - name: Deployment Complete
-      run: echo A new version of Raygun4JS has been deployed to pre-release!
+      - name: Create CloudFront Cache Invalidation
+        id: cache_invalidation
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "${{ secrets.AWS_CLOUDFRONT_INVALIDATION_PATH }}"
 
-    - name: Notify Slack
-      id: slack
-      uses: slackapi/slack-github-action@v1.14.0
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Notify Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "A new pre-release version of Raygun4JS has been published"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View this action run in GitHub>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n`${{ github.ref_name }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Node version:*\n`${{ matrix.node-version }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build status:*\n_${{ steps.build_step.outcome }}_"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*S3 publish status:*\n_${{ steps.publish_s3.outcome }}_"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*CloudFront cache invalidation status:*\n_${{ steps.cache_invalidation.outcome }}_"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
