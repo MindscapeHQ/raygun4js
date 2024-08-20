@@ -1,4 +1,4 @@
-name: Build & Publish Raygun4JS to the pre-release environment
+name: Publish Raygun4JS to the pre-release environment
 
 on:
   workflow_dispatch:
@@ -40,6 +40,13 @@ jobs:
         id: publish_s3
         run: aws s3 sync ./dist ${{ secrets.AWS_PUBLISH_TARGET }}
 
+      - name: Create CloudFront Cache Invalidation
+        id: cache_invalidation
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "${{ secrets.AWS_CLOUDFRONT_INVALIDATION_PATH }}"
+
       - name: Notify Slack
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
@@ -52,13 +59,6 @@ jobs:
                   "text": {
                     "type": "plain_text",
                     "text": "A new pre-release version of Raygun4JS has been published"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "The Cloudfront cache will need to be invalidated for changes to take effect immediately."
                   }
                 },
                 {
@@ -85,7 +85,11 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*S3 sync status:*\n_${{ steps.publish_s3.outcome }}_"
+                      "text": "*S3 publish status:*\n_${{ steps.publish_s3.outcome }}_"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*CloudFront cache invalidation status:*\n_${{ steps.cache_invalidation.outcome }}_"
                     }
                   ]
                 }
