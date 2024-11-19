@@ -19,15 +19,16 @@
     crashReportingEnabled = false,
     captureUnhandledRejections;
 
-    var hasLocalStorage = false;
+    var hasSessionStorage = false;
     try {
-      hasLocalStorage = !!window.localStorage;
+      hasSessionStorage = !!window.sessionStorage;
     } catch (e) {
-      // localStorage not available
+      // sessionStorage not available
     }
 
   var metadata = {
     ping : {
+        sessionStorageItem : 'raygun4js-successful-ping',
         sendPing : true,
         pingIntervalId : -1,
         failedPings : 0
@@ -241,11 +242,6 @@
       return;
     }
 
-    // Don't ping if we've already had a successful ping
-    if (hasLocalStorage && localStorage.getItem('raygun4js_successful_ping') === 'true') {
-      return;
-    }
-
     var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
     var data = {
       crashReportingEnabled: crashReportingEnabled ? true : false,
@@ -253,6 +249,14 @@
       providerName: "raygun4js",
       providerVersion: '{{VERSION}}'
     };
+
+    // Check if we've already pinged with the same data
+    if (hasSessionStorage) {
+      var storedData = sessionStorage.getItem(metadata.ping.sessionStorageItem);
+      if (storedData && storedData === JSON.stringify(data)) {
+          return;
+      }
+    }
 
     fetch(url, {
       method: 'POST',
@@ -262,9 +266,9 @@
       body: JSON.stringify(data)
     }).then(function(response) {
       if (response.ok) {
-        if (hasLocalStorage) {
+        if (hasSessionStorage) {
           // Record successful ping in local storage
-          localStorage.setItem('raygun4js_successful_ping', 'true');
+          sessionStorage.setItem(metadata.ping.sessionStorageItem, JSON.stringify(data));
         }
         metadata.ping.failedPings = 0;
       } else {
@@ -291,7 +295,7 @@
 
     // Retry after backoff delay
     setTimeout(ping, backoffDelay);
-  }
+  };
 
   var installGlobalExecutor = function() {
     window[window['RaygunObject']] = function() {
