@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   
 -->
 
+## [3.1.2]
+
+### Changed
+- Updated when ping happens so it only happens once, and when successful, it will store in sessionStorage and not ping again. This is to prevent multiple pings from happening on every page load.
+
 ## [3.1.1]
 
 ### Fixed
