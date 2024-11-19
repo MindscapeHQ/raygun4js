@@ -30,7 +30,6 @@
     ping : {
         sessionStorageItem : 'raygun4js-successful-ping',
         sendPing : true,
-        pingIntervalId : -1,
         failedPings : 0
     },
   };
@@ -356,7 +355,6 @@
 
     if(metadata.ping.sendPing) {
       ping(); //call immediately
-      // metadata.ping.pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
     }
     window[window['RaygunObject']].q = errorQueue;
   };
