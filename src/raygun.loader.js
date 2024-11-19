@@ -19,6 +19,13 @@
     crashReportingEnabled = false,
     captureUnhandledRejections;
 
+    var hasLocalStorage = false;
+    try {
+      hasLocalStorage = !!window.localStorage;
+    } catch (e) {
+      // localStorage not available
+    }
+
   var metadata = {
     ping : {
         sendPing : true,
@@ -230,41 +237,61 @@
   };
 
   function ping() {
-    if(metadata.ping.failedPings > 2) {
-        clearInterval(metadata.ping.pingIntervalId);
+    if(!Raygun.Options || !Raygun.Options._raygunApiKey || !Raygun.Options._raygunApiUrl){
+      return;
     }
 
-    if(!Raygun.Options || !Raygun.Options._raygunApiKey || !Raygun.Options._raygunApiUrl){
-        metadata.ping.failedPings++;
-        return;
+    // Don't ping if we've already had a successful ping
+    if (hasLocalStorage && localStorage.getItem('raygun4js_successful_ping') === 'true') {
+      return;
     }
 
     var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
     var data = {
-        crashReportingEnabled: crashReportingEnabled ? true : false,
-        realUserMonitoringEnabled: realUserMonitoringEnabled ? true : false,
-        providerName: "raygun4js",
-        providerVersion: '{{VERSION}}'
+      crashReportingEnabled: crashReportingEnabled ? true : false,
+      realUserMonitoringEnabled: realUserMonitoringEnabled ? true : false,
+      providerName: "raygun4js",
+      providerVersion: '{{VERSION}}'
     };
 
     fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
     }).then(function(response) {
-        if (response.ok) {
-            metadata.ping.failedPings = 0;
-        } else {
-            // Request failed
-            metadata.ping.failedPings++;
+      if (response.ok) {
+        if (hasLocalStorage) {
+          // Record successful ping in local storage
+          localStorage.setItem('raygun4js_successful_ping', 'true');
         }
-    }).catch(function() {
+        metadata.ping.failedPings = 0;
+      } else {
+        retryPing(metadata.ping.failedPings);
         metadata.ping.failedPings++;
+      }
+    }).catch(function() {
+      retryPing(metadata.ping.failedPings);
+      metadata.ping.failedPings++;
     });
   }
 
+  var retryPing = function(failedPings) {
+    if (failedPings > 5) {
+      // Stop retrying after 5 failed attempts
+      return;
+    }
+
+    // Generates a delay of 10/20/40/80/120 seconds
+    var backoffDelay = Math.min(
+      10 * Math.pow(2, metadata.ping.failedPings),
+      120 // 2 minutes
+    ) * 1000;
+
+    // Retry after backoff delay
+    setTimeout(ping, backoffDelay);
+  }
 
   var installGlobalExecutor = function() {
     window[window['RaygunObject']] = function() {
@@ -325,7 +352,7 @@
 
     if(metadata.ping.sendPing) {
       ping(); //call immediately
-      metadata.ping.pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
+      // metadata.ping.pingIntervalId = setInterval(ping, 1000 * 60 * 5); //5 minutes
     }
     window[window['RaygunObject']].q = errorQueue;
   };
