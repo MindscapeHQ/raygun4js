@@ -742,7 +742,7 @@ var raygunRumFactory = function (window, $, Raygun) {
           url: xhrStatus.request.requestURL,
           method: xhrStatus.request.method,
           body: xhrStatus.request.body,
-          response: xhrStatus.response.body
+          responseBody: xhrStatus.response.body
         };
 
         log('found status for timing', timingData.statusCode);
