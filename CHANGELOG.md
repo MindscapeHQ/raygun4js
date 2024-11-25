@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   
 -->
 
+## [3.1.3]
+
+### Changed
+- Updated RUM XHR events to include `requestDetails` for the `onBeforeSendRUM` handler. Request details include `url` (including query parameters), `method`, `body` and `responseBody`. These details are stripped from the payload before it's sent to Raygun's servers.
+
 ## [3.1.2]
 
 ### Changed

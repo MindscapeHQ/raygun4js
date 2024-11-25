@@ -733,10 +733,17 @@ var raygunRumFactory = function (window, $, Raygun) {
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        var request = this.xhrStatusMap[url].shift();
+        var xhrStatus = this.xhrStatusMap[url].shift();
 
-        timingData.statusCode = request.status;
-        timingData.parentResource = request.parentResource;
+        timingData.statusCode = xhrStatus.response.status;
+        timingData.parentResource = xhrStatus.parentResource;
+
+        timingData.requestDetails = {
+          url: xhrStatus.request.requestURL,
+          method: xhrStatus.request.method,
+          body: xhrStatus.request.body,
+          responseBody: xhrStatus.response.body
+        };
 
         log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
@@ -984,7 +991,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         if (!!payload.eventData) {
           for (var i = 0; i < payload.eventData.length; i++) {
             if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-              payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+              var strippedEventData = stripRequestDetailsFromPayloadEventData(payload.eventData[i].data);
+              payload.eventData[i].data = JSON.stringify(strippedEventData);
             }
           }
         }
@@ -1010,6 +1018,18 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
       }, (window.raygunUserAgentDataStatus === 1 ? 200 : 0));
+    }
+
+    function stripRequestDetailsFromPayloadEventData(payloadEventData){
+      for (var i = 0 ; i < payloadEventData.length; i++) {
+        var eventDataItem = payloadEventData[i];
+
+        if (eventDataItem.requestDetails) {
+          delete eventDataItem.requestDetails;
+        }
+      }
+
+      return payloadEventData;
     }
 
     function updateUserAgentData(payload) {
@@ -1174,7 +1194,9 @@ var raygunRumFactory = function (window, $, Raygun) {
       var requests = this.xhrRequestMap[response.baseUrl];
 
       if (requests && requests.length > 0) {
-        var parentResource = requests[0].parentResource;
+        var request = requests[0];
+
+        var parentResource = request.parentResource;
 
         this.xhrRequestMap[response.baseUrl].shift();
 
@@ -1186,9 +1208,14 @@ var raygunRumFactory = function (window, $, Raygun) {
           this.xhrStatusMap[response.baseUrl] = [];
         }
 
-        log('adding response to xhr status map', response);
-        var responseWithParent = attachParentResource(response, parentResource);
-        this.xhrStatusMap[response.baseUrl].push(responseWithParent);
+        var requestAndResponse = {
+          request: request,
+          response: response
+        };
+
+        log('adding request/response to xhr status map', requestAndResponse);
+        var requestAndResponseWithParent = attachParentResource(requestAndResponse, parentResource);
+        this.xhrStatusMap[response.baseUrl].push(requestAndResponseWithParent);
       } else {
         log('response fired from non-handled request');
       }
