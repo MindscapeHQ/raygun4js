@@ -737,10 +737,13 @@ var raygunRumFactory = function (window, $, Raygun) {
 
         timingData.statusCode = xhrStatus.response.status;
         timingData.parentResource = xhrStatus.parentResource;
-        timingData.requestBody = xhrStatus.request.body;
-        timingData.requestUrl = xhrStatus.request.requestURL;
-        timingData.requestMethod = xhrStatus.request.method;
-        timingData.responseBody = xhrStatus.response.body;
+
+        timingData.requestDetails = {
+          url: xhrStatus.request.requestURL,
+          method: xhrStatus.request.method,
+          body: xhrStatus.request.body,
+          response: xhrStatus.response.body
+        };
 
         log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
@@ -988,7 +991,7 @@ var raygunRumFactory = function (window, $, Raygun) {
         if (!!payload.eventData) {
           for (var i = 0; i < payload.eventData.length; i++) {
             if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-              var strippedEventData = stripRequestAndResponseFromPayloadEventData(payload.eventData[i].data);
+              var strippedEventData = stripRequestDetailsFromPayloadEventData(payload.eventData[i].data);
               payload.eventData[i].data = JSON.stringify(strippedEventData);
             }
           }
@@ -1017,24 +1020,12 @@ var raygunRumFactory = function (window, $, Raygun) {
       }, (window.raygunUserAgentDataStatus === 1 ? 200 : 0));
     }
 
-    function stripRequestAndResponseFromPayloadEventData(payloadEventData){
+    function stripRequestDetailsFromPayloadEventData(payloadEventData){
       for (var i = 0 ; i < payloadEventData.length; i++) {
         var eventDataItem = payloadEventData[i];
 
-        if (eventDataItem.requestUrl) {
-          delete eventDataItem.requestUrl;
-        }
-
-        if (eventDataItem.requestBody) {
-          delete eventDataItem.requestBody;
-        }
-
-        if (eventDataItem.requestMethod) {
-          delete eventDataItem.requestMethod;
-        }
-
-        if (eventDataItem.responseBody) {
-          delete eventDataItem.responseBody;
+        if (eventDataItem.requestDetails) {
+          delete eventDataItem.requestDetails;
         }
       }
 
