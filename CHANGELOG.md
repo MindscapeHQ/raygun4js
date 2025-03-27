@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+## [3.1.4]
+
+### Removed
+- Removed the ping functionality as it's no longer needed as part of the onboarding flow inside the app.
 
 ## [3.1.3]
 

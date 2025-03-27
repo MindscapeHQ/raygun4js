@@ -1,32 +1,18 @@
 {
   "name": "raygun4js",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "homepage": "http://raygun.com",
-  "authors": [
-    "Mindscape <hello@raygun.com>"
-  ],
+  "authors": ["Mindscape <hello@raygun.com>"],
   "repository": {
     "type": "git",
     "url": "git://github.com/MindscapeHQ/raygun4js.git"
   },
   "description": "Official Raygun.com automatic error tracking plugin for JavaScript",
   "main": "dist/raygun.js",
-  "keywords": [
-    "error",
-    "tracking",
-    "reporting",
-    "raygun"
-  ],
+  "keywords": ["error", "tracking", "reporting", "raygun"],
   "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-  },
+  "ignore": ["**/.*", "node_modules", "bower_components", "test", "tests"],
+  "dependencies": {},
   "devDependencies": {
     "grunt-contrib-jshint": "~0.11.2",
     "grunt-contrib-concat": "~0.1.2",
