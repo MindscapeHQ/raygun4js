@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 
+    <!-- Wraps the window.fetch -->
+    <script src="fetch-wrapper.js"></script>
+
     <script type="text/javascript">
         !function (a, b, c, d, e, f, g, h) {
             a.RaygunObject = e, a[e] = a[e] || function () {
@@ -18,6 +21,8 @@
             }
         }(window, document, "script", "http://cdn.raygun.io/raygun4js/raygun.min.js", "rg4js");
     </script>
+
+
 </head>
 <body>
 
@@ -35,12 +40,20 @@
                 Throw an error
             </a>
         </p>
+        <p class="text-center">
+            <a class="btn btn-lg btn-warning" href="#" id="FetchButton" role="button">
+                Trigger 429 fetch error
+            </a>
+        </p>
     </div>
 </div>
 
 <script type="text/javascript">
     rg4js('apiKey', 'paste_your_api_key_here');
     rg4js('enableCrashReporting', true);
+    rg4js('options', {
+        'debugMode': true,
+    });
 </script>
 
 
@@ -48,6 +61,16 @@
     $(function () {
         $('#ErrorButton').click(function () {
             bob.GetMessage();
+        });
+        
+        $('#FetchButton').click(function () {
+            fetch('https://mock.httpstatus.io/429')
+                .then(function(response) {
+                    console.log('Response received:', response.status);
+                })
+                .catch(function(error) {
+                    console.log('Fetch completely failed:', error);
+                });
         });
     });
 </script>
