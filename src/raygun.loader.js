@@ -14,11 +14,25 @@
     delayedCommands = [],
     apiKey,
     options,
-    attach,
-    enablePulse,
     noConflict,
+    realUserMonitoringEnabled = false,
+    crashReportingEnabled = false,
     captureUnhandledRejections;
 
+    var hasSessionStorage = false;
+    try {
+      hasSessionStorage = !!window.sessionStorage;
+    } catch (e) {
+      // sessionStorage not available
+    }
+
+  var metadata = {
+    ping : {
+        sessionStorageItem : 'raygun4js-successful-ping',
+        sendPing : true,
+        failedPings : 0
+    },
+  };
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
@@ -51,6 +65,9 @@
 
     if (key) {
       switch (key) {
+        case 'sendPing':
+          metadata.ping.sendPing = value;
+          break;
         // React Native only
         case 'boot':
           onLoadHandler();
@@ -68,12 +85,13 @@
           break;
         case 'attach':
         case 'enableCrashReporting':
-          attach = value;
+          crashReportingEnabled = value;
           hasLoaded = true;
           break;
+        case 'enableRealUserMonitoring':
         case 'enableRUM':
         case 'enablePulse':
-          enablePulse = value;
+          realUserMonitoringEnabled = value;
           hasLoaded = true;
           break;
         case 'detach':
@@ -218,6 +236,66 @@
     }
   };
 
+  function ping() {
+    if(!Raygun.Options || !Raygun.Options._raygunApiKey || !Raygun.Options._raygunApiUrl){
+      return;
+    }
+
+    var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
+    var data = {
+      crashReportingEnabled: crashReportingEnabled ? true : false,
+      realUserMonitoringEnabled: realUserMonitoringEnabled ? true : false,
+      providerName: "raygun4js",
+      providerVersion: '{{VERSION}}'
+    };
+
+    // Check if we've already pinged with the same data
+    if (hasSessionStorage) {
+      var storedData = sessionStorage.getItem(metadata.ping.sessionStorageItem);
+      if (storedData && storedData === JSON.stringify(data)) {
+          return;
+      }
+    }
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then(function(response) {
+      if (response.ok) {
+        if (hasSessionStorage) {
+          // Record successful ping in local storage
+          sessionStorage.setItem(metadata.ping.sessionStorageItem, JSON.stringify(data));
+        }
+        metadata.ping.failedPings = 0;
+      } else {
+        retryPing(metadata.ping.failedPings);
+        metadata.ping.failedPings++;
+      }
+    }).catch(function() {
+      retryPing(metadata.ping.failedPings);
+      metadata.ping.failedPings++;
+    });
+  }
+
+  var retryPing = function(failedPings) {
+    if (failedPings > 5) {
+      // Stop retrying after 5 failed attempts
+      return;
+    }
+
+    // Generates a delay of 10/20/40/80/120 seconds
+    var backoffDelay = Math.min(
+      10 * Math.pow(2, metadata.ping.failedPings),
+      120 // 2 minutes
+    ) * 1000;
+
+    // Retry after backoff delay
+    setTimeout(ping, backoffDelay);
+  };
+
   var installGlobalExecutor = function() {
     window[window['RaygunObject']] = function() {
       return executor(arguments);
@@ -232,13 +310,13 @@
     if (noConflict) {
       rg = Raygun.noConflict();
     }
-
+    
     if (apiKey) {
       if (!options) {
         options = {};
       }
 
-      if (enablePulse) {
+      if (realUserMonitoringEnabled) {
         options.disablePulse = false;
       }
 
@@ -246,7 +324,7 @@
       rg.init(apiKey, options, null);
     }
 
-    if (attach) {
+    if (crashReportingEnabled) {
       rg.attach();
 
       errorQueue = window[window['RaygunObject']].q;
@@ -275,6 +353,9 @@
       installGlobalExecutor();
     }
 
+    if(metadata.ping.sendPing) {
+      ping(); //call immediately
+    }
     window[window['RaygunObject']].q = errorQueue;
   };
 

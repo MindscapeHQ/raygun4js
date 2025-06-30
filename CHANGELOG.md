@@ -28,6 +28,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused normalize.css file
   
 -->
+
+## [3.1.3]
+
+### Changed
+- Updated RUM XHR events to include `requestDetails` for the `onBeforeSendRUM` handler. Request details include `url` (including query parameters), `method`, `body` and `responseBody`. These details are stripped from the payload before it's sent to Raygun's servers.
+
+## [3.1.2]
+
+### Changed
+- Updated when ping happens so it only happens once, and when successful, it will store in sessionStorage and not ping again. This is to prevent multiple pings from happening on every page load.
+
+## [3.1.1]
+
+### Fixed
+- Resolved jQuery `isFunction` deprecation warnings. As of jQuery 3.3, `jQuery.isFunction()` is deprecated. It is replaced by `typeof x === "function"` - [source](https://api.jquery.com/jQuery.isFunction/).
+
+## [3.1.0]
+
+### Added 
+- Added a ping to tell Raygun that raygun4js has been set up correctly. The ping is enabled by default but can be disabled using the new `sendPing` option e.g., `rg4js('sendPing', false)`. The ping contains the version of Raygun4js and which products have been enabled (CrashReporting and/or Real User Monitoring). This information will be used to help users when setting up a new application.
+- Moved the typescript types into the main raygun4js repo
+- Added a new option for enabling Real User Monitoring. `rg4js('enableRealUserMonitoring', true);`
+
+## [3.0.1]
+
+### Fixed
+- Fixed an typo raised by issue #508 that caused breadcrumb messages to be undefined
+
+## [3.0.0]
+
+### Added
+
+- Adds Browserify support to build pipeline
+- Added new browser mocks for unit tests
+- Added new popstate event listener, to trigger 
+- unloadHandler replacement: Added popstate event listener network logic to [better support mobile devices](https://developer.chrome.com/docs/web-platform/page-lifecycle-api#advice-hidden)
+- unloadHandler replacement: Added hidden visibilityState change network logic to [better support mobile devices](https://developer.chrome.com/docs/web-platform/page-lifecycle-api#advice-hidden)
+
+### Changed
+
+- Changed the way the web-vitals library is imported into the project
+- Moved to using the official web vital callback triggers
+- Updated the sendCoreWebVitalTimings method to fire web vital payloads using beacon if available
+- Upgrade chromedriver dependency to 119.0.1
+
+### Removed
+
+- unloadHandler replacement: Removed the unload event listener network logic in favour of other approaches
+
 ## [2.28.0]
 
 ### Changed

@@ -6,7 +6,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2013-2018 Raygun Limited
+ * Copyright (c) 2013-2024 Raygun Limited
  * Licensed under the MIT license.
  */
 
@@ -29,7 +29,6 @@ var raygunFactory = function (window, $, undefined) {
   };
 
   var _userKey = 'raygun4js-userid';
-
   // State variables
   var _traceKit = TraceKit,
     _raygun = window.Raygun,
@@ -56,7 +55,6 @@ var raygunFactory = function (window, $, undefined) {
     _groupingKeyCallback,
     _beforeXHRCallback,
     _afterSendCallback,
-    _raygunApiUrl = 'https://api.raygun.io',
     _excludedHostnames = null,
     _excludedUserAgents = null,
     _filterScope = 'customData',
@@ -101,6 +99,7 @@ var raygunFactory = function (window, $, undefined) {
     init: function (key, options, customdata) {
       _traceKit.remoteFetching = false;
 
+      Raygun.Options._raygunApiUrl = 'https://api.raygun.io';
       this.Options._raygunApiKey = key;
 
       if (customdata) {
@@ -129,8 +128,8 @@ var raygunFactory = function (window, $, undefined) {
         _trackViewportDimensions = options.trackViewportDimensions === undefined ? true : options.trackViewportDimensions;
 
         if (options.apiUrl) {
-          _raygunApiUrl = options.apiUrl;
-          _customEndpointSet = true;
+          this.Options._raygunApiUrl = options.apiUrl;
+          this.Options._customEndpointSet = true;
         }
 
         if (typeof options.wrapAsynchronousCallbacks !== 'undefined') {
@@ -151,8 +150,8 @@ var raygunFactory = function (window, $, undefined) {
         }
 
         if (options.apiEndpoint) {
-          _raygunApiUrl = options.apiEndpoint;
-          _customEndpointSet = true;
+          this.Options._raygunApiUrl = options.apiEndpoint;
+          this.Options._customEndpointSet = true;
         }
 
         if (options.from) {
@@ -500,7 +499,7 @@ var raygunFactory = function (window, $, undefined) {
       var startRum = function () {
         _rum = new Raygun.RealUserMonitoring(
           Raygun.Options._raygunApiKey,
-          _raygunApiUrl,
+          Raygun.Options._raygunApiUrl,
           makePostCorsRequest,
           _user,
           _version,
@@ -978,7 +977,7 @@ var raygunFactory = function (window, $, undefined) {
     }
 
     Raygun.Utilities.log('Sending exception data to Raygun:', data);
-    var url = _raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
+    var url = Raygun.Options._raygunApiUrl + '/entries?apikey=' + encodeURIComponent(Raygun.Options._raygunApiKey);
     makePostCorsRequest(url, JSON.stringify(data));
   }
 

@@ -6,7 +6,7 @@
  * raygun4js
  * https://github.com/MindscapeHQ/raygun4js
  *
- * Copyright (c) 2022 MindscapeHQ
+ * Copyright (c) 2024 MindscapeHQ
  * Licensed under the MIT license.
  */
 
@@ -117,33 +117,39 @@ var raygunRumFactory = function (window, $, Raygun) {
         Raygun.CoreWebVitals.attach(sendCoreWebVitalTimings, self.parentResource);
       }
 
-      var clickHandler = function () {
-        this.updateStorageTimestamp();
-      }.bind(_private);
-
-      var unloadHandler = function () {
+      var sendAllQueuedPayloadsWithBeacon = function () {
         self.sendUsingNavigatorBeacon = true;
         sendChildAssets(true);
         sendQueuedItems();
+      }.bind(_private);
+
+      var clickHandler = function () {
+        this.updateStorageTimestamp();
       }.bind(_private);
 
       var visibilityChangeHandler = function () {
         if (document.visibilityState === 'visible') {
           this.updateStorageTimestamp();
         }
+
+        if (document.visibilityState === 'hidden') {
+          sendAllQueuedPayloadsWithBeacon();
+        }
+      }.bind(_private);
+
+      var urlChangeHandler = function () {
+        sendAllQueuedPayloadsWithBeacon();
       }.bind(_private);
 
       var pageHideHandler = function () {
-        self.sendUsingNavigatorBeacon = true;
-        sendChildAssets(true);
-        sendQueuedItems();
+        sendAllQueuedPayloadsWithBeacon();
         self.stopCollectingMetrics = true;
       }.bind(_private);
 
       if (window.addEventListener) {
         window.addEventListener('click', clickHandler);
         document.addEventListener('visibilitychange', visibilityChangeHandler);
-        window.addEventListener('beforeunload', unloadHandler);
+        window.addEventListener('popstate', urlChangeHandler);
         window.addEventListener('pagehide', pageHideHandler);
       } else if (window.attachEvent) {
         document.attachEvent('onclick', clickHandler);
@@ -499,8 +505,27 @@ var raygunRumFactory = function (window, $, Raygun) {
     }
 
     function sendCoreWebVitalTimings(performanceData) {
-      // Core web vital timing metrics need to be sent to the API immediately, if they are queued then they may not be sent if a virtual page timing event occurs before they are tracked
-      sendItemImmediately(createTimingPayload([performanceData]));
+      var payload = createTimingPayload([performanceData]);
+      // send the payload immediately if beacon is not supported
+      if (!navigator.sendBeacon) {
+        sendItemsImmediately([payload]);
+      } else {
+        // send the payload using beacon, if there is data
+        if (payload.data) {
+          payload.data = JSON.stringify(payload.data);
+          var stringifiedPayload = JSON.stringify({eventData: [payload]});
+          var url = self.apiUrl + '/events?apikey=' + encodeURIComponent(self.apiKey);
+
+          try {
+            navigator.sendBeacon(url, stringifiedPayload);
+          } catch (e) {
+            log(e, {
+              url: url,
+              payload: stringifiedPayload
+            });
+          }
+        }
+      }
     }
 
     // ================================================================================
@@ -549,7 +574,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       try {
         var offset = 0;
         var navigationEntries = window.performance.getEntriesByType('navigation'); //this tries to fetch the PerformanceNavigationTiming object (this is the new timing API)
-        if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) { 
+        if (parentIsVirtualPage || navigationEntries && navigationEntries.length > 0) {
           offset = 0; //start time is always 0 with the new api & virtual page so the offset is always 0
         } else {
           offset = window.performance.timing.navigationStart;
@@ -680,8 +705,8 @@ var raygunRumFactory = function (window, $, Raygun) {
     }.bind(this);
 
     /**
-     * Stops sending through timing information if a XHR request has been made but the response handler hasn't been fired. 
-     * This is to prevent issues where multiple timings for the same asset can be sent. 
+     * Stops sending through timing information if a XHR request has been made but the response handler hasn't been fired.
+     * This is to prevent issues where multiple timings for the same asset can be sent.
      * Once for the performance timing and another for the missing request (if the captureMissingRequests option is enabled)
      */
     var waitingForResourceToFinishLoading = function (timing) {
@@ -708,10 +733,17 @@ var raygunRumFactory = function (window, $, Raygun) {
 
       var xhrStatusesForName = this.xhrStatusMap[url];
       if (xhrStatusesForName && xhrStatusesForName.length > 0) {
-        var request = this.xhrStatusMap[url].shift();
+        var xhrStatus = this.xhrStatusMap[url].shift();
 
-        timingData.statusCode = request.status;
-        timingData.parentResource = request.parentResource;
+        timingData.statusCode = xhrStatus.response.status;
+        timingData.parentResource = xhrStatus.parentResource;
+
+        timingData.requestDetails = {
+          url: xhrStatus.request.requestURL,
+          method: xhrStatus.request.method,
+          body: xhrStatus.request.body,
+          responseBody: xhrStatus.response.body
+        };
 
         log('found status for timing', timingData.statusCode);
         if (this.xhrStatusMap[url].length === 0) {
@@ -728,7 +760,7 @@ var raygunRumFactory = function (window, $, Raygun) {
       //Try to default to the new timing object, if not use the old
       var performanceNavigationTiming = window.performance.getEntriesByType('navigation')[0]; // The navigationEntries array will contain one entry, as it represents the current navigation
       var timing = performanceNavigationTiming || window.performance.timing;
-      
+
       var data = {
         du: getTimingDuration(timing),
         t: Timings.Page,
@@ -959,7 +991,8 @@ var raygunRumFactory = function (window, $, Raygun) {
         if (!!payload.eventData) {
           for (var i = 0; i < payload.eventData.length; i++) {
             if (!!payload.eventData[i].data && typeof payload.eventData[i].data !== 'string') {
-              payload.eventData[i].data = JSON.stringify(payload.eventData[i].data);
+              var strippedEventData = stripRequestDetailsFromPayloadEventData(payload.eventData[i].data);
+              payload.eventData[i].data = JSON.stringify(strippedEventData);
             }
           }
         }
@@ -984,10 +1017,19 @@ var raygunRumFactory = function (window, $, Raygun) {
         }
 
         makePostCorsRequest(url, stringifiedPayload, successCallback, errorCallback);
-
-
-
       }, (window.raygunUserAgentDataStatus === 1 ? 200 : 0));
+    }
+
+    function stripRequestDetailsFromPayloadEventData(payloadEventData){
+      for (var i = 0 ; i < payloadEventData.length; i++) {
+        var eventDataItem = payloadEventData[i];
+
+        if (eventDataItem.requestDetails) {
+          delete eventDataItem.requestDetails;
+        }
+      }
+
+      return payloadEventData;
     }
 
     function updateUserAgentData(payload) {
@@ -1069,7 +1111,7 @@ var raygunRumFactory = function (window, $, Raygun) {
        * This utility fallsback to using the responseEnd - startTime when
        * that is the case.
        */
-       
+
       return timing.duration || (timing.responseEnd - timing.startTime) || 0;
     }
     this.Utilities["getTimingDuration"] = getTimingDuration;
@@ -1142,17 +1184,19 @@ var raygunRumFactory = function (window, $, Raygun) {
     }
 
     /**
-     * Removes the asset from the requestMap if found and adds the response to the 
-     * statusMap so that the status code can be associated with the request. 
-     * 
-     * If the 'captureMissingRequests' option is enabled and the timing metric is missing 
+     * Removes the asset from the requestMap if found and adds the response to the
+     * statusMap so that the status code can be associated with the request.
+     *
+     * If the 'captureMissingRequests' option is enabled and the timing metric is missing
      * the duration will also be used to create a new XHR timing.
      */
     function xhrResponseHandler(response) {
       var requests = this.xhrRequestMap[response.baseUrl];
 
       if (requests && requests.length > 0) {
-        var parentResource = requests[0].parentResource;
+        var request = requests[0];
+
+        var parentResource = request.parentResource;
 
         this.xhrRequestMap[response.baseUrl].shift();
 
@@ -1164,9 +1208,14 @@ var raygunRumFactory = function (window, $, Raygun) {
           this.xhrStatusMap[response.baseUrl] = [];
         }
 
-        log('adding response to xhr status map', response);
-        var responseWithParent = attachParentResource(response, parentResource);
-        this.xhrStatusMap[response.baseUrl].push(responseWithParent);
+        var requestAndResponse = {
+          request: request,
+          response: response
+        };
+
+        log('adding request/response to xhr status map', requestAndResponse);
+        var requestAndResponseWithParent = attachParentResource(requestAndResponse, parentResource);
+        this.xhrStatusMap[response.baseUrl].push(requestAndResponseWithParent);
       } else {
         log('response fired from non-handled request');
       }
@@ -1426,5 +1475,3 @@ var raygunRumFactory = function (window, $, Raygun) {
 };
 
 raygunRumFactory(window, window.jQuery, window.__instantiatedRaygun);
-
-
