@@ -6,8 +6,6 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-    <!-- Wraps the window.fetch -->
-    <script src="fetch-wrapper.js"></script>
 
     <script type="text/javascript">
         !function (a, b, c, d, e, f, g, h) {
@@ -19,9 +17,8 @@
                     e: g
                 })
             }
-        }(window, document, "script", "http://cdn.raygun.io/raygun4js/raygun.min.js", "rg4js");
+        }(window, document, "script", "/home/miquel/dev/projects/raygun/raygun4js/dist/raygun.js", "rg4js");
     </script>
-
 
 </head>
 <body>
@@ -55,6 +52,10 @@
         'debugMode': true,
     });
 </script>
+
+
+    <!-- Wraps the window.fetch -->
+    <script src="fetch-wrapper.js"></script>
 
 
 <script type="text/javascript">
