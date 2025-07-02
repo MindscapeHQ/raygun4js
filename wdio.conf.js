@@ -1,23 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const chromeDriverExists = (path) => {
-    return fs.existsSync(path);
-};
-
-const githubActionsChromeDriver = process.env.CHROMEDRIVER_PATH;
-const localChromeDriver = path.join(__dirname, 'node_modules', 'chromedriver', 'bin', 'chromedriver');
-
-// If we are on a Continuous Integration server, use the ChromeDriver installed by browser-actions/setup-chrome.
-// Otherwise, use the ChromeDriver installed as a devDependency.
-let chromeDriverPath;
-if (githubActionsChromeDriver && chromeDriverExists(githubActionsChromeDriver)) {
-    chromeDriverPath = githubActionsChromeDriver;
-} else if (chromeDriverExists(localChromeDriver)) {
-    chromeDriverPath = localChromeDriver;
-} else {
-    console.warn('ChromeDriver not found in expected locations. Using default.');
-}
+// WebDriverIO v9 has automatic driver setup, no need for manual chromedriver configuration
 
 exports.config = {
     //
@@ -113,12 +94,6 @@ exports.config = {
     // gets prepended directly.
     baseUrl: 'http://localhost',
     //
-    host: 'localhost',
-    //
-    port: 9515,
-    //
-    path: '/',
-    //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
     //
@@ -140,13 +115,8 @@ exports.config = {
                 { mount: '/fixtures', path: './tests/fixtures' },
                 { mount: '/dist', path: './dist' },
             ]
-        }],
-        ['chromedriver', {
-            chromedriverCustomPath: chromeDriverPath
         }]
     ],
-    chromeDriverArgs: ['--headless', '--disable-gpu'],
-    
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: https://webdriver.io/docs/frameworks.html
