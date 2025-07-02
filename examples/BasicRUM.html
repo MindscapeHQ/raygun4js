@@ -35,39 +35,6 @@
                 Throw an error
             </a>
         </p>
-        
-        <div class="row" style="margin-top: 30px;">
-            <div class="col-md-6">
-                <h3>INP Test Interactions</h3>
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <button class="btn btn-primary btn-block" id="HeavyComputeButton">
-                            Heavy Computation (100ms delay)
-                        </button>
-                        <br>
-                        <button class="btn btn-info btn-block" id="DOMManipulationButton">
-                            DOM Manipulation
-                        </button>
-                        <br>
-                        <input type="text" class="form-control" id="DelayedInput" placeholder="Type here (delayed response)">
-                        <br>
-                        <button class="btn btn-warning btn-block" id="LayoutShiftButton">
-                            Trigger Layout Shift
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <h3>Results</h3>
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <div id="InteractionResults" style="min-height: 200px; background-color: #f9f9f9; padding: 10px; border-radius: 4px;">
-                            <em>Interaction results will appear here...</em>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -80,98 +47,9 @@
 
 <script type="text/javascript">
     $(function () {
-        let interactionCount = 0;
-        const resultsDiv = $('#InteractionResults');
-        
-        function addResult(message) {
-            interactionCount++;
-            const timestamp = new Date().toLocaleTimeString();
-            resultsDiv.append(`<div><strong>${interactionCount}.</strong> [${timestamp}] ${message}</div>`);
-            resultsDiv.scrollTop(resultsDiv[0].scrollHeight);
-        }
-        
-        // Original error button
         $('#ErrorButton').click(function () {
-            addResult('Error thrown - check Raygun dashboard');
             bob.GetMessage();
         });
-        
-        // Heavy computation button (simulates CPU-intensive work)
-        $('#HeavyComputeButton').click(function () {
-            addResult('Starting heavy computation...');
-            
-            // Simulate heavy computation with a blocking operation
-            const start = performance.now();
-            const duration = 100; // 100ms delay
-            
-            // CPU-intensive loop
-            let result = 0;
-            while (performance.now() - start < duration) {
-                result += Math.random() * Math.random();
-            }
-            
-            addResult(`Heavy computation completed (${(performance.now() - start).toFixed(2)}ms)`);
-        });
-        
-        // DOM manipulation button
-        $('#DOMManipulationButton').click(function () {
-            addResult('Performing DOM manipulation...');
-            
-            // Create and remove many DOM elements
-            const container = $('<div>').appendTo('body');
-            for (let i = 0; i < 100; i++) {
-                const element = $(`<div class="test-element" style="position: absolute; left: ${Math.random() * 100}px; top: ${Math.random() * 100}px; width: 10px; height: 10px; background: red;"></div>`);
-                container.append(element);
-            }
-            
-            // Force layout recalculation
-            container[0].offsetHeight;
-            
-            // Remove elements after a short delay
-            setTimeout(() => {
-                container.remove();
-                addResult('DOM manipulation completed');
-            }, 50);
-        });
-        
-        // Delayed input response
-        let inputTimeout;
-        $('#DelayedInput').on('input', function () {
-            const value = $(this).val();
-            clearTimeout(inputTimeout);
-            
-            addResult(`Input detected: "${value}"`);
-            
-            // Simulate delayed processing
-            inputTimeout = setTimeout(() => {
-                // Simulate heavy processing on input
-                let result = 0;
-                for (let i = 0; i < 100000; i++) {
-                    result += Math.sin(i) * Math.cos(i);
-                }
-                addResult(`Input processing completed for: "${value}"`);
-            }, 50);
-        });
-        
-        // Layout shift button
-        $('#LayoutShiftButton').click(function () {
-            addResult('Triggering layout shift...');
-            
-            // Create a large element that causes layout shift
-            const shiftElement = $(`<div style="height: 200px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); margin: 20px 0; padding: 20px; border-radius: 8px; color: white; text-align: center; line-height: 160px; font-size: 18px; font-weight: bold;">Layout Shift Element</div>`);
-            
-            // Insert before the results panel to cause layout shift
-            $('.row').before(shiftElement);
-            
-            // Remove after 2 seconds
-            setTimeout(() => {
-                shiftElement.remove();
-                addResult('Layout shift element removed');
-            }, 2000);
-        });
-        
-        // Initialize
-        addResult('INP test interactions ready. Try clicking buttons and typing in the input field.');
     });
 </script>
 

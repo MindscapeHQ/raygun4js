@@ -34,6 +34,7 @@ function raygunCoreWebVitalFactory() {
         _parentResource = parentResource;
 
         webVitals.onLCP(this.handler);
+        webVitals.onFID(this.handler);
         webVitals.onCLS(this.handler);
         webVitals.onINP(this.handler);
         webVitals.onFCP(this.handler);
