@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raygun Crash Reporting - Large Payload Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+    <script type="text/javascript">
+        !function (a, b, c, d, e, f, g, h) {
+            a.RaygunObject = e, a[e] = a[e] || function () {
+                        (a[e].o = a[e].o || []).push(arguments)
+                    }, f = b.createElement(c), g = b.getElementsByTagName(c)[0],
+                    f.async = 1, f.src = d, g.parentNode.insertBefore(f, g), h = a.onerror, a.onerror = function (b, c, d, f, g) {
+                h && h(b, c, d, f, g), g || (g = new Error(b)), a[e].q = a[e].q || [], a[e].q.push({
+                    e: g
+                })
+            }
+        }(window, document, "script", "/home/miquel/dev/projects/raygun/raygun4js/dist/raygun.min.js", "rg4js");
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header clearfix">
+        <br>
+    </div>
+
+    <div class="jumbotron">
+        <h1 class="text-center">Raygun4JS - Large Payload Support</h1>
+        <p class="text-center">
+            This example demonstrates that Raygun4JS now supports error messages longer than 512 characters.
+        </p>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p class="text-center">
+                    <button class="btn btn-lg btn-primary" id="ShortErrorButton" role="button">
+                        Short Error (< 512 chars)
+                    </button>
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="text-center">
+                    <button class="btn btn-lg btn-warning" id="MediumErrorButton" role="button">
+                        Medium Error (> 512 chars)
+                    </button>
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="text-center">
+                    <button class="btn btn-lg btn-danger" id="LargeErrorButton" role="button">
+                        Large Error (> 1000 chars)
+                    </button>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Instructions:</h3>
+                <ol>
+                    <li>Replace <code>paste_your_api_key_here</code> with your actual Raygun API key</li>
+                    <li>Click any of the buttons above to send errors of different sizes</li>
+                    <li>Check your Raygun dashboard to see the full error messages</li>
+                    <li>Notice that error messages are no longer truncated at 512 characters</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    rg4js('apiKey', 'paste_your_api_key_here');
+    rg4js('enableCrashReporting', true);
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#ShortErrorButton').click(function () {
+            var shortMessage = "This is a short error message that is less than 512 characters long. It should be sent to Raygun without any truncation.";
+            console.log("Sending short error (" + shortMessage.length + " characters)");
+            Raygun.send(new Error(shortMessage));
+        });
+
+        $('#MediumErrorButton').click(function () {
+            var mediumMessage = "This is a medium-length error message that exceeds 512 characters. ".repeat(8) + 
+                "This demonstrates that the previous 512-character limit has been removed and longer error messages are now fully supported.";
+            console.log("Sending medium error (" + mediumMessage.length + " characters)");
+            Raygun.send(new Error(mediumMessage));
+        });
+
+        $('#LargeErrorButton').click(function () {
+            var largeMessage = "This is a very large error message designed to test support for payloads significantly longer than the previous 512 character limit. ".repeat(15) + 
+                "This final section ensures we have a comprehensive error message that provides detailed context about what went wrong in the application. " +
+                "With the removal of the character limit, developers can now include stack traces, user data, environment information, and other debugging details " +
+                "that are essential for effective error tracking and resolution. This improves the overall debugging experience significantly.";
+            console.log("Sending large error (" + largeMessage.length + " characters)");
+            Raygun.send(new Error(largeMessage));
+        });
+    });
+</script>
+
+</body>
+</html>

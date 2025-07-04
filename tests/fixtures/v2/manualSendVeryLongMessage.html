@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Raygun4JS with V2 API - Very Long Message Test</title>
+    <script src="/fixtures/common/instrumentXHRs.js"></script>
+    <script type="text/javascript">
+        !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){
+        (a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],
+        f.async=1,f.src=d,g.parentNode.insertBefore(f,g),h=a.onerror,a.onerror=function(b,c,d,f,g){
+        h&&h(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],a[e].q.push({
+        e:g})}}(window,document,"script","/dist/raygun.js","rg4js");
+    </script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      rg4js('apiKey', 'abcdef==');
+      rg4js('enableCrashReporting', true);
+
+      setTimeout(function () {
+        // Create a message much longer than 1000 characters
+        var veryLongMessage = "This is a very long error message designed to test that the 512 character limit has been removed from Raygun4JS. ".repeat(15) + "This final part should ensure we're well over 1000 characters to test large payload support thoroughly.";
+        rg4js('send', veryLongMessage);
+      }, 1000);
+    </script>
+  </body>
+</html>
