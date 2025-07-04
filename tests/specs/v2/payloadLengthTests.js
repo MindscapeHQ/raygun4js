@@ -1,7 +1,4 @@
 var _ = require('underscore');
-var common = require('../common');
-
-var _entriesEndpoint = 'https://api.raygun.io/entries';
 
 describe("Large payload support tests for v2 manual send", function() {
 
@@ -14,11 +11,10 @@ describe("Large payload support tests for v2 manual send", function() {
       return window.__requestPayloads;
     });
 
-    var passes = await _.any(requestPayloads, function (payload) {
+    var passes = _.any(requestPayloads, function (payload) {
       return payload.Details.Error.Message.length > 1000;
     });
 
-    await expect(passes).toBe(true);
+    expect(passes).toBe(true);
   });
-
 });
