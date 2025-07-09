@@ -440,6 +440,6 @@ interface Window {
     Raygun: RaygunStatic;
 }
 
-export { BreadcrumbLevel, RaygunOptions, RaygunPayload, RaygunStackTrace, RaygunStatic, RaygunV2, RaygunV2UserDetails };
+export { BreadcrumbLevel, RaygunBreadcrumb, RaygunOptions, RaygunPayload, RaygunStackTrace, RaygunStatic, RaygunV2, RaygunV2UserDetails };
 
 export default rg4js;
