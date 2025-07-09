@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 ## [3.1.4]
 
+### Fixed
+- Added `Breadcrumbs` definition to `RaygunPayload` Typescript type.
+- Updated internal dev dependencies.
+
 ### Removed
 - Removed the ping functionality as it's no longer needed as part of the onboarding flow inside the app.
 
