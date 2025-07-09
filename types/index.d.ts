@@ -23,6 +23,13 @@ interface RaygunStackTrace {
     MethodName: string;
 }
 
+interface RaygunBreadcrumb {
+    type?: string;
+    message?: string;
+    level?: BreadcrumbLevel;
+    metadata?: any;
+}
+
 interface RaygunOptions {
     /**
      * Posts error payloads over HTTP. This allows IE8 to send JS errors.
@@ -171,6 +178,7 @@ interface RaygunPayload {
             UUID?: any;
         };
         GroupingKey?: string | undefined;
+        Breadcrumbs?: RaygunBreadcrumb[];
     };
 }
 
