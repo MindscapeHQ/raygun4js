@@ -2,7 +2,7 @@
  * @prettier
  */
 
-(function(window, Raygun) {
+(function (window, Raygun) {
   if (!window['RaygunObject'] || !window[window['RaygunObject']]) {
     return;
   }
@@ -19,33 +19,31 @@
     crashReportingEnabled = false,
     captureUnhandledRejections;
 
-    var hasSessionStorage = false;
-    try {
-      hasSessionStorage = !!window.sessionStorage;
-    } catch (e) {
-      // sessionStorage not available
-    }
+  var hasSessionStorage = false;
+  try {
+    hasSessionStorage = !!window.sessionStorage;
+  } catch (e) {
+    // sessionStorage not available
+  }
 
-  var metadata = {
-    ping : {
-        sessionStorageItem : 'raygun4js-successful-ping',
-        sendPing : true,
-        failedPings : 0
-    },
-  };
   var snippetOnErrorSignature = ['function (b,c,d,f,g){', '||(g=new Error(b)),a[e].q=a[e].q||[]'];
 
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb','captureMissingRequests'];
+  var delayedExecutionFunctions = [
+    'trackEvent',
+    'send',
+    'recordBreadcrumb',
+    'captureMissingRequests',
+  ];
 
-  var parseSnippetOptions = function() {
+  var parseSnippetOptions = function () {
     snippetOptions = window[window['RaygunObject']].o;
 
-    for (var i in snippetOptions) {  
-      if (snippetOptions.hasOwnProperty(i)) {  
-        var pair = snippetOptions[i];  
+    for (var i in snippetOptions) {
+      if (snippetOptions.hasOwnProperty(i)) {
+        var pair = snippetOptions[i];
         if (pair) {
           if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
             // Config pair, can execute immediately
@@ -59,15 +57,12 @@
     }
   };
 
-  var executor = function(pair) {
+  var executor = function (pair) {
     var key = pair[0];
     var value = pair[1];
 
     if (key) {
       switch (key) {
-        case 'sendPing':
-          metadata.ping.sendPing = value;
-          break;
         // React Native only
         case 'boot':
           onLoadHandler();
@@ -175,8 +170,12 @@
         case 'trackEvent':
           if (value.type && value.path) {
             rg.trackEvent(value.type, { path: value.path });
-          } else if(value.type && value.name && value.duration) {
-            rg.trackEvent(value.type, { name: value.name, duration: value.duration, offset: value.offset || 0 });
+          } else if (value.type && value.name && value.duration) {
+            rg.trackEvent(value.type, {
+              name: value.name,
+              duration: value.duration,
+              offset: value.offset || 0,
+            });
           } else if (value.type && value.timings) {
             rg.trackEvent(value.type, { timings: value.timings });
           }
@@ -226,7 +225,7 @@
         case 'clientIp':
           rg.setClientIp(value);
           break;
-        case 'captureMissingRequests': 
+        case 'captureMissingRequests':
           rg.captureMissingRequests(value);
           break;
         case 'captureUnhandledRejections':
@@ -236,81 +235,21 @@
     }
   };
 
-  function ping() {
-    if(!Raygun.Options || !Raygun.Options._raygunApiKey || !Raygun.Options._raygunApiUrl){
-      return;
-    }
-
-    var url = Raygun.Options._raygunApiUrl + "/ping?apiKey=" + encodeURIComponent(Raygun.Options._raygunApiKey);
-    var data = {
-      crashReportingEnabled: crashReportingEnabled ? true : false,
-      realUserMonitoringEnabled: realUserMonitoringEnabled ? true : false,
-      providerName: "raygun4js",
-      providerVersion: '{{VERSION}}'
-    };
-
-    // Check if we've already pinged with the same data
-    if (hasSessionStorage) {
-      var storedData = sessionStorage.getItem(metadata.ping.sessionStorageItem);
-      if (storedData && storedData === JSON.stringify(data)) {
-          return;
-      }
-    }
-
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    }).then(function(response) {
-      if (response.ok) {
-        if (hasSessionStorage) {
-          // Record successful ping in local storage
-          sessionStorage.setItem(metadata.ping.sessionStorageItem, JSON.stringify(data));
-        }
-        metadata.ping.failedPings = 0;
-      } else {
-        retryPing(metadata.ping.failedPings);
-        metadata.ping.failedPings++;
-      }
-    }).catch(function() {
-      retryPing(metadata.ping.failedPings);
-      metadata.ping.failedPings++;
-    });
-  }
-
-  var retryPing = function(failedPings) {
-    if (failedPings > 5) {
-      // Stop retrying after 5 failed attempts
-      return;
-    }
-
-    // Generates a delay of 10/20/40/80/120 seconds
-    var backoffDelay = Math.min(
-      10 * Math.pow(2, metadata.ping.failedPings),
-      120 // 2 minutes
-    ) * 1000;
-
-    // Retry after backoff delay
-    setTimeout(ping, backoffDelay);
-  };
-
-  var installGlobalExecutor = function() {
-    window[window['RaygunObject']] = function() {
+  var installGlobalExecutor = function () {
+    window[window['RaygunObject']] = function () {
       return executor(arguments);
     };
     window['RaygunInitialized'] = true;
     globalExecutorInstalled = true;
   };
 
-  var onLoadHandler = function() {
+  var onLoadHandler = function () {
     parseSnippetOptions();
 
     if (noConflict) {
       rg = Raygun.noConflict();
     }
-    
+
     if (apiKey) {
       if (!options) {
         options = {};
@@ -353,23 +292,23 @@
       installGlobalExecutor();
     }
 
-    if(metadata.ping.sendPing) {
-      ping(); //call immediately
-    }
     window[window['RaygunObject']].q = errorQueue;
   };
 
   if (!Raygun.Utilities.isReactNative()) {
-    var supportsNavigationTiming = !!window.PerformanceObserver && !!window.PerformanceObserver.supportedEntryTypes && window.PerformanceObserver.supportedEntryTypes.includes('navigation');
+    var supportsNavigationTiming =
+      !!window.PerformanceObserver &&
+      !!window.PerformanceObserver.supportedEntryTypes &&
+      window.PerformanceObserver.supportedEntryTypes.includes('navigation');
     if (document.readyState === 'complete') {
-        onLoadHandler();
+      onLoadHandler();
     } else if (supportsNavigationTiming) {
-        //The other 'load' events are called before the PerformanceNavigationTiming is completed resulting in `loadEventEnd` never being set which is needed to calculate the duration of the timing. This observer triggers after the timing is complete. 
-        var observer = new window.PerformanceObserver(function () {
-          onLoadHandler();
-        });
+      //The other 'load' events are called before the PerformanceNavigationTiming is completed resulting in `loadEventEnd` never being set which is needed to calculate the duration of the timing. This observer triggers after the timing is complete.
+      var observer = new window.PerformanceObserver(function () {
+        onLoadHandler();
+      });
 
-        observer.observe({ entryTypes: ['navigation'] });
+      observer.observe({ entryTypes: ['navigation'] });
     } else if (window.addEventListener) {
       window.addEventListener('load', onLoadHandler);
     } else {
