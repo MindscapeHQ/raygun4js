@@ -865,10 +865,6 @@ var raygunFactory = function (window, $, undefined) {
       finalMessage = scriptError;
     }
 
-    if (finalMessage && typeof finalMessage === 'string') {
-      finalMessage = finalMessage.substring(0, 512);
-    }
-
     var pageLocation;
     if (!Raygun.Utilities.isReactNative()) {
       pageLocation = [
