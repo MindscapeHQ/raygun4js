@@ -68,13 +68,21 @@ records the source commit, whether the working tree has uncommitted changes, too
 and package checksums. No wall-clock date is included in the bundle banner.
 
 Before accepting the output, the command verifies the manifest and uses a browser to check
-that the pinned snippets load, preserve queued configuration and early errors, and reject
-an incorrect hash or missing CORS headers. Run `npm run test:release` to repeat those checks
+that every pinned snippet format loads, preserves queued configuration and early errors, and
+rejects an incorrect hash or missing CORS headers. Generation fails if a source snippet cannot
+be pinned and given integrity attributes. Run `npm run test:release` to repeat the asset checks
 against an existing local release. Browser tests use WebdriverIO's automatic Chrome/driver
 setup; `CHROME_BIN` and `CHROMEDRIVER_PATH` can select installed binaries. The first run may
 download browser binaries and the .NET packaging project's dependencies.
 
-The output directory is replaced only after the release-asset checks pass. It is ignored by Git.
+Run `npm run test:release-preparation` after building to test replacement, rollback, and rejection
+of unsupported snippet sources. These checks run the packaging command in isolated temporary
+copies and leave your existing release assets untouched.
+
+The output directory is replaced only after the release-asset checks pass. Previous output is
+kept as a backup until installation succeeds and restored if installation fails. If backup cleanup
+fails, the new output stays installed and the command prints the backup path for manual cleanup.
+Release output and backups are ignored by Git.
 These commands only prepare local files: they do not upload, publish packages, update CDN latest,
 or configure TeamCity. A later TeamCity publishing job must consume the retained artifacts
 without rebuilding. Use a new version before publishing changed files; never replace an

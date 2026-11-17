@@ -108,6 +108,8 @@ test('pinned async snippets load with SRI and reject a wrong hash or missing COR
           loaded: !!window.releaseLoaded,
           blocked: !!window.releaseBlocked,
           initialized: !!window.RaygunInitialized,
+          integrity: document.querySelector('script[src]').integrity,
+          crossOrigin: document.querySelector('script[src]').crossOrigin,
           queuedError: window.rg4js.q && window.rg4js.q[0] && window.rg4js.q[0].e.message,
           fetchPreserved: window.__raygunOriginalFetch === window.releaseOriginalFetch,
         }));
@@ -120,6 +122,8 @@ test('pinned async snippets load with SRI and reject a wrong hash or missing COR
             assert.equal(result.loaded, true);
             assert.equal(result.initialized, true);
             assert.equal(result.blocked, false);
+            assert.equal(result.integrity, manifest.files['raygun.min.js'].integrity);
+            assert.equal(result.crossOrigin, 'anonymous');
             if (variant !== '.nohandler') {
               assert.equal(result.queuedError, 'early release error');
             }
@@ -127,16 +131,16 @@ test('pinned async snippets load with SRI and reject a wrong hash or missing COR
               assert.equal(result.fetchPreserved, true);
             }
           });
+          for (const options of [{ badHash: true }, { cors: false }]) {
+            await t.test(`${file} blocks the provider with ${options.badHash ? 'an incorrect hash' : 'missing CORS'}`,
+              async () => {
+                const result = await load(file, options);
+                assert.equal(result.blocked, true);
+                assert.equal(result.loaded, false);
+                assert.equal(result.initialized, false);
+              });
+          }
         }
-      }
-      for (const options of [{ badHash: true }, { cors: false }]) {
-        await t.test(`blocks the provider with ${options.badHash ? 'an incorrect hash' : 'missing CORS'}`,
-          async () => {
-            const result = await load('snippet.html', options);
-            assert.equal(result.blocked, true);
-            assert.equal(result.loaded, false);
-            assert.equal(result.initialized, false);
-          });
       }
     } finally {
       if (browser) {

@@ -75,14 +75,19 @@ async function prepare() {
     const snippetFiles = {};
     for (const variant of ['', '.nohandler', '.fetchhandler']) {
       const sourceName = `unminified${variant}.js`;
-      const source = fs.readFileSync(path.join(root, 'src', 'snippet', sourceName), 'utf8')
-        .replace('//cdn.raygun.io/raygun4js/raygun.min.js', bundle.url)
-        .replace(/(\w+)\.src = url;/, (match, script) =>
+      const source = fs.readFileSync(path.join(root, 'src', 'snippet', sourceName), 'utf8');
+      const floatingURL = '//cdn.raygun.io/raygun4js/raygun.min.js';
+      const scriptSource = /(\w+)\.src\s*=\s*url\s*;/;
+      if (!source.includes(floatingURL) || !scriptSource.test(source)) {
+        throw new Error(`Cannot generate pinned SRI snippet from ${sourceName}`);
+      }
+      const pinned = source.replace(floatingURL, bundle.url)
+        .replace(scriptSource, (match, script) =>
           `${match}\n    ${script}.integrity = '${bundle.integrity}';\n` +
           `    ${script}.crossOrigin = 'anonymous';`);
       const input = path.join(snippets, sourceName);
       const output = path.join(snippets, `minified${variant}.js`);
-      fs.writeFileSync(input, source);
+      fs.writeFileSync(input, pinned);
       snippetFiles[output] = [input];
     }
 
@@ -124,8 +129,31 @@ async function prepare() {
     });
 
     const destination = path.join(releases, pkg.version);
-    fs.rmSync(destination, { recursive: true, force: true });
-    fs.renameSync(staging, destination);
+    const backup = `${staging}.previous`;
+    const replacing = fs.existsSync(destination);
+    if (replacing) {
+      fs.renameSync(destination, backup);
+    }
+    try {
+      fs.renameSync(staging, destination);
+    } catch (error) {
+      if (replacing) {
+        try {
+          fs.renameSync(backup, destination);
+        } catch (restoreError) {
+          throw new Error(`Release installation failed: ${error.message}. ` +
+            `Could not restore previous output: ${restoreError.message}. Retained at ${backup}`);
+        }
+      }
+      throw error;
+    }
+    if (replacing) {
+      try {
+        fs.rmSync(backup, { recursive: true, force: true });
+      } catch (error) {
+        console.warn(`Release installed, but previous output could not be fully removed at ${backup}: ${error.message}`);
+      }
+    }
     console.log(`\nLocal release assets prepared in ${destination}`);
     console.log('Nothing was published. Never overwrite an existing published version with these files.');
   } finally {
