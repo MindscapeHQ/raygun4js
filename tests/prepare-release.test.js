@@ -70,33 +70,57 @@ test('release preparation safely replaces protected previous output', { timeout:
   assert.equal(fs.existsSync(previousBundle), false);
 });
 
-test('release preparation restores previous output when installation fails', { timeout: 150000 }, t => {
-  const directory = fixture(t);
-  const destination = path.join(directory, 'release', pkg.version);
-  fs.mkdirSync(destination, { recursive: true });
-  fs.writeFileSync(path.join(destination, 'previous.txt'), 'retain this exact release');
-  const preload = path.join(directory, 'fail-install.cjs');
-  fs.writeFileSync(preload, `
-    const fs = require('node:fs');
-    const path = require('node:path');
-    const rename = fs.renameSync;
-    const destination = ${JSON.stringify(destination)};
-    fs.renameSync = function(from, to) {
-      if (to === destination && path.basename(from).startsWith('.${pkg.version}-') &&
-          !from.endsWith('.previous')) {
-        throw Object.assign(new Error('Simulated release installation failure'), { code: 'EACCES' });
-      }
-      return rename.apply(this, arguments);
-    };
-  `);
+test('release preparation preserves previous output when installation fails', { timeout: 300000 }, async t => {
+  for (const failRecovery of [false, true]) {
+    await t.test(failRecovery ? 'restoration and cleanup fail' : 'restoration succeeds', t => {
+      const directory = fixture(t);
+      const releases = path.join(directory, 'release');
+      const destination = path.join(releases, pkg.version);
+      fs.mkdirSync(destination, { recursive: true });
+      fs.writeFileSync(path.join(destination, 'previous.txt'), 'retain this exact release');
+      const preload = path.join(directory, 'fail-install.cjs');
+      fs.writeFileSync(preload, `
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const rename = fs.renameSync;
+        const remove = fs.rmSync;
+        const destination = ${JSON.stringify(destination)};
+        fs.renameSync = function(from, to) {
+          if (to === destination && path.basename(from).startsWith('.${pkg.version}-') &&
+              (${failRecovery} || !from.endsWith('.previous'))) {
+            throw Object.assign(new Error('Simulated release installation failure'), { code: 'EACCES' });
+          }
+          return rename.apply(this, arguments);
+        };
+        fs.rmSync = function(target) {
+          if (${failRecovery} && path.dirname(target) === path.dirname(destination) &&
+              path.basename(target).startsWith('.${pkg.version}-') && !target.endsWith('.previous')) {
+            throw Object.assign(new Error('Simulated staging cleanup failure'), { code: 'EACCES' });
+          }
+          return remove.apply(this, arguments);
+        };
+      `);
 
-  const result = prepare(directory, {
-    NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --require ${JSON.stringify(preload)}`,
-  });
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /Simulated release installation failure/);
-  assert.equal(fs.readFileSync(path.join(destination, 'previous.txt'), 'utf8'), 'retain this exact release');
-  assert.deepEqual(fs.readdirSync(path.join(directory, 'release')), [pkg.version]);
+      const result = prepare(directory, {
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --require ${JSON.stringify(preload)}`,
+      });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Simulated release installation failure/);
+      if (failRecovery) {
+        const backups = fs.readdirSync(releases).filter(name => name.endsWith('.previous'));
+        assert.equal(backups.length, 1);
+        const backup = path.join(releases, backups[0]);
+        assert.equal(fs.readFileSync(path.join(backup, 'previous.txt'), 'utf8'), 'retain this exact release');
+        assert.match(result.stderr, /Could not restore previous output/);
+        assert.ok(result.stderr.includes(`Retained at ${backup}`), result.stderr);
+        assert.match(result.stderr, /Staging output could not be removed at /);
+        assert.match(result.stderr, /Simulated staging cleanup failure/);
+      } else {
+        assert.equal(fs.readFileSync(path.join(destination, 'previous.txt'), 'utf8'), 'retain this exact release');
+        assert.deepEqual(fs.readdirSync(releases), [pkg.version]);
+      }
+    });
+  }
 });
 
 test('release preparation rejects snippets it cannot secure', { timeout: 150000 }, t => {

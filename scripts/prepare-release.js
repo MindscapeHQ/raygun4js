@@ -157,7 +157,11 @@ async function prepare() {
     console.log(`\nLocal release assets prepared in ${destination}`);
     console.log('Nothing was published. Never overwrite an existing published version with these files.');
   } finally {
-    fs.rmSync(staging, { recursive: true, force: true });
+    try {
+      fs.rmSync(staging, { recursive: true, force: true });
+    } catch (error) {
+      console.warn(`Staging output could not be removed at ${staging}: ${error.message}`);
+    }
   }
 }
 
