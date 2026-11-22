@@ -43,7 +43,11 @@
   "scripts": {
     "test": "npm run jasmine && npm run wdio",
     "jasmine": "jasmine --config=jasmine.json && jasmine tests/specs/typescript-definitions.js",
-    "wdio": "cross-env node_modules/.bin/wdio wdio.conf.js"
+    "wdio": "cross-env node_modules/.bin/wdio wdio.conf.js",
+    "release:prepare": "grunt build && npm test && npm run release:assets",
+    "release:assets": "node scripts/prepare-release.js",
+    "test:release": "node --test tests/release.test.js",
+    "test:release-preparation": "node --test tests/prepare-release.test.js"
   },
   "keywords": [
     "error",
